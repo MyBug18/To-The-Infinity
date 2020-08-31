@@ -1,11 +1,14 @@
 using System;
 
-public class Game
+namespace Core
 {
-    public readonly int GameSpeed;
-
-    public Game(int gameSpeed)
+    public class Game
     {
-        GameSpeed = gameSpeed;
+        public readonly int GameSpeed;
+
+        public Game(int gameSpeed)
+        {
+            GameSpeed = gameSpeed;
+        }
     }
 }
