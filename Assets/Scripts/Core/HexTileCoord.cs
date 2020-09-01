@@ -48,7 +48,7 @@ namespace Core
 
         public bool Equals(HexTileCoord c) => c.Q == Q && c.R == R;
 
-        public override bool Equals(object obj) => (obj is HexTileCoord c) && Equals(c);
+        public override bool Equals(object obj) => obj is HexTileCoord c && Equals(c);
 
         public override int GetHashCode() => base.GetHashCode();
 

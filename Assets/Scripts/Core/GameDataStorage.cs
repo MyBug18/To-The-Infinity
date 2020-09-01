@@ -18,7 +18,7 @@ namespace Core
         private static readonly IReadOnlyDictionary<string, Func<string, ILuaHolder>> LuaHolderMaker =
             new Dictionary<string, Func<string, ILuaHolder>>
             {
-                {"PopSlot", path => new PopSlotData(path)},
+                {"PopSlot", path => new PopSlotPrototype(path)},
             };
 
         private readonly IReadOnlyDictionary<string, Dictionary<string, ILuaHolder>> _allData =

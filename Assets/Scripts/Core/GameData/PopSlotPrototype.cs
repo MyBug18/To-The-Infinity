@@ -4,7 +4,7 @@ using MoonSharp.Interpreter;
 
 namespace Core.GameData
 {
-    public class PopSlotData : ILuaHolder
+    public class PopSlotPrototype : ILuaHolder
     {
         public string TypeName => "PopSlot";
 
@@ -22,7 +22,7 @@ namespace Core.GameData
 
         private readonly Script _script = new Script();
 
-        public PopSlotData(string filePath) => FilePath = filePath;
+        public PopSlotPrototype(string filePath) => FilePath = filePath;
 
         public bool Load(Script luaCode)
         {
