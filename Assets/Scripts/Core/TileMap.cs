@@ -14,34 +14,10 @@ namespace Core
 
         public readonly int Radius;
 
-        public TileMap(int radius)
+        public TileMap(HexTile[][] tileMap, int radius)
         {
+            _tileMap = tileMap;
             Radius = radius;
-
-            _tileMap = new HexTile[radius * 2 + 1][];
-            ConstructTileMap();
-        }
-
-        private void ConstructTileMap()
-        {
-            for (var r = 0; r < Radius; r++)
-            {
-                _tileMap[r] = new HexTile[Radius + r + 1];
-                for (var q = Radius - r; q <= 2 * Radius; q++)
-                {
-                    var qIdx = q - Radius + r;
-                    _tileMap[r][qIdx] = new HexTile(new HexTileCoord(q, r));
-                }
-            }
-
-            for (var r = Radius; r <= 2 * Radius; r++)
-            {
-                _tileMap[r] = new HexTile[3 * Radius - r + 1];
-                for (var q = 0; q <= 3 * Radius - r; q++)
-                {
-                    _tileMap[r][q] = new HexTile(new HexTileCoord(q, r));
-                }
-            }
         }
 
         /// <summary>
@@ -111,6 +87,13 @@ namespace Core
             }
 
             throw new InvalidOperationException("Chance generator has broken!");
+        }
+
+        public int GetDistanceOfTwoTile(HexTileCoord c1, HexTileCoord c2)
+        {
+            if (!IsValidCoord(c1) || !IsValidCoord(c2)) return -1;
+
+            return (Math.Abs(c1.Q - c2.Q) + Math.Abs(c1.Q + c1.R - c2.Q - c2.R) + Math.Abs(c1.R - c2.R)) / 2;
         }
 
         public IReadOnlyList<IOnHexTileObject> GetAllTileObjects(HexTileCoord coord) =>

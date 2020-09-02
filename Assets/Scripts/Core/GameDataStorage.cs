@@ -3,7 +3,6 @@ using System.IO;
 using UnityEngine;
 using MoonSharp.Interpreter;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Core.GameData;
 
@@ -27,6 +26,7 @@ namespace Core
                 {"PopSlot", new PopSlotData()},
             };
 
+        [MoonSharpHidden]
         public void Initialize()
         {
             // HardWireType.Initialize();
@@ -79,5 +79,8 @@ namespace Core
 
             return (T) gameData;
         }
+
+        public IGameData GetGameData(string dataName) =>
+            !_allData.TryGetValue(dataName, out var result) ? null : result;
     }
 }
