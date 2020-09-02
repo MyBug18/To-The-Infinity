@@ -21,10 +21,10 @@ namespace Core
                 {"PopSlot", path => new PopSlotPrototype(path)},
             };
 
-        private readonly IReadOnlyDictionary<string, Dictionary<string, ILuaHolder>> _allData =
-            new Dictionary<string, Dictionary<string, ILuaHolder>>
+        private readonly IReadOnlyDictionary<string, IGameData> _allData =
+            new Dictionary<string, IGameData>
             {
-                {"PopSlot", new Dictionary<string, ILuaHolder>()},
+                {"PopSlot", new PopSlotData()},
             };
 
         public void Initialize()
@@ -63,42 +63,26 @@ namespace Core
 
             foreach (var luaHolder in luaHolderList)
             {
+                // null means there were errors when loading lua script
                 if (luaHolder == null) continue;
 
-                _allData[luaHolder.TypeName].Add(luaHolder.Name, luaHolder);
+                _allData[luaHolder.TypeName].AddNewData(luaHolder);
             }
 
-            foreach (var luaHolders in _allData.Values)
+            foreach (var gameData in _allData.Values)
             {
-                var invalidList = (
-                    from luaHolder in luaHolders
-                    where !luaHolder.Value.IsValid
-                    select luaHolder.Key).ToList();
-
-                foreach (var s in invalidList)
-                    luaHolders.Remove(s);
+                gameData.RemoveInvalidData();
             }
         }
 
         [MoonSharpHidden]
-        public T GetData<T>(string name) where T : ILuaHolder
+        public T GetGameData<T>() where T : IGameData
         {
             const string typeName = nameof(T);
 
-            var luaHolders = _allData[typeName.Substring(0, typeName.Length - 4)];
+            var gameData = _allData[typeName.Substring(0, typeName.Length - 4)];
 
-            if (!luaHolders.ContainsKey(name)) return default;
-            return (T) luaHolders[name];
-        }
-
-        [MoonSharpHidden]
-        public bool DataExist<T>(string name) where T : ILuaHolder
-        {
-            const string typeName = nameof(T);
-
-            var luaHolders = _allData[typeName.Substring(0, typeName.Length - 4)];
-
-            return luaHolders.ContainsKey(name);
+            return (T) gameData;
         }
     }
 }

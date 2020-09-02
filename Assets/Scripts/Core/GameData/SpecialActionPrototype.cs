@@ -13,13 +13,13 @@ namespace Core.GameData
 
         public string FilePath { get; }
 
-        public string OwnerType { get; }
+        public string OwnerTypeName { get; }
 
-        private Closure _dynamicIsVisible;
+        private ScriptFunctionDelegate<bool> _dynamicIsVisible;
 
-        private Closure _dynamicIsAvailable;
+        private ScriptFunctionDelegate<bool> _dynamicIsAvailable;
 
-        private Closure _dynamicDoSpecialAction;
+        private ScriptFunctionDelegate<bool> _dynamicDoSpecialAction;
 
         public bool Load(Script luaScript)
         {
@@ -28,7 +28,7 @@ namespace Core.GameData
 
         public SpecialAction CreateSpecialAction(IOnHexTileObject owner)
         {
-            if (OwnerType != owner.Type.ToString()) return null;
+            if (OwnerTypeName != owner.TypeName) return null;
 
 
             return null;

@@ -4,7 +4,7 @@ namespace Core
 {
     public interface IOnHexTileObject
     {
-        Type Type { get; }
+        string TypeName { get; }
 
         string Name { get; }
 
