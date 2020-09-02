@@ -14,13 +14,6 @@ public interface ILuaHolder
     string TypeName { get; }
 
     /// <summary>
-    /// After all data is loaded, validate it's members with dependencies.
-    /// </summary>
-    /// <returns>Whether there is not valid member</returns>
-    [MoonSharpHidden]
-    bool IsValid { get; }
-
-    /// <summary>
     /// The file path of lua file.
     /// </summary>
     [MoonSharpHidden]

@@ -14,8 +14,6 @@ namespace Core.GameData
 
         public string Group { get; private set; }
 
-        public bool IsValid => true;
-
         public IReadOnlyDictionary<string, float> BaseYield { get; private set; }
 
         public IReadOnlyDictionary<string, float> BaseUpkeep { get; private set; }

@@ -68,11 +68,6 @@ namespace Core
 
                 _allData[luaHolder.TypeName].AddNewData(luaHolder);
             }
-
-            foreach (var gameData in _allData.Values)
-            {
-                gameData.RemoveInvalidData();
-            }
         }
 
         [MoonSharpHidden]

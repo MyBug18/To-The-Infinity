@@ -8,9 +8,6 @@ namespace Core.GameData
         void AddNewData(ILuaHolder luaHolder);
 
         [MoonSharpHidden]
-        void RemoveInvalidData();
-
-        [MoonSharpHidden]
         void OnGameInitialized(Game game);
     }
 }

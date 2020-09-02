@@ -18,17 +18,6 @@ namespace Core.GameData
             _data[luaHolder.Name] = (PopSlotPrototype) luaHolder;
         }
 
-        public void RemoveInvalidData()
-        {
-            var invalidData =
-                (from kv in _data
-                    where !kv.Value.IsValid
-                    select kv.Key).ToList();
-
-            foreach (var s in invalidData)
-                _data.Remove(s);
-        }
-
         public void OnGameInitialized(Game _)
         {
         }
