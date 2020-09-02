@@ -9,5 +9,8 @@ namespace Core.GameData
 
         [MoonSharpHidden]
         void RemoveInvalidData();
+
+        [MoonSharpHidden]
+        void OnGameInitialized(Game game);
     }
 }

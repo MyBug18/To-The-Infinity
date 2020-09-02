@@ -28,5 +28,9 @@ namespace Core.GameData
             foreach (var s in invalidData)
                 _data.Remove(s);
         }
+
+        public void OnGameInitialized(Game _)
+        {
+        }
     }
 }
