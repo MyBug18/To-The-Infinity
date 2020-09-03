@@ -38,19 +38,25 @@ namespace Core.GameData
 
         public HexTile Create(HexTileCoord coord, int resDecider)
         {
-            var specialResource = "";
+            var specialResourceName = "";
 
             foreach (var (value, resName) in ResChanceMap)
             {
                 if (resDecider <= value)
                 {
-                    specialResource = resName;
+                    specialResourceName = resName;
                     continue;
                 }
 
                 if (resDecider > value)
                     break;
             }
+
+            if (string.IsNullOrEmpty(specialResourceName))
+                return new HexTile(coord, Name, null);
+
+            var specialResource = GameDataStorage.Instance.GetGameData<TileSpecialResourceTypeData>()
+                .GetData(specialResourceName);
 
             return new HexTile(coord, Name, specialResource);
         }

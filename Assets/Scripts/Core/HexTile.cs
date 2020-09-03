@@ -4,11 +4,11 @@
     {
         public readonly HexTileCoord Coord;
 
-        public string Name { get; private set; }
+        public readonly string Name;
 
-        public string SpecialResource { get; private set; }
+        public readonly TileSpecialResourceType SpecialResource;
 
-        public HexTile(HexTileCoord coord, string name, string specialResource)
+        public HexTile(HexTileCoord coord, string name, TileSpecialResourceType specialResource)
         {
             Coord = coord;
             Name = name;

@@ -3,19 +3,6 @@ using MoonSharp.Interpreter;
 
 namespace Core.GameData
 {
-    public class TileSpecialResourceType
-    {
-        public readonly string Name;
-
-        public readonly int MoveCost;
-
-        public TileSpecialResourceType(string name, int moveCost)
-        {
-            Name = name;
-            MoveCost = moveCost;
-        }
-    }
-
     public class TileSpecialResourceTypeData : IGameData
     {
         private TileSpecialResourceTypeHolder _holder;
@@ -32,6 +19,14 @@ namespace Core.GameData
         public void OnGameInitialized(Game game)
         {
             throw new System.NotImplementedException();
+        }
+
+        public TileSpecialResourceType GetData(string name)
+        {
+            if (!_holder.Data.TryGetValue(name, out var result))
+                return HasDefaultValue ? _holder.Default : null;
+
+            return result;
         }
     }
 
