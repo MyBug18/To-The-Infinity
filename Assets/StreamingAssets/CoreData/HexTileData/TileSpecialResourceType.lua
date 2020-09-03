@@ -1,7 +1,9 @@
 ﻿Type = "TileSpecialResourceType"
 
-Default = {}
-Default.MoveCost = 1;
+SpecialTypes = {}
 
-Iron = {}
-Iron.MoveCost = 3;
+Res.Default = {}
+Res.Default.MoveCost = 1;
+
+Res.Iron = {}
+Res.Iron.MoveCost = 3;

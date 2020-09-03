@@ -51,25 +51,10 @@ namespace Core.GameData
         {
             var data = new Dictionary<string, TileSpecialResourceType>();
 
-            foreach (var kv in luaScript.Globals.Pairs)
-            {
-                if (kv.Key.String == "Type") continue;
+            var values = luaScript.Globals.Get("Res").Table;
 
-                var name = kv.Key.String;
-
-                var infos = kv.Value.Table;
-
-                var value = new TileSpecialResourceType(name, (int) infos.Get("MoveCost").Number);
-
-                if (name == "Default")
-                {
-                    Default = value;
-                    continue;
-                }
-
-                if (data.ContainsKey(name)) continue;
-                data[name] = value;
-            }
+            foreach (var kv in values.Pairs)
+                UnityEngine.Debug.Log(kv.Key.String + "asdf");
 
             Data = data;
             return true;
