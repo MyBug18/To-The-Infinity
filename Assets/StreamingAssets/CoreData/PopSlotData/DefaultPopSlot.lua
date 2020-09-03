@@ -1,7 +1,7 @@
 Type = "PopSlot"
 
-Name = "TestPopSlot"
-Group = "TestPopGroup"
+Name = "Default"
+Group = "Default"
 
 Yield = {}
 Yield.Mineral = 4
