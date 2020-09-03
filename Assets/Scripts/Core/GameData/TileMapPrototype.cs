@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using MoonSharp.Interpreter;
 
@@ -11,6 +12,11 @@ namespace Core.GameData
         public string TypeName => "TileMap";
 
         public string FilePath { get; }
+
+        public TileMapPrototype(string filePath)
+        {
+            FilePath = filePath;
+        }
 
         public bool Load(Script luaScript)
         {
@@ -73,7 +79,7 @@ namespace Core.GameData
 
         private HexTile GenerateTileThreadSafe(HexTileCoord coord, float noise)
         {
-            return new HexTile(coord);
+            return null;
         }
     }
 }

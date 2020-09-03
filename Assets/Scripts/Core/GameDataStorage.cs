@@ -18,12 +18,14 @@ namespace Core
             new Dictionary<string, Func<string, ILuaHolder>>
             {
                 {"PopSlot", path => new PopSlotPrototype(path)},
+                {"TileMap", path => new TileMapPrototype(path)}
             };
 
         private readonly IReadOnlyDictionary<string, IGameData> _allData =
             new Dictionary<string, IGameData>
             {
                 {"PopSlot", new PopSlotData()},
+                {"TileMap", new TileMapData()}
             };
 
         [MoonSharpHidden]

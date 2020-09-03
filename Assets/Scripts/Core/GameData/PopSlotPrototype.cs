@@ -22,20 +22,20 @@ namespace Core.GameData
 
         public PopSlotPrototype(string filePath) => FilePath = filePath;
 
-        public bool Load(Script luaCode)
+        public bool Load(Script luaScript)
         {
-            Name = luaCode.Globals.Get("Name").String;
-            Group = luaCode.Globals.Get("Group").String;
+            Name = luaScript.Globals.Get("Name").String;
+            Group = luaScript.Globals.Get("Group").String;
 
             var yield = new Dictionary<string, float>();
-            foreach (var kv in luaCode.Globals.Get("Yield").Table.Pairs)
+            foreach (var kv in luaScript.Globals.Get("Yield").Table.Pairs)
             {
                 yield[kv.Key.String] = (float) kv.Value.Number;
             }
             BaseYield = yield;
 
             var upkeep = new Dictionary<string, float>();
-            foreach (var kv in luaCode.Globals.Get("Upkeep").Table.Pairs)
+            foreach (var kv in luaScript.Globals.Get("Upkeep").Table.Pairs)
             {
                 upkeep[kv.Key.String] = (float) kv.Value.Number;
             }
