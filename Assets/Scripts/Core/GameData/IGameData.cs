@@ -9,5 +9,8 @@ namespace Core.GameData
 
         [MoonSharpHidden]
         void OnGameInitialized(Game game);
+
+        [MoonSharpHidden]
+        bool HasDefaultValue { get; }
     }
 }

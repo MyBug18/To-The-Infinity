@@ -6,15 +6,23 @@ namespace Core.GameData
     {
         private readonly Dictionary<string, PopSlotPrototype> _data = new Dictionary<string, PopSlotPrototype>();
 
-        public IReadOnlyDictionary<string, PopSlotPrototype> Data => _data;
+        private PopSlotPrototype _default;
+
+        public bool HasDefaultValue => _default != null;
 
         public void AddNewData(ILuaHolder luaHolder)
         {
-            if (!(luaHolder is PopSlotPrototype)) return;
+            if (!(luaHolder is PopSlotPrototype psp)) return;
 
-            if (_data.ContainsKey(luaHolder.Name)) return;
+            if (_data.ContainsKey(psp.Name)) return;
 
-            _data[luaHolder.Name] = (PopSlotPrototype) luaHolder;
+            if (psp.Name == "Default")
+            {
+                _default = psp;
+                return;
+            }
+
+            _data[psp.Name] = psp;
         }
 
         public void OnGameInitialized(Game _)

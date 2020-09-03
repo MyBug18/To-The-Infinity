@@ -6,14 +6,23 @@ namespace Core.GameData
     {
         private readonly Dictionary<string, TileMapPrototype> _data = new Dictionary<string, TileMapPrototype>();
 
+        private TileMapPrototype _default;
+
+        public bool HasDefaultValue => _default != null;
+
         public void AddNewData(ILuaHolder luaHolder)
         {
+            if (!(luaHolder is TileMapPrototype tmp)) return;
 
-            if (!(luaHolder is TileMapPrototype)) return;
+            if (_data.ContainsKey(tmp.Name)) return;
 
-            if (_data.ContainsKey(luaHolder.Name)) return;
+            if (tmp.Name == "Default")
+            {
+                _default = tmp;
+                return;
+            }
 
-            _data[luaHolder.Name] = (TileMapPrototype) luaHolder;
+            _data[tmp.Name] = tmp;
         }
 
         public void OnGameInitialized(Game _)

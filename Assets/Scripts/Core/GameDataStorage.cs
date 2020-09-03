@@ -70,6 +70,14 @@ namespace Core
 
                 _allData[luaHolder.TypeName].AddNewData(luaHolder);
             }
+
+            foreach (var kv in _allData)
+            {
+                if (!kv.Value.HasDefaultValue)
+                {
+                    // TODO: Should log warning
+                }
+            }
         }
 
         [MoonSharpHidden]
