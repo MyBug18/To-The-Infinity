@@ -1,4 +1,4 @@
-﻿Type = "SpecialResourceType"
+﻿Type = "TileSpecialResourceType"
 
 Default = {}
 Default.MoveCost = 1;
