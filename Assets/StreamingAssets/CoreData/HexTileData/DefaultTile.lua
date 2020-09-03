@@ -1,6 +1,6 @@
 ﻿Type = "HexTile"
 
-Name = "DefaultTile"
+Name = "Default"
 MoveCost = 1
 
 ResChanceMap = {}
