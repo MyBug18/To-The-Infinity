@@ -20,7 +20,7 @@ namespace Core
                 {"PopSlot", path => new PopSlotPrototype(path)},
                 {"TileMap", path => new TileMapPrototype(path)},
                 {"HexTile", path => new HexTilePrototype(path)},
-                {"TileSpecialResourceType", path => new TileSpecialResourceTypeHolder(path)},
+                {"TileSpecialResourceType", path => new TileSpecialResourceTypePrototype(path)},
             };
 
         private readonly IReadOnlyDictionary<string, IGameData> _allData =

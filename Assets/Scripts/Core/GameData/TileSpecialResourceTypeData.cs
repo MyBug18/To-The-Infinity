@@ -5,15 +5,26 @@ namespace Core.GameData
 {
     public class TileSpecialResourceTypeData : IGameData
     {
-        private TileSpecialResourceTypeHolder _holder;
+        private readonly Dictionary<string, TileSpecialResourceTypePrototype> _data =
+            new Dictionary<string, TileSpecialResourceTypePrototype>();
 
-        public bool HasDefaultValue => _holder.Default != null;
+        private TileSpecialResourceTypePrototype _default;
+
+        public bool HasDefaultValue => _default != null;
 
         public void AddNewData(ILuaHolder luaHolder)
         {
-            if (!(luaHolder is TileSpecialResourceTypeHolder tsrth)) return;
+            if (!(luaHolder is TileSpecialResourceTypePrototype tsrth)) return;
 
-            _holder = tsrth;
+            if (_data.ContainsKey(tsrth.Name)) return;
+
+            if (tsrth.Name == "Default")
+            {
+                _default = tsrth;
+                return;
+            }
+
+            _data[tsrth.Name] = tsrth;
         }
 
         public void OnGameInitialized(Game game)
@@ -21,43 +32,12 @@ namespace Core.GameData
             throw new System.NotImplementedException();
         }
 
-        public TileSpecialResourceType GetData(string name)
+        public TileSpecialResourceTypePrototype GetPrototype(string name)
         {
-            if (!_holder.Data.TryGetValue(name, out var result))
-                return HasDefaultValue ? _holder.Default : null;
+            if (!_data.TryGetValue(name, out var result))
+                return HasDefaultValue ? _default : null;
 
             return result;
-        }
-    }
-
-    public class TileSpecialResourceTypeHolder : ILuaHolder
-    {
-        public string Name => "TileSpecialResourceTypeHolder";
-
-        public string TypeName => "TileSpecialResourceType";
-
-        public string FilePath { get; }
-
-        public TileSpecialResourceType Default { get; private set; }
-
-        public IReadOnlyDictionary<string, TileSpecialResourceType> Data { get; private set; }
-
-        public TileSpecialResourceTypeHolder(string filePath)
-        {
-            FilePath = filePath;
-        }
-
-        public bool Load(Script luaScript)
-        {
-            var data = new Dictionary<string, TileSpecialResourceType>();
-
-            var values = luaScript.Globals.Get("Res").Table;
-
-            foreach (var kv in values.Pairs)
-                UnityEngine.Debug.Log(kv.Key.String + "asdf");
-
-            Data = data;
-            return true;
         }
     }
 }

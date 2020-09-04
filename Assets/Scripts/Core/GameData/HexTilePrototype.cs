@@ -56,9 +56,9 @@ namespace Core.GameData
                 return new HexTile(coord, Name, null);
 
             var specialResource = GameDataStorage.Instance.GetGameData<TileSpecialResourceTypeData>()
-                .GetData(specialResourceName);
+                .GetPrototype(specialResourceName);
 
-            return new HexTile(coord, Name, specialResource);
+            return new HexTile(coord, Name, specialResource.Create());
         }
     }
 }
