@@ -13,6 +13,9 @@ namespace Editor
         private static void GenerateLuaFromInfo()
         {
             UserData.RegisterType<Game>();
+            UserData.RegisterType<TileMap>();
+            UserData.RegisterType<HexTile>();
+            UserData.RegisterType<HexTileCoord>();
 
             File.WriteAllText(Path.Combine(Application.dataPath, "HardWireInfo.lua"),
                 UserData.GetDescriptionOfRegisteredTypes(true).Serialize());

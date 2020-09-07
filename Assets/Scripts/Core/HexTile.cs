@@ -2,11 +2,11 @@
 {
     public class HexTile
     {
-        public readonly HexTileCoord Coord;
+        public HexTileCoord Coord { get; }
 
-        public readonly string Name;
+        public string Name { get; }
 
-        public readonly TileSpecialResourceType SpecialResource;
+        public TileSpecialResourceType SpecialResource { get; }
 
         public HexTile(HexTileCoord coord, string name, TileSpecialResourceType specialResource)
         {

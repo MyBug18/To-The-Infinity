@@ -2,9 +2,9 @@
 {
     public class TileSpecialResourceType
     {
-        public readonly string Name;
+        public string Name { get; }
 
-        public readonly int MoveCost;
+        public int MoveCost { get; }
 
         public TileSpecialResourceType(string name, int moveCost)
         {

@@ -2,9 +2,17 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Core.GameData;
 
 namespace Core
 {
+    public interface ITileMapHolder
+    {
+        string TileMapHolderType { get; }
+
+        TileMap TileMap { get; }
+    }
+
     public class TileMap : IEnumerable<HexTile>
     {
         private readonly HexTile[][] _tileMap;
@@ -12,7 +20,7 @@ namespace Core
         private readonly Dictionary<HexTileCoord, List<IOnHexTileObject>> _onTileMapObjects =
             new Dictionary<HexTileCoord, List<IOnHexTileObject>>();
 
-        public readonly int Radius;
+        public int Radius { get; }
 
         public TileMap(HexTile[][] tileMap, int radius)
         {
@@ -108,6 +116,22 @@ namespace Core
                 from obj in objLists
                 where obj.TypeName == nameof(T)
                 select (T) obj).ToList();
+
+        public bool AddTileObject(string typeName, string name, HexTileCoord coord)
+        {
+            var gameData = GameDataStorage.Instance.GetGameData(typeName);
+
+            if (gameData == null)
+                return false;
+
+            switch (gameData)
+            {
+                default:
+                    return false;
+            }
+
+            return true;
+        }
 
         public IEnumerator<HexTile> GetEnumerator() =>
             _tileMap.SelectMany(tileArray => tileArray).GetEnumerator();

@@ -4,7 +4,7 @@ namespace Core
 {
     public class Game
     {
-        public readonly int GameSpeed;
+        public int GameSpeed { get; }
 
         public Game(int gameSpeed)
         {
