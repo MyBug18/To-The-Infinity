@@ -19,6 +19,7 @@ namespace Core
             {
                 {"HexTile", path => new HexTilePrototype(path)},
                 {"PopSlot", path => new PopSlotPrototype(path)},
+                {"Resource", path => new ResourcePrototype(path)},
                 {"TileMap", path => new TileMapPrototype(path)},
                 {"TileSpecialResourceType", path => new TileSpecialResourceTypePrototype(path)},
             };
@@ -28,6 +29,7 @@ namespace Core
             {
                 {"HexTile", new HexTileData()},
                 {"PopSlot", new PopSlotData()},
+                {"Resource", new ResourceData()},
                 {"TileMap", new TileMapData()},
                 {"TileSpecialResourceType", new TileSpecialResourceTypeData()},
             };
