@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using MoonSharp.Interpreter;
+﻿using MoonSharp.Interpreter;
 
 namespace Core.GameData
 {

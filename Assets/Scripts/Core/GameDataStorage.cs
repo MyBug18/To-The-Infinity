@@ -17,18 +17,18 @@ namespace Core
         private static readonly IReadOnlyDictionary<string, Func<string, ILuaHolder>> LuaHolderMaker =
             new Dictionary<string, Func<string, ILuaHolder>>
             {
+                {"HexTile", path => new HexTilePrototype(path)},
                 {"PopSlot", path => new PopSlotPrototype(path)},
                 {"TileMap", path => new TileMapPrototype(path)},
-                {"HexTile", path => new HexTilePrototype(path)},
                 {"TileSpecialResourceType", path => new TileSpecialResourceTypePrototype(path)},
             };
 
         private readonly IReadOnlyDictionary<string, IGameData> _allData =
             new Dictionary<string, IGameData>
             {
+                {"HexTile", new HexTileData()},
                 {"PopSlot", new PopSlotData()},
                 {"TileMap", new TileMapData()},
-                {"HexTile", new HexTileData()},
                 {"TileSpecialResourceType", new TileSpecialResourceTypeData()},
             };
 
