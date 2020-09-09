@@ -10,8 +10,6 @@ namespace Core.GameData
             {"Planetary", ResourceType.PlanetaryResource},
             {"Global", ResourceType.GlobalResource},
             {"Research", ResourceType.Research},
-            {"PlanetaryFactor", ResourceType.PlanetaryFactor},
-            {"GlobalFactor", ResourceType.GlobalFactor},
         };
 
         public string Name { get; private set; }

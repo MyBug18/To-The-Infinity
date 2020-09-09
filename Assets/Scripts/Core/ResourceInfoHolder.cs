@@ -5,8 +5,7 @@
         PlanetaryResource,
         GlobalResource,
         Research,
-        PlanetaryFactor,
-        GlobalFactor,
+        Factor,
     }
 
     public class ResourceInfoHolder
