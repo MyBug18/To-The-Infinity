@@ -29,7 +29,7 @@ namespace Core.GameData
             return true;
         }
 
-        public TileMap Create(int radius)
+        public TileMap Create(ITileMapHolder holder, int radius)
         {
             var size = 2 * radius + 1;
 
@@ -65,7 +65,7 @@ namespace Core.GameData
                 tileMap[x][y] = GenerateTileThreadSafe(coord, noise, rnd);
             });
 
-            return new TileMap(tileMap, radius);
+            return new TileMap(holder, tileMap, radius);
 
             (int x, int y) GetTileMapIndexFromInt(int n)
             {

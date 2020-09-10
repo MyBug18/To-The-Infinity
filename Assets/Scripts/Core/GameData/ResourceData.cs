@@ -13,6 +13,9 @@ namespace Core.GameData
                 {"Amenity", new ResourceInfoHolder("Amenity", ResourceType.Factor)},
                 {"Crime", new ResourceInfoHolder("Crime", ResourceType.Factor)},
                 {"Stability", new ResourceInfoHolder("Stability", ResourceType.Factor)},
+                {"PopGrowth", new ResourceInfoHolder("PopGrowth", ResourceType.Factor)},
+
+                {"Happiness", new ResourceInfoHolder("Happiness", ResourceType.Factor)},
             };
 
         #endregion

@@ -18,8 +18,8 @@ namespace Core
 
     public readonly struct HexTileCoord : IEquatable<HexTileCoord>
     {
-        public readonly int Q;
-        public readonly int R;
+        public int Q { get; }
+        public int R { get; }
 
         public HexTileCoord(int q, int r)
         {

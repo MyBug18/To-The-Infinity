@@ -5,15 +5,19 @@ using System.Linq;
 
 namespace Core
 {
-    public interface ITileMapHolder
+    public interface ITileMapHolder : IModifierHolder
     {
         string TileMapHolderType { get; }
 
         TileMap TileMap { get; }
+
+        void AddModifierToTiles(List<HexTileCoord> coords, Modifier modifier);
     }
 
     public class TileMap : IEnumerable<HexTile>
     {
+        public ITileMapHolder Holder { get; }
+
         private readonly HexTile[][] _tileMap;
 
         private readonly Dictionary<HexTileCoord, List<IOnHexTileObject>> _onTileMapObjects =
@@ -21,8 +25,9 @@ namespace Core
 
         public int Radius { get; }
 
-        public TileMap(HexTile[][] tileMap, int radius)
+        public TileMap(ITileMapHolder holder, HexTile[][] tileMap, int radius)
         {
+            Holder = holder;
             _tileMap = tileMap;
             Radius = radius;
         }

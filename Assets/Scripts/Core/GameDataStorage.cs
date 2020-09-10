@@ -18,6 +18,7 @@ namespace Core
             new Dictionary<string, Func<string, ILuaHolder>>
             {
                 {"HexTile", path => new HexTilePrototype(path)},
+                {"Modifier", path => new ModifierPrototype(path)},
                 {"PopSlot", path => new PopSlotPrototype(path)},
                 {"Resource", path => new ResourcePrototype(path)},
                 {"TileMap", path => new TileMapPrototype(path)},
