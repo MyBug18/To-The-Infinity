@@ -45,7 +45,15 @@ namespace Core.GameData
         {
         }
 
-        public bool TryGetFactor(string name, out ResourceInfoHolder result) =>
-            _hardCodedFactors.TryGetValue(name, out result);
+        public ResourceInfoHolder GetResourceDirectly(string name)
+        {
+            if (_hardCodedFactors.TryGetValue(name, out var result))
+                return result;
+
+            if (_data.TryGetValue(name, out var result2))
+                return result2.Create();
+
+            return _default.Create();
+        }
     }
 }

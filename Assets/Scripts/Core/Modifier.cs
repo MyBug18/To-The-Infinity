@@ -29,18 +29,23 @@ namespace Core
     {
         public string Name { get; }
 
-        public string HolderName { get; }
-
-        public string TargetName { get; }
+        public string TargetTypeName { get; }
 
         public string AdditionalInfo { get; }
 
-        public IReadOnlyList<ModifierInfoHolder> Infos { get; }
+        public IReadOnlyList<ModifierInfoHolder> Effect { get; }
 
-        private readonly object _target;
+        private readonly Func<bool> _conditionChecker;
 
-        private readonly Func<object, bool> _conditionChecker;
+        public bool CheckCondition() => _conditionChecker();
 
-        public bool CheckCondition() => _conditionChecker(_target);
+        public Modifier(string name, string targetTypeName, string additionalInfo, IReadOnlyList<ModifierInfoHolder> effect, Func<bool> conditionChecker)
+        {
+            Name = name;
+            TargetTypeName = targetTypeName;
+            AdditionalInfo = additionalInfo;
+            Effect = effect;
+            _conditionChecker = conditionChecker;
+        }
     }
 }
