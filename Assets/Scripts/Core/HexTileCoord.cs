@@ -68,7 +68,6 @@ namespace Core
         public bool IsAdjacent(HexTileCoord coord, bool includeCenter) =>
             this == coord ? includeCenter : AllDirectionSet.Contains(this - coord);
 
-
         public HexTileCoord AddDirection(TileDirection dir)
         {
             return dir switch

@@ -1,5 +1,5 @@
-﻿using System;
-using MoonSharp.Interpreter;
+﻿using MoonSharp.Interpreter;
+using System;
 
 namespace Core.GameData
 {
@@ -29,7 +29,6 @@ namespace Core.GameData
         public SpecialAction CreateSpecialAction(IOnHexTileObject owner)
         {
             if (OwnerTypeName != owner.TypeName) return null;
-
 
             return null;
         }

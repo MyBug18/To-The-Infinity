@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using MoonSharp.Interpreter;
+using System.Collections.Generic;
 using System.Linq;
-using MoonSharp.Interpreter;
 
 namespace Core.GameData
 {
@@ -23,11 +23,11 @@ namespace Core.GameData
         public bool Load(Script luaScript)
         {
             Name = luaScript.Globals.Get("Name").String;
-            MoveCost = (int) luaScript.Globals.Get("MoveCost").Number;
+            MoveCost = (int)luaScript.Globals.Get("MoveCost").Number;
 
             var resChanceMap =
                 luaScript.Globals.Get("ResChanceMap").Table.Pairs
-                    .Select(kv => ((int) kv.Key.Number, kv.Value.String)).ToList();
+                    .Select(kv => ((int)kv.Key.Number, kv.Value.String)).ToList();
 
             resChanceMap.Sort((x, y) => y.Item1.CompareTo(x.Item1));
 

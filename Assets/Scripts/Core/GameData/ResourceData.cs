@@ -18,7 +18,7 @@ namespace Core.GameData
                 {"Happiness", new ResourceInfoHolder("Happiness", ResourceType.Factor)},
             };
 
-        #endregion
+        #endregion HardCodedFactors
 
         private readonly Dictionary<string, ResourcePrototype> _data = new Dictionary<string, ResourcePrototype>();
 
@@ -43,7 +43,6 @@ namespace Core.GameData
 
         public void OnGameInitialized(Game _)
         {
-
         }
 
         public bool TryGetFactor(string name, out ResourceInfoHolder result) =>

@@ -28,6 +28,7 @@ namespace Core
 
         private readonly Dictionary<ResourceInfoHolder, float> _planetaryResourceKeep =
             new Dictionary<ResourceInfoHolder, float>();
+
         public void AddModifierToTarget(string modifierName)
         {
             throw new System.NotImplementedException();

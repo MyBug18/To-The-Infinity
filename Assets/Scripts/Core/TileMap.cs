@@ -117,9 +117,9 @@ namespace Core
         /// <returns>Returns null if given type is not in the dict.</returns>
         public IReadOnlyList<T> GetTileObjectList<T>() where T : IOnHexTileObject =>
             (from objLists in _onTileMapObjects.Values
-                from obj in objLists
-                where obj.TypeName == nameof(T)
-                select (T) obj).ToList();
+             from obj in objLists
+             where obj.TypeName == nameof(T)
+             select (T)obj).ToList();
 
         public bool AddTileObject(string typeName, string name, HexTileCoord coord)
         {

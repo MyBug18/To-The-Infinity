@@ -23,7 +23,7 @@ namespace Core.GameData
         {
             Name = luaScript.Globals.Get("Name").String;
 
-            MoveCost = (int) luaScript.Globals.Get("MoveCost").Number;
+            MoveCost = (int)luaScript.Globals.Get("MoveCost").Number;
 
             _cache = new TileSpecialResourceType(Name, MoveCost);
             return true;

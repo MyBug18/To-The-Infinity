@@ -1,10 +1,10 @@
-﻿using System;
-using System.IO;
-using UnityEngine;
+﻿using Core.GameData;
 using MoonSharp.Interpreter;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
-using Core.GameData;
+using UnityEngine;
 
 namespace Core
 {
@@ -94,7 +94,7 @@ namespace Core
 
             var gameData = _allData[typeName.Substring(0, typeName.Length - 4)];
 
-            return (T) gameData;
+            return (T)gameData;
         }
 
         public IGameData GetGameData(string dataName) =>

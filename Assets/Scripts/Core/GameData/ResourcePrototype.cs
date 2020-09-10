@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using MoonSharp.Interpreter;
+﻿using MoonSharp.Interpreter;
+using System.Collections.Generic;
 
 namespace Core.GameData
 {
@@ -42,7 +42,7 @@ namespace Core.GameData
 
             IsBasic = luaScript.Globals.Get("IsBasic").Boolean;
 
-            MaxAmount = (int) luaScript.Globals.Get("MaxAmount").Number;
+            MaxAmount = (int)luaScript.Globals.Get("MaxAmount").Number;
 
             _cache = new ResourceInfoHolder(Name, ResourceType);
 

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Core
 {
-        public static class Noise2d
+    public static class Noise2d
     {
         private static readonly Random Random = new Random();
         private static int[] _permutation;

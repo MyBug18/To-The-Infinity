@@ -1,8 +1,8 @@
-﻿using System;
+﻿using MoonSharp.Interpreter;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using MoonSharp.Interpreter;
 
 namespace Core.GameData
 {
@@ -94,8 +94,8 @@ namespace Core.GameData
         {
             var dict = _tileInfoMaker.Invoke(coord, noise, rnd);
 
-            var name = (string) dict["Name"];
-            var res = (int) dict["ResDecider"];
+            var name = (string)dict["Name"];
+            var res = (int)dict["ResDecider"];
 
             var tileProto = GameDataStorage.Instance.GetGameData<HexTileData>().GetPrototype(name);
             var tile = tileProto.Create(coord, res);
@@ -113,7 +113,7 @@ namespace Core.GameData
             {
                 for (var j = 0; j < size; j++)
                 {
-                    result[i, j] = (float) r.NextDouble();
+                    result[i, j] = (float)r.NextDouble();
                 }
             }
 
