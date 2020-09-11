@@ -33,8 +33,18 @@ namespace Core
 
         private readonly List<Pop> _pops = new List<Pop>();
 
+        public IReadOnlyList<Pop> Pops => _pops;
+
+        private readonly List<Pop> _unemployedPops = new List<Pop>();
+
+        public IReadOnlyList<Pop> UnemployedPops => _unemployedPops;
+
         private readonly Dictionary<ResourceInfoHolder, float> _planetaryResourceKeep =
             new Dictionary<ResourceInfoHolder, float>();
+
+        public IReadOnlyDictionary<ResourceInfoHolder, float> PlanetaryResourceKeep => _planetaryResourceKeep;
+
+        public const float BasePopGrowth = 5.0f;
 
         public void AddModifierToTarget(string modifierName)
         {
