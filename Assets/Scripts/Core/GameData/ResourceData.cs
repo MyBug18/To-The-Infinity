@@ -9,6 +9,8 @@ namespace Core.GameData
         private readonly Dictionary<string, ResourceInfoHolder> _hardCodedFactors =
             new Dictionary<string, ResourceInfoHolder>
             {
+                {"All", new ResourceInfoHolder("All", ResourceType.GlobalResource)},
+
                 {"Housing", new ResourceInfoHolder("Housing", ResourceType.Factor)},
                 {"Amenity", new ResourceInfoHolder("Amenity", ResourceType.Factor)},
                 {"Crime", new ResourceInfoHolder("Crime", ResourceType.Factor)},

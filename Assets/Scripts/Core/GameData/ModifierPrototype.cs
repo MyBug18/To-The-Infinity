@@ -1,6 +1,7 @@
 ﻿using MoonSharp.Interpreter;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Core.GameData
 {
@@ -13,8 +14,6 @@ namespace Core.GameData
         private string _holderType;
 
         private string _additionalInfo;
-
-        private IReadOnlyList<(string name, float amount)> _resourceInfo;
 
         private ScriptFunctionDelegate<bool> _conditionChecker;
 
@@ -41,14 +40,10 @@ namespace Core.GameData
 
             var data = GameDataStorage.Instance.GetGameData<ResourceData>();
 
-            var effect = new List<ModifierInfoHolder>();
-
-            foreach (var kv in table.Pairs)
-            {
-                var name = kv.Key.String;
-                var info = data.GetResourceDirectly(name);
-                effect.Add(new ModifierInfoHolder(info, (int)kv.Value.Number));
-            }
+            var effect = (from kv in table.Pairs
+                let name = kv.Key.String
+                let info = data.GetResourceDirectly(name)
+                select new ModifierInfoHolder(info, (int) kv.Value.Number)).ToList();
 
             _effect = effect;
 
@@ -57,9 +52,12 @@ namespace Core.GameData
 
         public Modifier Create(object target)
         {
-            Func<bool> conditionChecker = () => _conditionChecker.Invoke(target);
+            if (Name != "Default" && target.GetType().ToString() != _holderType)
+                throw new InvalidOperationException(
+                    $"Trying to instantiate modifier with holder type {_holderType} to target type {target.GetType()}!");
 
-            return new Modifier(Name, _holderType, _additionalInfo, _effect, conditionChecker);
+            return new Modifier(Name, _holderType, _additionalInfo, _effect, () => _conditionChecker.Invoke(target));
         }
+
     }
 }
