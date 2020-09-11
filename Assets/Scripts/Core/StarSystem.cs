@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Core.GameData;
 
 namespace Core
 {
@@ -8,16 +9,25 @@ namespace Core
 
         public TileMap TileMap { get; }
 
-        public IReadOnlyList<Modifier> Modifiers { get; }
+        private readonly List<Modifier> _modifiers = new List<Modifier>();
+
+        public IReadOnlyList<Modifier> Modifiers => _modifiers;
 
         public void AddModifierToTarget(string modifierName)
         {
-            throw new System.NotImplementedException();
+            var modifier = GameDataStorage.Instance.GetGameData<ModifierData>().GetModifierDirectly(modifierName, this);
+
+            AddModifier(modifier);
         }
 
         public void AddModifier(Modifier modifier)
         {
-            throw new System.NotImplementedException();
+            _modifiers.Add(modifier);
+        }
+
+        public void RemoveModifier(Modifier modifier)
+        {
+            _modifiers.Remove(modifier);
         }
 
         public void AddModifierToTiles(List<HexTileCoord> coords, Modifier modifier)

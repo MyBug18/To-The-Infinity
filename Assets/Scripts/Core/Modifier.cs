@@ -23,9 +23,11 @@ namespace Core
         void AddModifierToTarget(string modifierName);
 
         void AddModifier(Modifier modifier);
+
+        void RemoveModifier(Modifier modifier);
     }
 
-    public class Modifier
+    public class Modifier : IEquatable<Modifier>
     {
         public string Name { get; }
 
@@ -47,5 +49,11 @@ namespace Core
             Effect = effect;
             _conditionChecker = conditionChecker;
         }
+
+        public override bool Equals(object obj) => obj is Modifier m && Equals(m);
+
+        public bool Equals(Modifier m) => m != null && Name == m.Name;
+
+        public override int GetHashCode() => Name.GetHashCode();
     }
 }

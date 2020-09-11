@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Core.GameData;
 
 namespace Core
 {
@@ -14,7 +15,11 @@ namespace Core
 
         public HexTileCoord HexCoord { get; }
 
-        public IReadOnlyList<Modifier> Modifiers { get; }
+        private readonly List<Modifier> _modifiers = new List<Modifier>();
+
+        public IReadOnlyList<Modifier> Modifiers => _modifiers;
+
+        private readonly Dictionary<ResourceInfoHolder, int> _fromModifiers = new Dictionary<ResourceInfoHolder, int>();
 
         /// <summary>
         /// 0 if totally uninhabitable,
@@ -26,22 +31,31 @@ namespace Core
 
         public bool IsColonizing { get; private set; }
 
+        private readonly List<Pop> _pops = new List<Pop>();
+
         private readonly Dictionary<ResourceInfoHolder, float> _planetaryResourceKeep =
             new Dictionary<ResourceInfoHolder, float>();
 
         public void AddModifierToTarget(string modifierName)
         {
-            throw new System.NotImplementedException();
+            var modifier = GameDataStorage.Instance.GetGameData<ModifierData>().GetModifierDirectly(modifierName, this);
+
+            AddModifier(modifier);
         }
 
         public void AddModifier(Modifier modifier)
         {
-            throw new System.NotImplementedException();
+            _modifiers.Add(modifier);
+        }
+
+        public void RemoveModifier(Modifier modifier)
+        {
+            _modifiers.Remove(modifier);
         }
 
         public void AddModifierToTiles(List<HexTileCoord> coords, Modifier modifier)
         {
-            throw new System.NotImplementedException();
+            _modifiers.Remove(modifier);
         }
     }
 }
