@@ -18,11 +18,13 @@ namespace Core
 
     public interface IModifierHolder
     {
+        string HolderType { get; }
+
         IReadOnlyList<Modifier> Modifiers { get; }
 
-        void AddModifierToTarget(string modifierName);
+        void AddModifierInitial(string modifierName);
 
-        void AddModifier(Modifier modifier);
+        void AddModifierSequential(Modifier modifier);
 
         void RemoveModifier(Modifier modifier);
     }

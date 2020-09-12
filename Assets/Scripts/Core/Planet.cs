@@ -6,7 +6,7 @@ namespace Core
 {
     public class Planet : ITileMapHolder, IOnHexTileObject
     {
-        public string TileMapHolderType => nameof(Planet);
+        public string HolderType => nameof(Planet);
 
         public TileMap TileMap { get; }
 
@@ -47,14 +47,14 @@ namespace Core
 
         public const float BasePopGrowth = 5.0f;
 
-        public void AddModifierToTarget(string modifierName)
+        public void AddModifierInitial(string modifierName)
         {
             var modifier = GameDataStorage.Instance.GetGameData<ModifierData>().GetModifierDirectly(modifierName, this);
 
-            AddModifier(modifier);
+            AddModifierSequential(modifier);
         }
 
-        public void AddModifier(Modifier modifier)
+        public void AddModifierSequential(Modifier modifier)
         {
             _modifiers.Add(modifier);
         }

@@ -5,7 +5,7 @@ namespace Core
 {
     public class StarSystem : ITileMapHolder
     {
-        public string TileMapHolderType => nameof(StarSystem);
+        public string HolderType => nameof(StarSystem);
 
         public TileMap TileMap { get; }
 
@@ -13,14 +13,14 @@ namespace Core
 
         public IReadOnlyList<Modifier> Modifiers => _modifiers;
 
-        public void AddModifierToTarget(string modifierName)
+        public void AddModifierInitial(string modifierName)
         {
             var modifier = GameDataStorage.Instance.GetGameData<ModifierData>().GetModifierDirectly(modifierName, this);
 
-            AddModifier(modifier);
+            AddModifierSequential(modifier);
         }
 
-        public void AddModifier(Modifier modifier)
+        public void AddModifierSequential(Modifier modifier)
         {
             _modifiers.Add(modifier);
         }

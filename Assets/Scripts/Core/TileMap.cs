@@ -7,8 +7,6 @@ namespace Core
 {
     public interface ITileMapHolder : IModifierHolder
     {
-        string TileMapHolderType { get; }
-
         TileMap TileMap { get; }
 
         void AddModifierToTiles(List<HexTileCoord> coords, Modifier modifier);
