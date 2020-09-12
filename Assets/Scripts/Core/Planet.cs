@@ -20,7 +20,7 @@ namespace Core
 
         public IReadOnlyList<Modifier> Modifiers => _modifiers;
 
-        private Dictionary<ResourceInfoHolder, int> _fromModifiers;
+        public IReadOnlyDictionary<ResourceInfoHolder, int> ModifierEffect { get; private set; }
 
         /// <summary>
         /// 0 if totally uninhabitable,
@@ -47,65 +47,13 @@ namespace Core
 
         public const float BasePopGrowth = 5.0f;
 
-        public void AddModifierInitial(string modifierName)
+        public void AddModifier(string modifierName, string scopeName, int leftMonth = -1, IReadOnlyList<HexTileCoord> tiles = null)
         {
-            var modifier = GameDataStorage.Instance.GetGameData<ModifierData>().GetModifierDirectly(modifierName, this);
-
-            AddModifierSequential(modifier);
+            _modifiers.Add(new Modifier(
+                GameDataStorage.Instance.GetGameData<ModifierData>().GetModifierDirectly(modifierName), scopeName,
+                leftMonth, tiles));
         }
 
-        public void AddModifierSequential(Modifier modifier)
-        {
-            _modifiers.Add(modifier);
-        }
-
-        public void RemoveModifier(Modifier modifier)
-        {
-            _modifiers.Remove(modifier);
-        }
-
-        public void AddModifierToTiles(List<HexTileCoord> coords, Modifier modifier)
-        {
-            _modifiers.Remove(modifier);
-        }
-
-        private void RecalculateModifierYield()
-        {
-            var mutex = new object();
-            var result = new Dictionary<ResourceInfoHolder, int>();
-
-            Parallel.ForEach(_modifiers,
-                () => new Dictionary<ResourceInfoHolder, int>(),
-                (m, loop, acc) =>
-                {
-                    if (!m.CheckCondition())
-                        return acc;
-
-                    foreach (var info in m.Effect)
-                    {
-                        if (!acc.ContainsKey(info.ResourceInfo))
-                            acc.Add(info.ResourceInfo, 0);
-
-                        acc[info.ResourceInfo] += info.Amount;
-                    }
-
-                    return acc;
-                },
-                final =>
-                {
-                    lock (mutex)
-                    {
-                        foreach (var kv in final)
-                        {
-                            if (!result.ContainsKey(kv.Key))
-                                result.Add(kv.Key, 0);
-
-                            result[kv.Key] += kv.Value;
-                        }
-                    }
-                });
-
-            _fromModifiers = result;
-        }
+        public void RecalculateModifierEffect() => ModifierEffect = this.GetModifierEffect();
     }
 }

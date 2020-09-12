@@ -1,5 +1,4 @@
 ﻿using MoonSharp.Interpreter;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -11,13 +10,7 @@ namespace Core.GameData
 
         public string TypeName => "Modifier";
 
-        private string _holderType;
-
-        private string _additionalInfo;
-
-        private ScriptFunctionDelegate<bool> _conditionChecker;
-
-        private ScriptFunctionDelegate<Dictionary<string, object>> _effectDictGetter;
+        private ModifierCore _cache;
 
         public string FilePath { get; }
 
@@ -30,34 +23,29 @@ namespace Core.GameData
         {
             Name = luaScript.Globals.Get("Name").String;
 
-            _additionalInfo = luaScript.Globals.Get("Name").String;
+            var additionalInfo = luaScript.Globals.Get("Name").String;
 
-            _holderType = luaScript.Globals.Get("TargetType").String;
+            var holderType = luaScript.Globals.Get("TargetType").String;
 
-            _conditionChecker = luaScript.Globals.Get("CheckCondition").Function.GetDelegate<bool>();
+            var conditionChecker = luaScript.Globals.Get("CheckCondition").Function.GetDelegate<bool>();
 
-            _effectDictGetter = luaScript.Globals.Get("GetEffect").Function.GetDelegate<Dictionary<string, object>>();
+            var effectDictGetter = luaScript.Globals.Get("GetEffect").Function.GetDelegate<Dictionary<string, object>>();
+
+            _cache = new ModifierCore(Name, holderType, additionalInfo, ProcessEffect,
+                t => conditionChecker.Invoke(t));
 
             return true;
+
+            List<ModifierEffect> ProcessEffect(IModifierHolder target)
+            {
+                var dict = effectDictGetter.Invoke(target);
+                var data = GameDataStorage.Instance.GetGameData<ResourceData>();
+
+                return (from kv in dict
+                    select new ModifierEffect(data.GetResourceDirectly(kv.Key), (int) kv.Value)).ToList();
+            }
         }
 
-        public Modifier Create(object target)
-        {
-            if (Name != "Default" && target.GetType().ToString() != _holderType)
-                throw new InvalidOperationException(
-                    $"Trying to instantiate modifier with holder type {_holderType} to target type {target.GetType()}!");
-
-            return new Modifier(Name, _holderType, _additionalInfo, () => ProcessEffect(target),
-                () => _conditionChecker.Invoke(target));
-        }
-
-        private List<ModifierInfoHolder> ProcessEffect(object target)
-        {
-            var dict = _effectDictGetter.Invoke(target);
-            var data = GameDataStorage.Instance.GetGameData<ResourceData>();
-
-            return (from kv in dict
-                select new ModifierInfoHolder(data.GetResourceDirectly(kv.Key), (int) kv.Value)).ToList();
-        }
+        public ModifierCore Create() => _cache;
     }
 }

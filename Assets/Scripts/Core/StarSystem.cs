@@ -13,26 +13,11 @@ namespace Core
 
         public IReadOnlyList<Modifier> Modifiers => _modifiers;
 
-        public void AddModifierInitial(string modifierName)
+        public void AddModifier(string modifierName, string scopeName, int leftMonth = -1, IReadOnlyList<HexTileCoord> tiles = null)
         {
-            var modifier = GameDataStorage.Instance.GetGameData<ModifierData>().GetModifierDirectly(modifierName, this);
-
-            AddModifierSequential(modifier);
-        }
-
-        public void AddModifierSequential(Modifier modifier)
-        {
-            _modifiers.Add(modifier);
-        }
-
-        public void RemoveModifier(Modifier modifier)
-        {
-            _modifiers.Remove(modifier);
-        }
-
-        public void AddModifierToTiles(List<HexTileCoord> coords, Modifier modifier)
-        {
-            throw new System.NotImplementedException();
+            _modifiers.Add(new Modifier(
+                GameDataStorage.Instance.GetGameData<ModifierData>().GetModifierDirectly(modifierName), scopeName,
+                leftMonth, tiles));
         }
     }
 }

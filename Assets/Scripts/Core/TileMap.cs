@@ -8,8 +8,6 @@ namespace Core
     public interface ITileMapHolder : IModifierHolder
     {
         TileMap TileMap { get; }
-
-        void AddModifierToTiles(List<HexTileCoord> coords, Modifier modifier);
     }
 
     public class TileMap : IEnumerable<HexTile>
