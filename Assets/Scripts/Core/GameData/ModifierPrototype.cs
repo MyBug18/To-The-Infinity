@@ -17,7 +17,7 @@ namespace Core.GameData
 
         private ScriptFunctionDelegate<bool> _conditionChecker;
 
-        private IReadOnlyList<ModifierInfoHolder> _effect;
+        private ScriptFunctionDelegate<Dictionary<string, object>> _effectDictGetter;
 
         public string FilePath { get; }
 
@@ -36,16 +36,7 @@ namespace Core.GameData
 
             _conditionChecker = luaScript.Globals.Get("CheckCondition").Function.GetDelegate<bool>();
 
-            var table = luaScript.Globals.Get("Effect").Table;
-
-            var data = GameDataStorage.Instance.GetGameData<ResourceData>();
-
-            var effect = (from kv in table.Pairs
-                let name = kv.Key.String
-                let info = data.GetResourceDirectly(name)
-                select new ModifierInfoHolder(info, (int) kv.Value.Number)).ToList();
-
-            _effect = effect;
+            _effectDictGetter = luaScript.Globals.Get("GetEffect").Function.GetDelegate<Dictionary<string, object>>();
 
             return true;
         }
@@ -56,8 +47,17 @@ namespace Core.GameData
                 throw new InvalidOperationException(
                     $"Trying to instantiate modifier with holder type {_holderType} to target type {target.GetType()}!");
 
-            return new Modifier(Name, _holderType, _additionalInfo, _effect, () => _conditionChecker.Invoke(target));
+            return new Modifier(Name, _holderType, _additionalInfo, () => ProcessEffect(target),
+                () => _conditionChecker.Invoke(target));
         }
 
+        private List<ModifierInfoHolder> ProcessEffect(object target)
+        {
+            var dict = _effectDictGetter.Invoke(target);
+            var data = GameDataStorage.Instance.GetGameData<ResourceData>();
+
+            return (from kv in dict
+                select new ModifierInfoHolder(data.GetResourceDirectly(kv.Key), (int) kv.Value)).ToList();
+        }
     }
 }

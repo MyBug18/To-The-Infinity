@@ -35,18 +35,21 @@ namespace Core
 
         public string AdditionalInfo { get; }
 
-        public IReadOnlyList<ModifierInfoHolder> Effect { get; }
+        private readonly Func<List<ModifierInfoHolder>> _effectGetter;
+
+        public IReadOnlyList<ModifierInfoHolder> Effect => _effectGetter();
 
         private readonly Func<bool> _conditionChecker;
 
         public bool CheckCondition() => _conditionChecker();
 
-        public Modifier(string name, string targetTypeName, string additionalInfo, IReadOnlyList<ModifierInfoHolder> effect, Func<bool> conditionChecker)
+        public Modifier(string name, string targetTypeName, string additionalInfo,
+            Func<List<ModifierInfoHolder>> effectGetter, Func<bool> conditionChecker)
         {
             Name = name;
             TargetTypeName = targetTypeName;
             AdditionalInfo = additionalInfo;
-            Effect = effect;
+            _effectGetter = effectGetter;
             _conditionChecker = conditionChecker;
         }
 

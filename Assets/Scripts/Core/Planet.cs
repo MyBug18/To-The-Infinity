@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Core.GameData;
 
 namespace Core
@@ -19,7 +20,7 @@ namespace Core
 
         public IReadOnlyList<Modifier> Modifiers => _modifiers;
 
-        private readonly Dictionary<ResourceInfoHolder, int> _fromModifiers = new Dictionary<ResourceInfoHolder, int>();
+        private Dictionary<ResourceInfoHolder, int> _fromModifiers;
 
         /// <summary>
         /// 0 if totally uninhabitable,
@@ -66,6 +67,45 @@ namespace Core
         public void AddModifierToTiles(List<HexTileCoord> coords, Modifier modifier)
         {
             _modifiers.Remove(modifier);
+        }
+
+        private void RecalculateModifierYield()
+        {
+            var mutex = new object();
+            var result = new Dictionary<ResourceInfoHolder, int>();
+
+            Parallel.ForEach(_modifiers,
+                () => new Dictionary<ResourceInfoHolder, int>(),
+                (m, loop, acc) =>
+                {
+                    if (!m.CheckCondition())
+                        return acc;
+
+                    foreach (var info in m.Effect)
+                    {
+                        if (!acc.ContainsKey(info.ResourceInfo))
+                            acc.Add(info.ResourceInfo, 0);
+
+                        acc[info.ResourceInfo] += info.Amount;
+                    }
+
+                    return acc;
+                },
+                final =>
+                {
+                    lock (mutex)
+                    {
+                        foreach (var kv in final)
+                        {
+                            if (!result.ContainsKey(kv.Key))
+                                result.Add(kv.Key, 0);
+
+                            result[kv.Key] += kv.Value;
+                        }
+                    }
+                });
+
+            _fromModifiers = result;
         }
     }
 }
