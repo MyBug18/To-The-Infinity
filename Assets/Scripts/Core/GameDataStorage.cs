@@ -29,6 +29,7 @@ namespace Core
             new Dictionary<string, IGameData>
             {
                 {"HexTile", new HexTileData()},
+                {"Modifier", new ModifierData()},
                 {"PopSlot", new PopSlotData()},
                 {"Resource", new ResourceData()},
                 {"TileMap", new TileMapData()},

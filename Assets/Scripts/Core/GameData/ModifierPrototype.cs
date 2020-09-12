@@ -32,7 +32,7 @@ namespace Core.GameData
 
             _additionalInfo = luaScript.Globals.Get("Name").String;
 
-            _holderType = luaScript.Globals.Get("HolderType").String;
+            _holderType = luaScript.Globals.Get("TargetType").String;
 
             _conditionChecker = luaScript.Globals.Get("CheckCondition").Function.GetDelegate<bool>();
 

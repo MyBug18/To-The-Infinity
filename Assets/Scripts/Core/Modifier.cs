@@ -31,7 +31,7 @@ namespace Core
     {
         public string Name { get; }
 
-        public string TargetTypeName { get; }
+        public string TargetType { get; }
 
         public string AdditionalInfo { get; }
 
@@ -43,11 +43,11 @@ namespace Core
 
         public bool CheckCondition() => _conditionChecker();
 
-        public Modifier(string name, string targetTypeName, string additionalInfo,
+        public Modifier(string name, string targetType, string additionalInfo,
             Func<List<ModifierInfoHolder>> effectGetter, Func<bool> conditionChecker)
         {
             Name = name;
-            TargetTypeName = targetTypeName;
+            TargetType = targetType;
             AdditionalInfo = additionalInfo;
             _effectGetter = effectGetter;
             _conditionChecker = conditionChecker;
