@@ -21,6 +21,7 @@ namespace Core
                 {"Modifier", path => new ModifierPrototype(path)},
                 {"PopSlot", path => new PopSlotPrototype(path)},
                 {"Resource", path => new ResourcePrototype(path)},
+                {"SpecialAction", path => new SpecialActionPrototype(path)},
                 {"TileMap", path => new TileMapPrototype(path)},
                 {"TileSpecialResourceType", path => new TileSpecialResourceTypePrototype(path)},
             };
@@ -32,6 +33,7 @@ namespace Core
                 {"Modifier", new ModifierData()},
                 {"PopSlot", new PopSlotData()},
                 {"Resource", new ResourceData()},
+                {"Resource", new SpecialActionData()},
                 {"TileMap", new TileMapData()},
                 {"TileSpecialResourceType", new TileSpecialResourceTypeData()},
             };

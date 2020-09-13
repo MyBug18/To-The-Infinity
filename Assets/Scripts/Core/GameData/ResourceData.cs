@@ -54,10 +54,7 @@ namespace Core.GameData
             if (_hardCodedFactors.TryGetValue(name, out var result))
                 return result;
 
-            if (_data.TryGetValue(name, out var result2))
-                return result2.Create();
-
-            return _default.Create();
+            return _data.TryGetValue(name, out var result2) ? result2.Create() : _default.Create();
         }
     }
 }

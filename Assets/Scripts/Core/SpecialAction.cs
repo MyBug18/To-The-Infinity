@@ -18,13 +18,19 @@ namespace Core
 
         private readonly ISpecialActionHolder _owner;
 
+        public bool IsActivatedThisTurn { get; }
+
+        public SpecialAction(SpecialActionCore core, ISpecialActionHolder owner)
+        {
+            _core = core;
+            _owner = owner;
+        }
+
         public string Name => _core.Name;
 
         public bool NeedCoordinate => _core.NeedCoordinate;
 
         public IReadOnlyDictionary<ResourceInfoHolder, int> Cost => _core.Cost;
-
-        public bool IsActivatedThisTurn { get; }
 
         public bool IsVisible => _core.IsVisible(_owner);
 
@@ -61,6 +67,7 @@ namespace Core
         private readonly Action<ISpecialActionHolder, HexTileCoord> _doAction;
 
         public SpecialActionCore(string name, bool needCoordinate,
+            Dictionary<ResourceInfoHolder, int> cost,
             Func<ISpecialActionHolder, bool> visibleChecker,
             Func<ISpecialActionHolder, bool> availableChecker,
             Func<ISpecialActionHolder, List<HexTileCoord>> availableCoordsGetter,
@@ -68,6 +75,7 @@ namespace Core
         {
             Name = name;
             NeedCoordinate = needCoordinate;
+            Cost = cost;
             _visibleChecker = visibleChecker;
             _availableChecker = availableChecker;
             _availableCoordsGetter = availableCoordsGetter;
