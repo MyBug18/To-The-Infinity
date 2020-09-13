@@ -39,7 +39,7 @@ namespace Core
         [MoonSharpHidden]
         public void Initialize()
         {
-            // HardWireType.Initialize();
+            InitializeMoonSharp();
 
             var pathList = Directory.GetFiles(Path.Combine(Application.streamingAssetsPath, "CoreData"),
                     "*.lua", SearchOption.AllDirectories);
@@ -86,6 +86,17 @@ namespace Core
                     // TODO: Should log warning
                 }
             }
+        }
+
+        private void InitializeMoonSharp()
+        {
+            // HardWireType.Initialize();
+
+            var customConverters = Script.GlobalOptions.CustomConverters;
+
+            customConverters.SetScriptToClrCustomConversion(
+                DataType.Table, typeof(HexTileCoord), v =>
+                    new HexTileCoord((int) v.Table.Get("Q").Number, (int) v.Table.Get("R").Number));
         }
 
         [MoonSharpHidden]
