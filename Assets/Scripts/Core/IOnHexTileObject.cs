@@ -2,7 +2,7 @@
 
 namespace Core
 {
-    public interface IOnHexTileObject
+    public interface IOnHexTileObject : IModifierHolder, ISpecialActionHolder
     {
         string TypeName { get; }
 

@@ -3,15 +3,26 @@ using System.Collections.Generic;
 
 namespace Core
 {
+    public interface ISpecialActionHolder
+    {
+        IReadOnlyList<SpecialAction> SpecialActions { get; }
+
+        bool CheckSpecialActionCost(IReadOnlyDictionary<ResourceInfoHolder, int> cost);
+
+        void ConsumeSpecialActionCost(IReadOnlyDictionary<ResourceInfoHolder, int> cost);
+    }
+
     public readonly struct SpecialAction
     {
         private readonly SpecialActionCore _core;
 
-        private readonly IOnHexTileObject _owner;
+        private readonly ISpecialActionHolder _owner;
 
         public string Name => _core.Name;
 
         public bool NeedCoordinate => _core.NeedCoordinate;
+
+        public IReadOnlyDictionary<ResourceInfoHolder, int> Cost => _core.Cost;
 
         public bool IsActivatedThisTurn { get; }
 
@@ -24,8 +35,12 @@ namespace Core
         public bool DoAction(HexTileCoord coord)
         {
             if (!_core.IsVisible(_owner) || !IsAvailable || !GetAvailableTiles.Contains(coord)) return false;
+            if (!_owner.CheckSpecialActionCost(_core.Cost)) return false;
 
-            return _core.DoAction(_owner, coord);
+            _owner.ConsumeSpecialActionCost(_core.Cost);
+            _core.DoAction(_owner, coord);
+
+            return true;
         }
     }
 
@@ -35,19 +50,21 @@ namespace Core
 
         public bool NeedCoordinate { get; }
 
-        private readonly Func<IOnHexTileObject, bool> _visibleChecker;
+        public Dictionary<ResourceInfoHolder, int> Cost { get; }
 
-        private readonly Func<IOnHexTileObject, bool> _availableChecker;
+        private readonly Func<ISpecialActionHolder, bool> _visibleChecker;
 
-        private readonly Func<IOnHexTileObject, List<HexTileCoord>> _availableCoordsGetter;
+        private readonly Func<ISpecialActionHolder, bool> _availableChecker;
 
-        private readonly Func<IOnHexTileObject, HexTileCoord, bool> _doAction;
+        private readonly Func<ISpecialActionHolder, List<HexTileCoord>> _availableCoordsGetter;
+
+        private readonly Action<ISpecialActionHolder, HexTileCoord> _doAction;
 
         public SpecialActionCore(string name, bool needCoordinate,
-            Func<IOnHexTileObject, bool> visibleChecker,
-            Func<IOnHexTileObject, bool> availableChecker,
-            Func<IOnHexTileObject, List<HexTileCoord>> availableCoordsGetter,
-            Func<IOnHexTileObject, HexTileCoord, bool> doAction)
+            Func<ISpecialActionHolder, bool> visibleChecker,
+            Func<ISpecialActionHolder, bool> availableChecker,
+            Func<ISpecialActionHolder, List<HexTileCoord>> availableCoordsGetter,
+            Action<ISpecialActionHolder, HexTileCoord> doAction)
         {
             Name = name;
             NeedCoordinate = needCoordinate;
@@ -57,12 +74,12 @@ namespace Core
             _doAction = doAction;
         }
 
-        public bool IsVisible(IOnHexTileObject owner) => _visibleChecker(owner);
+        public bool IsVisible(ISpecialActionHolder owner) => _visibleChecker(owner);
 
-        public bool IsAvailable(IOnHexTileObject owner) => _availableChecker(owner);
+        public bool IsAvailable(ISpecialActionHolder owner) => _availableChecker(owner);
 
-        public List<HexTileCoord> GetAvailableTiles(IOnHexTileObject owner) => _availableCoordsGetter(owner);
+        public List<HexTileCoord> GetAvailableTiles(ISpecialActionHolder owner) => _availableCoordsGetter(owner);
 
-        public bool DoAction(IOnHexTileObject owner, HexTileCoord coord) => _doAction(owner, coord);
+        public void DoAction(ISpecialActionHolder owner, HexTileCoord coord) => _doAction(owner, coord);
     }
 }

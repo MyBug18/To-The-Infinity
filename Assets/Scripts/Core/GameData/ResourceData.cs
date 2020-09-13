@@ -18,6 +18,8 @@ namespace Core.GameData
                 {"PopGrowth", new ResourceInfoHolder("PopGrowth", ResourceType.Factor)},
 
                 {"Happiness", new ResourceInfoHolder("Happiness", ResourceType.Factor)},
+
+                {"MovePoint", new ResourceInfoHolder("MovePoint", ResourceType.Factor)},
             };
 
         #endregion HardCodedFactors

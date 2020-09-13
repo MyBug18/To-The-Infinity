@@ -10,6 +10,8 @@ namespace Core
 
         public TileMap TileMap { get; }
 
+        public IReadOnlyList<SpecialAction> SpecialActions { get; }
+
         public string TypeName => nameof(Planet);
 
         public string Name { get; }
@@ -46,6 +48,16 @@ namespace Core
         public IReadOnlyDictionary<ResourceInfoHolder, float> PlanetaryResourceKeep => _planetaryResourceKeep;
 
         public const float BasePopGrowth = 5.0f;
+
+        public bool CheckSpecialActionCost(IReadOnlyDictionary<ResourceInfoHolder, int> cost)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void ConsumeSpecialActionCost(IReadOnlyDictionary<ResourceInfoHolder, int> cost)
+        {
+            throw new System.NotImplementedException();
+        }
 
         public void AddModifier(string modifierName, string scopeName, int leftMonth = -1, IReadOnlyList<HexTileCoord> tiles = null)
         {
