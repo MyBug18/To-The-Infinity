@@ -7,7 +7,7 @@ namespace Core
     {
         public string HolderType => nameof(Planet);
 
-        public TileMap HoldingTileMap { get; }
+        public TileMap TileMap { get; }
 
         public IReadOnlyList<SpecialAction> SpecialActions { get; }
 
@@ -48,6 +48,12 @@ namespace Core
 
         public const float BasePopGrowth = 5.0f;
 
+        public void StartNewTurn(int month)
+        {
+            ReduceModifiersLeftMonth(month);
+            TileMap.StartNewTurn(month);
+        }
+
         public bool CheckSpecialActionCost(IReadOnlyDictionary<ResourceInfoHolder, int> cost)
         {
             throw new System.NotImplementedException();
@@ -58,7 +64,7 @@ namespace Core
             throw new System.NotImplementedException();
         }
 
-        public void ReduceModifiersLeftMonth(int month)
+        private void ReduceModifiersLeftMonth(int month)
         {
             for (var i = _modifiers.Count - 1; i >= 0; i--)
             {

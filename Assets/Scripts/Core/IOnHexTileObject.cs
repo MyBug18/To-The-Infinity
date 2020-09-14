@@ -9,6 +9,8 @@ namespace Core
         string Name { get; }
 
         HexTile Tile { get; }
+
+        void StartNewTurn(int month);
     }
 
     public interface IMovableObject : IOnHexTileObject

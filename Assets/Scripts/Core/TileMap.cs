@@ -7,7 +7,7 @@ namespace Core
 {
     public interface ITileMapHolder : IModifierHolder
     {
-        TileMap HoldingTileMap { get; }
+        TileMap TileMap { get; }
     }
 
     public class TileMap : IEnumerable<HexTile>
@@ -26,6 +26,14 @@ namespace Core
             Holder = holder;
             _tileMap = tileMap;
             Radius = radius;
+        }
+
+        public void StartNewTurn(int month)
+        {
+            foreach (var obj in _onTileMapObjects.Values.SelectMany(objs => objs))
+            {
+                obj.StartNewTurn(month);
+            }
         }
 
         /// <summary>

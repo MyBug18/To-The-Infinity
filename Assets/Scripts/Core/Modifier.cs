@@ -48,8 +48,6 @@ namespace Core
 
         IReadOnlyList<Modifier> Modifiers { get; }
 
-        void ReduceModifiersLeftMonth(int month);
-
         void AddModifier(string modifierName, string scopeName, int leftMonth, IReadOnlyList<HexTileCoord> tiles);
     }
 
