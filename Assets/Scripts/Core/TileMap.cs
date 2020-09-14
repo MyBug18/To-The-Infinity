@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Core
 {
-    public interface ITileMapHolder
+    public interface ITileMapHolder : IModifierHolder
     {
         TileMap HoldingTileMap { get; }
     }

@@ -8,9 +8,7 @@ namespace Core
 
         string Name { get; }
 
-        HexTileCoord HexCoord { get; }
-
-        TileMap OnTileMap { get; }
+        HexTile Tile { get; }
     }
 
     public interface IMovableObject : IOnHexTileObject

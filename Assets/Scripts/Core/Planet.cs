@@ -7,8 +7,6 @@ namespace Core
     {
         public string HolderType => nameof(Planet);
 
-        public TileMap OnTileMap { get; }
-
         public TileMap HoldingTileMap { get; }
 
         public IReadOnlyList<SpecialAction> SpecialActions { get; }
@@ -17,7 +15,7 @@ namespace Core
 
         public string Name { get; }
 
-        public HexTileCoord HexCoord { get; }
+        public HexTile Tile { get; }
 
         private readonly List<Modifier> _modifiers = new List<Modifier>();
 

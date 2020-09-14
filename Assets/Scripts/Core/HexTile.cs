@@ -2,6 +2,8 @@
 {
     public class HexTile
     {
+        public TileMap TileMap { get; }
+
         public HexTileCoord Coord { get; }
 
         public string Name { get; }
