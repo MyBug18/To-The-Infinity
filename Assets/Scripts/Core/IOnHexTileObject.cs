@@ -10,7 +10,7 @@ namespace Core
 
         HexTileCoord HexCoord { get; }
 
-        TileMap TileMap { get; }
+        TileMap OnTileMap { get; }
     }
 
     public interface IMovableObject : IOnHexTileObject

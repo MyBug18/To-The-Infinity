@@ -7,11 +7,28 @@ namespace Core
     {
         public string HolderType => nameof(StarSystem);
 
-        public TileMap TileMap { get; }
+        public TileMap HoldingTileMap { get; }
 
         private readonly List<Modifier> _modifiers = new List<Modifier>();
 
         public IReadOnlyList<Modifier> Modifiers => _modifiers;
+
+        public void ReduceModifiersLeftMonth(int month)
+        {
+            for (var i = _modifiers.Count - 1; i >= 0; i--)
+            {
+                var m = _modifiers[i];
+                if (m.IsPermanent) continue;
+
+                if (m.LeftMonth - month <= 0)
+                {
+                    _modifiers.RemoveAt(i);
+                    continue;
+                }
+
+                _modifiers[i] = m.ReduceLeftMonth(month);
+            }
+        }
 
         public void AddModifier(string modifierName, string scopeName, int leftMonth = -1, IReadOnlyList<HexTileCoord> tiles = null)
         {

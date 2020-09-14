@@ -7,7 +7,7 @@ namespace Core
 {
     public interface ITileMapHolder
     {
-        TileMap TileMap { get; }
+        TileMap HoldingTileMap { get; }
     }
 
     public class TileMap : IEnumerable<HexTile>
