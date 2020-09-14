@@ -44,7 +44,7 @@ namespace Core
 
     public interface IModifierHolder
     {
-        string HolderType { get; }
+        string TypeName { get; }
 
         IReadOnlyList<Modifier> Modifiers { get; }
 

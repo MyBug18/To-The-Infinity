@@ -5,7 +5,7 @@ namespace Core
 {
     public static class Util
     {
-        public static TValue TryGetKeyWithDefault<TKey, TValue>(this IReadOnlyDictionary<TKey, TValue> dict, TKey key,
+        public static TValue TryGetValueWithDefault<TKey, TValue>(this IReadOnlyDictionary<TKey, TValue> dict, TKey key,
             TValue defaultValue) => dict.TryGetValue(key, out var result) ? result : defaultValue;
 
         public static IReadOnlyDictionary<ResourceInfoHolder, int> GetModifierEffect(this IModifierHolder holder)
@@ -17,7 +17,7 @@ namespace Core
                 () => new Dictionary<ResourceInfoHolder, int>(),
                 (m, loop, acc) =>
                 {
-                    if (m.Core.TargetType != holder.HolderType || !m.Core.CheckCondition(holder))
+                    if (m.Core.TargetType != holder.TypeName || !m.Core.CheckCondition(holder))
                         return acc;
 
                     foreach (var info in m.Core.GetEffects(holder))

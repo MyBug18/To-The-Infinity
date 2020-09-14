@@ -5,13 +5,11 @@ namespace Core
 {
     public class Planet : ITileMapHolder, IOnHexTileObject
     {
-        public string HolderType => nameof(Planet);
+        public string TypeName => nameof(Planet);
 
         public TileMap TileMap { get; }
 
         public IReadOnlyList<SpecialAction> SpecialActions { get; }
-
-        public string TypeName => nameof(Planet);
 
         public string Name { get; }
 

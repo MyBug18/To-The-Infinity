@@ -5,7 +5,7 @@ namespace Core
 {
     public class StarSystem : ITileMapHolder
     {
-        public string HolderType => nameof(StarSystem);
+        public string TypeName => nameof(StarSystem);
 
         public TileMap TileMap { get; }
 

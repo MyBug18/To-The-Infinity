@@ -4,8 +4,6 @@ namespace Core
 {
     public interface IOnHexTileObject : IModifierHolder, ISpecialActionHolder
     {
-        string TypeName { get; }
-
         string Name { get; }
 
         HexTile Tile { get; }
@@ -13,9 +11,11 @@ namespace Core
         void StartNewTurn(int month);
     }
 
-    public interface IMovableObject : IOnHexTileObject
+    public interface IUnit : IOnHexTileObject
     {
-        int MovePoint { get; }
+        int MaxMovePoint { get; }
+
+        int RemainMovePoint { get; }
 
         List<HexTileCoord> GetMovableTiles();
 
