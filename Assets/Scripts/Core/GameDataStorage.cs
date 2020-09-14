@@ -33,7 +33,7 @@ namespace Core
                 {"Modifier", new ModifierData()},
                 {"PopSlot", new PopSlotData()},
                 {"Resource", new ResourceData()},
-                {"Resource", new SpecialActionData()},
+                {"SpecialAction", new SpecialActionData()},
                 {"TileMap", new TileMapData()},
                 {"TileSpecialResourceType", new TileSpecialResourceTypeData()},
             };

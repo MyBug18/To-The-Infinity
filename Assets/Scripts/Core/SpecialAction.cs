@@ -12,18 +12,19 @@ namespace Core
         void ConsumeSpecialActionCost(IReadOnlyDictionary<ResourceInfoHolder, int> cost);
     }
 
-    public readonly struct SpecialAction
+    public class SpecialAction
     {
         private readonly SpecialActionCore _core;
 
         private readonly ISpecialActionHolder _owner;
 
-        public bool IsActivatedThisTurn { get; }
+        public bool IsActivatedThisTurn { get; private set; }
 
         public SpecialAction(SpecialActionCore core, ISpecialActionHolder owner)
         {
             _core = core;
             _owner = owner;
+            IsActivatedThisTurn = false;
         }
 
         public string Name => _core.Name;
@@ -40,13 +41,20 @@ namespace Core
 
         public bool DoAction(HexTileCoord coord)
         {
-            if (!_core.IsVisible(_owner) || !IsAvailable || !GetAvailableTiles.Contains(coord)) return false;
+            if (!_core.IsVisible(_owner) || !IsAvailable ||
+                _core.NeedCoordinate && !GetAvailableTiles.Contains(coord)) return false;
             if (!_owner.CheckSpecialActionCost(_core.Cost)) return false;
 
             _owner.ConsumeSpecialActionCost(_core.Cost);
             _core.DoAction(_owner, coord);
+            IsActivatedThisTurn = true;
 
             return true;
+        }
+
+        public void Reset()
+        {
+            IsActivatedThisTurn = false;
         }
     }
 
