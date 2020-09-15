@@ -4,6 +4,8 @@ namespace Core
 {
     public interface IOnHexTileObject : IModifierHolder, ISpecialActionHolder
     {
+        string Owner { get; }
+
         string Name { get; }
 
         HexTile Tile { get; }

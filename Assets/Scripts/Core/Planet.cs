@@ -7,6 +7,8 @@ namespace Core
     {
         public string TypeName => nameof(Planet);
 
+        public string Owner { get; }
+
         public TileMap TileMap { get; }
 
         public IReadOnlyList<SpecialAction> SpecialActions { get; }
