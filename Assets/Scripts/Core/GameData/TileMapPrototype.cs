@@ -36,6 +36,9 @@ namespace Core.GameData
             var noiseTask = new Task<float[,]>(() => Noise2d.GenerateNoiseMap(size, size, 2));
             var randomTask = new Task<float[,]>(() => MakeRandomMap(size));
 
+            noiseTask.Start();
+            randomTask.Start();
+
             var tileMap = new HexTile[radius * 2 + 1][];
 
             var lineCount = new int[radius * 2 + 1];
@@ -55,6 +58,8 @@ namespace Core.GameData
             var noiseMap = noiseTask.Result;
             var randomMap = randomTask.Result;
 
+            var result = new TileMap(holder, tileMap, radius);
+
             Parallel.For(0, lineCount.Sum(), i =>
             {
                 var (x, y) = GetTileMapIndexFromInt(i);
@@ -62,10 +67,10 @@ namespace Core.GameData
                 var noise = noiseMap[coord.Q, coord.R];
                 var rnd = randomMap[coord.Q, coord.R];
 
-                tileMap[x][y] = GenerateTileThreadSafe(coord, noise, rnd);
+                tileMap[x][y] = GenerateTileThreadSafe(result, coord, noise, rnd);
             });
 
-            return new TileMap(holder, tileMap, radius);
+            return result;
 
             (int x, int y) GetTileMapIndexFromInt(int n)
             {
@@ -88,9 +93,26 @@ namespace Core.GameData
 
                 return (x, y);
             }
+
+            static float[,] MakeRandomMap(int size)
+            {
+                var r = new Random();
+
+                var result = new float[size, size];
+
+                for (var i = 0; i < size; i++)
+                {
+                    for (var j = 0; j < size; j++)
+                    {
+                        result[i, j] = (float)r.NextDouble();
+                    }
+                }
+
+                return result;
+            }
         }
 
-        private HexTile GenerateTileThreadSafe(HexTileCoord coord, float noise, float rnd)
+        private HexTile GenerateTileThreadSafe(TileMap tileMap, HexTileCoord coord, float noise, float rnd)
         {
             var dict = _tileInfoMaker.Invoke(coord, noise, rnd);
 
@@ -98,26 +120,9 @@ namespace Core.GameData
             var res = (int)dict["ResDecider"];
 
             var tileProto = GameDataStorage.Instance.GetGameData<HexTileData>().GetPrototype(name);
-            var tile = tileProto.Create(coord, res);
+            var tile = tileProto.Create(tileMap, coord, res);
 
             return tile;
-        }
-
-        private float[,] MakeRandomMap(int size)
-        {
-            var r = new Random();
-
-            var result = new float[size, size];
-
-            for (var i = 0; i < size; i++)
-            {
-                for (var j = 0; j < size; j++)
-                {
-                    result[i, j] = (float)r.NextDouble();
-                }
-            }
-
-            return result;
         }
     }
 }

@@ -36,7 +36,7 @@ namespace Core.GameData
             return true;
         }
 
-        public HexTile Create(HexTileCoord coord, int resDecider)
+        public HexTile Create(TileMap tileMap, HexTileCoord coord, int resDecider)
         {
             var specialResourceName = "";
 
@@ -53,12 +53,12 @@ namespace Core.GameData
             }
 
             if (string.IsNullOrEmpty(specialResourceName))
-                return new HexTile(coord, Name, null);
+                return new HexTile(tileMap, coord, Name, null);
 
             var specialResource = GameDataStorage.Instance.GetGameData<TileSpecialResourceTypeData>()
                 .GetPrototype(specialResourceName);
 
-            return new HexTile(coord, Name, specialResource.Create());
+            return new HexTile(tileMap, coord, Name, specialResource.Create());
         }
     }
 }
