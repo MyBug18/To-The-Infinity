@@ -27,7 +27,6 @@ namespace Core.GameData
 
         public void OnGameInitialized(Game _)
         {
-
         }
 
         public ModifierCore GetModifierDirectly(string name) => !_data.TryGetValue(name, out var proto)

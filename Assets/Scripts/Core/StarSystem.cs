@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using Core.GameData;
+﻿using Core.GameData;
+using System.Collections.Generic;
 
 namespace Core
 {

@@ -42,7 +42,7 @@ namespace Core.GameData
                 var data = GameDataStorage.Instance.GetGameData<ResourceData>();
 
                 return (from kv in dict
-                    select new ModifierEffect(data.GetResourceDirectly(kv.Key), (int) kv.Value)).ToList();
+                        select new ModifierEffect(data.GetResourceDirectly(kv.Key), (int)kv.Value)).ToList();
             }
         }
 

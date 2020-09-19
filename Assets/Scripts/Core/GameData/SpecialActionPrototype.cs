@@ -27,7 +27,7 @@ namespace Core.GameData
 
             var data = GameDataStorage.Instance.GetGameData<ResourceData>();
             var cost = luaScript.Globals.Get("Cost").Table.Pairs
-                .ToDictionary(kv => data.GetResourceDirectly(kv.Key.String), kv => (int) kv.Value.Number);
+                .ToDictionary(kv => data.GetResourceDirectly(kv.Key.String), kv => (int)kv.Value.Number);
 
             var isVisible = luaScript.Globals.Get("IsVisible").Function.GetDelegate<bool>();
             var isAvailable = luaScript.Globals.Get("IsAvailable").Function.GetDelegate<bool>();

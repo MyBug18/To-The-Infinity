@@ -10,7 +10,7 @@ namespace Core.GameData
 
         public bool HasDefaultValue => _default != null;
 
-        public HashSet<string> AllJobName { get; } =  new HashSet<string>();
+        public HashSet<string> AllJobName { get; } = new HashSet<string>();
 
         public Dictionary<string, List<string>> AllGroupInfo { get; } = new Dictionary<string, List<string>>();
 
