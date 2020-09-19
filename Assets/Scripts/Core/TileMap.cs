@@ -16,8 +16,8 @@ namespace Core
 
         private readonly HexTile[][] _tileMap;
 
-        private readonly Dictionary<HexTileCoord, List<IOnHexTileObject>> _onTileMapObjects =
-            new Dictionary<HexTileCoord, List<IOnHexTileObject>>();
+        private readonly Dictionary<HexTileCoord, Dictionary<string, IOnHexTileObject>> _onTileMapObjects =
+            new Dictionary<HexTileCoord, Dictionary<string, IOnHexTileObject>>();
 
         public int Radius { get; }
 
@@ -30,7 +30,7 @@ namespace Core
 
         public void StartNewTurn(int month)
         {
-            foreach (var obj in _onTileMapObjects.Values.SelectMany(objs => objs))
+            foreach (var obj in _onTileMapObjects.Values.SelectMany(objs => objs.Values))
             {
                 obj.StartNewTurn(month);
             }
@@ -71,15 +71,15 @@ namespace Core
         }
 
         public IReadOnlyList<IOnHexTileObject> GetAllTileObjects(HexTileCoord coord) =>
-            !_onTileMapObjects.TryGetValue(coord, out var result) ? null : result;
+            !_onTileMapObjects.TryGetValue(coord, out var result) ? new List<IOnHexTileObject>() : result.Values.ToList();
 
         /// <summary>
         /// Gets collection of OnHexTileObject with given type.
         /// </summary>
         /// <returns>Returns null if given type is not in the dict.</returns>
         public IReadOnlyList<T> GetTileObjectList<T>() where T : IOnHexTileObject =>
-            (from objLists in _onTileMapObjects.Values
-             from obj in objLists
+            (from objDict in _onTileMapObjects.Values
+             from obj in objDict.Values
              where obj.TypeName == nameof(T)
              select (T)obj).ToList();
 
