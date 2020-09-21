@@ -1,5 +1,6 @@
 ﻿using Core.GameData;
 using System.Collections.Generic;
+using MoonSharp.Interpreter;
 
 namespace Core
 {
@@ -41,12 +42,12 @@ namespace Core
 
         public IReadOnlyList<Pop> UnemployedPops => _unemployedPops;
 
+        public const float BasePopGrowth = 5.0f;
+
         private readonly Dictionary<ResourceInfoHolder, float> _planetaryResourceKeep =
             new Dictionary<ResourceInfoHolder, float>();
 
         public IReadOnlyDictionary<ResourceInfoHolder, float> PlanetaryResourceKeep => _planetaryResourceKeep;
-
-        public const float BasePopGrowth = 5.0f;
 
         public void StartNewTurn(int month)
         {
@@ -89,5 +90,15 @@ namespace Core
         }
 
         public void RecalculateModifierEffect() => ModifierEffect = this.GetModifierEffect();
+
+        public void SubscribeEvent(string eventType, Closure luaFunction)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public void UnsubscribeEvent(string eventType, Closure luaFunction)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }
