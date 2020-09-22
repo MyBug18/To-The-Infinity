@@ -10,3 +10,11 @@ end
 function GetEffect(target)
     return {}
 end
+
+function OnAdded(target)
+
+end
+
+function OnRemoved(target)
+
+end

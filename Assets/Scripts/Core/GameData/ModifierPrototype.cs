@@ -21,18 +21,26 @@ namespace Core.GameData
 
         public bool Load(Script luaScript)
         {
-            Name = luaScript.Globals.Get("Name").String;
+            var t = luaScript.Globals;
 
-            var additionalInfo = luaScript.Globals.Get("Name").String;
+            Name = t.Get("Name").String;
 
-            var holderType = luaScript.Globals.Get("TargetType").String;
+            var additionalInfo = t.Get("Name").String;
 
-            var conditionChecker = luaScript.Globals.Get("CheckCondition").Function.GetDelegate<bool>();
+            var holderType = t.Get("TargetType").String;
 
-            var effectDictGetter = luaScript.Globals.Get("GetEffect").Function.GetDelegate<Dictionary<string, object>>();
+            var conditionChecker = t.Get("CheckCondition").Function.GetDelegate<bool>();
+
+            var effectDictGetter = t.Get("GetEffect").Function.GetDelegate<Dictionary<string, object>>();
+
+            var onAdded = t.Get("OnAdded").Function.GetDelegate();
+
+            var onRemoved = t.Get("OnRemoved").Function.GetDelegate();
 
             _cache = new ModifierCore(Name, holderType, additionalInfo, ProcessEffect,
-                t => conditionChecker.Invoke(t));
+                holder => conditionChecker.Invoke(holder),
+                holder => onAdded.Invoke(),
+                holder => onRemoved.Invoke(holder));
 
             return true;
 

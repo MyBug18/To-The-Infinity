@@ -19,11 +19,17 @@ namespace Core
             TileMap.StartNewTurn(month);
         }
 
-        public void AddModifier(string modifierName, string scopeName, int leftMonth = -1, IReadOnlyList<HexTileCoord> tiles = null)
+        public void AddModifier(string modifierName, int leftMonth = -1, IReadOnlyList<HexTileCoord> tiles = null)
         {
-            _modifiers.Add(new Modifier(
-                GameDataStorage.Instance.GetGameData<ModifierData>().GetModifierDirectly(modifierName), scopeName,
-                leftMonth, tiles));
+            var m = new Modifier(GameDataStorage.Instance.GetGameData<ModifierData>().GetModifierDirectly(modifierName),
+                leftMonth, tiles);
+
+            _modifiers.Add(m);
+
+            // TODO: Also add modifiers to planets, etc.
+
+            if (m.Core.TargetType == TypeName)
+                m.Core.OnAdded(this);
         }
 
         private void ReduceModifiersLeftMonth(int month)

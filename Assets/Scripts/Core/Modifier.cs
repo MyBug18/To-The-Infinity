@@ -20,16 +20,13 @@ namespace Core
     {
         public readonly ModifierCore Core;
 
-        public readonly string ScopeTypeName;
-
         public readonly int LeftMonth;
 
         public readonly IReadOnlyList<HexTileCoord> Tiles;
 
-        public Modifier(ModifierCore core, string scope, int leftMonth = -1, IReadOnlyList<HexTileCoord> tiles = null)
+        public Modifier(ModifierCore core, int leftMonth = -1, IReadOnlyList<HexTileCoord> tiles = null)
         {
             Core = core;
-            ScopeTypeName = scope;
             LeftMonth = leftMonth;
             Tiles = tiles;
         }
@@ -39,7 +36,7 @@ namespace Core
         public bool IsPermanent => LeftMonth != -1;
 
         public Modifier ReduceLeftMonth(int month) =>
-            new Modifier(Core, ScopeTypeName, LeftMonth == -1 ? -1 : LeftMonth - month, Tiles);
+            new Modifier(Core, LeftMonth == -1 ? -1 : LeftMonth - month, Tiles);
     }
 
     public interface IModifierHolder
@@ -48,7 +45,7 @@ namespace Core
 
         IReadOnlyList<Modifier> Modifiers { get; }
 
-        void AddModifier(string modifierName, string scopeName, int leftMonth, IReadOnlyList<HexTileCoord> tiles);
+        void AddModifier(string modifierName, int leftMonth, IReadOnlyList<HexTileCoord> tiles);
     }
 
     public class ModifierCore : IEquatable<ModifierCore>
@@ -63,19 +60,30 @@ namespace Core
 
         private readonly Func<IModifierHolder, bool> _conditionChecker;
 
+        private readonly Action<IModifierHolder> _onAdded;
+
+        private readonly Action<IModifierHolder> _onRemoved;
+
         public bool CheckCondition(IModifierHolder target) => _conditionChecker(target);
 
         public IReadOnlyList<ModifierEffect> GetEffects(IModifierHolder target) => _effectGetter(target);
 
         public ModifierCore(string name, string targetType, string additionalDesc,
-            Func<IModifierHolder, List<ModifierEffect>> effectGetter, Func<IModifierHolder, bool> conditionChecker)
+            Func<IModifierHolder, List<ModifierEffect>> effectGetter, Func<IModifierHolder, bool> conditionChecker,
+            Action<IModifierHolder> onAdded, Action<IModifierHolder> onRemoved)
         {
             Name = name;
             TargetType = targetType;
             AdditionalDesc = additionalDesc;
             _effectGetter = effectGetter;
             _conditionChecker = conditionChecker;
+            _onAdded = onAdded;
+            _onRemoved = onRemoved;
         }
+
+        public void OnAdded(IModifierHolder holder) => _onAdded(holder);
+
+        public void OnRemoved(IModifierHolder holder) => _onRemoved(holder);
 
         public override bool Equals(object obj) => obj is ModifierCore m && Equals(m);
 
