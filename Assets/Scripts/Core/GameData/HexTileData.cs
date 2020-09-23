@@ -2,7 +2,7 @@
 
 namespace Core.GameData
 {
-    public class HexTileData : IGameData
+    public sealed class HexTileData : IGameData
     {
         private readonly Dictionary<string, HexTilePrototype> _data = new Dictionary<string, HexTilePrototype>();
 

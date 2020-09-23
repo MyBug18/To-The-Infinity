@@ -10,7 +10,7 @@ namespace Core
         TileMap TileMap { get; }
     }
 
-    public class TileMap : IEnumerable<HexTile>
+    public sealed class TileMap : IEnumerable<HexTile>
     {
         public ITileMapHolder Holder { get; }
 

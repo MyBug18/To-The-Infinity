@@ -2,7 +2,7 @@
 
 namespace Core.GameData
 {
-    public class TileSpecialResourceTypeData : IGameData
+    public sealed class TileSpecialResourceTypeData : IGameData
     {
         private readonly Dictionary<string, TileSpecialResourceTypePrototype> _data =
             new Dictionary<string, TileSpecialResourceTypePrototype>();

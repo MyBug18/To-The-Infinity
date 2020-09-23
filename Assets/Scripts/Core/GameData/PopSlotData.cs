@@ -2,7 +2,7 @@
 
 namespace Core.GameData
 {
-    public class PopSlotData : IGameData
+    public sealed class PopSlotData : IGameData
     {
         private readonly Dictionary<string, PopSlotPrototype> _data = new Dictionary<string, PopSlotPrototype>();
 

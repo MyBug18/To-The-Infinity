@@ -2,7 +2,7 @@
 
 namespace Core.GameData
 {
-    public class SpecialActionData : IGameData
+    public sealed class SpecialActionData : IGameData
     {
         private readonly Dictionary<string, SpecialActionPrototype> _data =
             new Dictionary<string, SpecialActionPrototype>();

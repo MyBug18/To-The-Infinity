@@ -1,6 +1,6 @@
 ﻿namespace Core
 {
-    public class HexTile
+    public sealed class HexTile
     {
         public TileMap TileMap { get; }
 

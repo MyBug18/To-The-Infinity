@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Core.GameData
 {
-    public class PopSlotPrototype : ILuaHolder
+    public sealed class PopSlotPrototype : ILuaHolder
     {
         public string TypeName => "PopSlot";
 

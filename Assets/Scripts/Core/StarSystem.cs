@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Core
 {
-    public class StarSystem : ITileMapHolder
+    public sealed class StarSystem : ITileMapHolder
     {
         public string TypeName => nameof(StarSystem);
 

@@ -2,7 +2,7 @@
 
 namespace Core.GameData
 {
-    public class TileMapData : IGameData
+    public sealed class TileMapData : IGameData
     {
         private readonly Dictionary<string, TileMapPrototype> _data = new Dictionary<string, TileMapPrototype>();
 

@@ -43,7 +43,7 @@ namespace Core
         public Modifier WithoutTileLimit() => new Modifier(Core, LeftMonth);
     }
 
-    public class ModifierCore : IEquatable<ModifierCore>
+    public sealed class ModifierCore : IEquatable<ModifierCore>
     {
         public string Name { get; }
 
@@ -69,7 +69,7 @@ namespace Core
         public override int GetHashCode() => Name.GetHashCode();
     }
 
-    public class ModifierScope
+    public sealed class ModifierScope
     {
         public string ScopeName { get; }
 

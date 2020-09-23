@@ -1,6 +1,6 @@
 ﻿namespace Core
 {
-    public class Pop
+    public sealed class Pop
     {
         public string Name { get; }
 

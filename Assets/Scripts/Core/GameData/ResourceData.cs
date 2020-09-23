@@ -2,7 +2,7 @@
 
 namespace Core.GameData
 {
-    public class ResourceData : IGameData
+    public sealed class ResourceData : IGameData
     {
         #region HardCodedFactors
 

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Core.GameData
 {
-    public class TileMapPrototype : ILuaHolder
+    public sealed class TileMapPrototype : ILuaHolder
     {
         public string Name { get; private set; }
 

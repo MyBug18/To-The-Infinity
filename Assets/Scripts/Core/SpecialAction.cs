@@ -12,7 +12,7 @@ namespace Core
         void ConsumeSpecialActionCost(IReadOnlyDictionary<ResourceInfoHolder, int> cost);
     }
 
-    public class SpecialAction
+    public sealed class SpecialAction
     {
         private readonly SpecialActionCore _core;
 
@@ -58,7 +58,7 @@ namespace Core
         }
     }
 
-    public class SpecialActionCore
+    public sealed class SpecialActionCore
     {
         public string Name { get; }
 

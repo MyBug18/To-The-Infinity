@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Core
 {
-    public class Game
+    public sealed class Game
     {
         public int GameSpeed { get; }
 

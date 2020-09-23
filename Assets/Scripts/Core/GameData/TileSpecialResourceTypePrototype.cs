@@ -2,7 +2,7 @@
 
 namespace Core.GameData
 {
-    public class TileSpecialResourceTypePrototype : ILuaHolder
+    public sealed class TileSpecialResourceTypePrototype : ILuaHolder
     {
         public string Name { get; private set; }
 

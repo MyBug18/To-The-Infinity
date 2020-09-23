@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Core.GameData
 {
-    public class HexTilePrototype : ILuaHolder
+    public sealed class HexTilePrototype : ILuaHolder
     {
         public string Name { get; private set; }
         public string TypeName => "HexTile";

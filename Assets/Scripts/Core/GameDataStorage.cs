@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Core
 {
-    public class GameDataStorage
+    public sealed class GameDataStorage
     {
         private static GameDataStorage _instance;
 

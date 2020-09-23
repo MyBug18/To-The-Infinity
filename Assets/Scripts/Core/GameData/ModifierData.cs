@@ -2,7 +2,7 @@
 
 namespace Core.GameData
 {
-    public class ModifierData : IGameData
+    public sealed class ModifierData : IGameData
     {
         private readonly Dictionary<string, ModifierPrototype> _data = new Dictionary<string, ModifierPrototype>();
 

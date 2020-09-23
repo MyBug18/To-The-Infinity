@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Core.GameData
 {
-    public class ModifierPrototype : ILuaHolder
+    public sealed class ModifierPrototype : ILuaHolder
     {
         public string Name { get; private set; }
 

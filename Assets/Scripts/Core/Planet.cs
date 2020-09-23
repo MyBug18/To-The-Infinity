@@ -4,7 +4,7 @@ using MoonSharp.Interpreter;
 
 namespace Core
 {
-    public class Planet : ITileMapHolder, IOnHexTileObject
+    public sealed class Planet : ITileMapHolder, IOnHexTileObject
     {
         public string TypeName => nameof(Planet);
 

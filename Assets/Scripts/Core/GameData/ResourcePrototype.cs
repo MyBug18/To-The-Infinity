@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Core.GameData
 {
-    public class ResourcePrototype : ILuaHolder
+    public sealed class ResourcePrototype : ILuaHolder
     {
         private static readonly Dictionary<string, ResourceType> StringTypeMap = new Dictionary<string, ResourceType>
         {

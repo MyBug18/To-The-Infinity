@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Core.GameData
 {
-    public class SpecialActionPrototype : ILuaHolder
+    public sealed class SpecialActionPrototype : ILuaHolder
     {
         public string Name { get; private set; }
 

@@ -8,7 +8,7 @@
         Factor,
     }
 
-    public class ResourceInfoHolder
+    public sealed class ResourceInfoHolder
     {
         public string Name { get; }
 

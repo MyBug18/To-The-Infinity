@@ -1,6 +1,6 @@
 ﻿namespace Core
 {
-    public class TileSpecialResourceType
+    public sealed class TileSpecialResourceType
     {
         public string Name { get; }
 
