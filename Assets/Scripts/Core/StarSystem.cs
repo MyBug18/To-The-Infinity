@@ -19,17 +19,62 @@ namespace Core
             TileMap.StartNewTurn(month);
         }
 
-        public void AddModifier(string modifierName, int leftMonth = -1, IReadOnlyList<HexTileCoord> tiles = null)
+        public void AddModifierDirectly(string modifierName, int leftMonth, IReadOnlyList<HexTileCoord> tiles)
         {
             var m = new Modifier(GameDataStorage.Instance.GetGameData<ModifierData>().GetModifierDirectly(modifierName),
                 leftMonth, tiles);
 
+            if (m.Core.TargetType != TypeName)
+                return;
+
+            AddModifier(m);
+        }
+
+        public void AddModifier(Modifier m)
+        {
             _modifiers.Add(m);
 
-            // TODO: Also add modifiers to planets, etc.
+            if (m.IsRelated(TypeName))
+                m.Core.Scope[TypeName].OnAdded(this);
 
-            if (m.Core.TargetType == TypeName)
-                m.Core.OnAdded(this);
+            // TODO: Also add modifier to buildings, etc.
+        }
+
+        public void RemoveModifierDirectly(string modifierName)
+        {
+            for (var i = 0; i < _modifiers.Count; i++)
+            {
+                var m = _modifiers[i];
+
+                if (m.Core.Name != modifierName) continue;
+                if(m.Core.TargetType != TypeName) continue;
+
+                _modifiers.RemoveAt(i);
+                if (m.IsRelated(TypeName))
+                    m.Core.Scope[TypeName].OnRemoved(this);
+
+                break;
+            }
+
+            // TODO: Also remove modifier to buildings, etc
+        }
+
+        public void RemoveModifierFromUpward(string modifierName)
+        {
+            for (var i = 0; i < _modifiers.Count; i++)
+            {
+                var m = _modifiers[i];
+
+                if (m.Core.Name != modifierName) continue;
+
+                _modifiers.RemoveAt(i);
+                if (m.IsRelated(TypeName))
+                    m.Core.Scope[TypeName].OnRemoved(this);
+
+                break;
+            }
+
+            // TODO: Also remove modifier to buildings, etc
         }
 
         private void ReduceModifiersLeftMonth(int month)

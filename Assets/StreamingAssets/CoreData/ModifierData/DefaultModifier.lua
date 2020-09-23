@@ -3,18 +3,27 @@
 Name = "Default"
 TargetType = "Game"
 
-function CheckCondition(target)
-    return false
-end
+AdditionalDesc = "DefaultDesc"
 
-function GetEffect(target)
+Scope = {}
+Scope.Game = {}
+
+Scope.Game.GetEffect =
+function (target)
     return {}
 end
 
-function OnAdded(target)
+Scope.Game.CheckCondition =
+function (target)
+    return false
+end
+
+Scope.Game.OnAdded =
+function (target)
 
 end
 
-function OnRemoved(target)
+Scope.Game.OnRemoved =
+function (target)
 
 end

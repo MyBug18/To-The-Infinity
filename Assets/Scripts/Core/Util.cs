@@ -8,7 +8,7 @@ namespace Core
         public static TValue TryGetValueWithDefault<TKey, TValue>(this IReadOnlyDictionary<TKey, TValue> dict, TKey key,
             TValue defaultValue) => dict.TryGetValue(key, out var result) ? result : defaultValue;
 
-        public static IReadOnlyDictionary<ResourceInfoHolder, int> GetModifierEffect(this IModifierHolder holder)
+        public static IReadOnlyDictionary<ResourceInfoHolder, int> GetModifiersEffect(this IModifierHolder holder)
         {
             var mutex = new object();
             var result = new Dictionary<ResourceInfoHolder, int>();
@@ -17,10 +17,15 @@ namespace Core
                 () => new Dictionary<ResourceInfoHolder, int>(),
                 (m, loop, acc) =>
                 {
-                    if (m.Core.TargetType != holder.TypeName || !m.Core.CheckCondition(holder))
+                    if (!m.IsRelated(holder.TypeName))
                         return acc;
 
-                    foreach (var info in m.Core.GetEffects(holder))
+                    var scope = m.Core.Scope[holder.TypeName];
+
+                    if (!scope.CheckCondition(holder))
+                        return acc;
+
+                    foreach (var info in scope.GetEffects(holder))
                     {
                         if (!acc.ContainsKey(info.ResourceInfo))
                             acc.Add(info.ResourceInfo, 0);

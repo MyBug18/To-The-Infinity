@@ -1,4 +1,5 @@
-﻿using MoonSharp.Interpreter;
+﻿using System;
+using MoonSharp.Interpreter;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -25,33 +26,42 @@ namespace Core.GameData
 
             Name = t.Get("Name").String;
 
-            var additionalInfo = t.Get("Name").String;
+            var additionalDesc = t.Get("AdditionalDesc").String;
 
             var holderType = t.Get("TargetType").String;
 
-            var conditionChecker = t.Get("CheckCondition").Function.GetDelegate<bool>();
+            var scopeDict = new Dictionary<string, ModifierScope>();
 
-            var effectDictGetter = t.Get("GetEffect").Function.GetDelegate<Dictionary<string, object>>();
+            foreach (var nameTable in t.Get("Scope").Table.Pairs)
+            {
+                var name = nameTable.Key.String;
+                var scopeTable = nameTable.Value.Table;
 
-            var onAdded = t.Get("OnAdded").Function.GetDelegate();
+                var getEffect = scopeTable.Get("GetEffect").Function.GetDelegate<Dictionary<string, object>>();
+                var checkCondition = scopeTable.Get("CheckCondition").Function.GetDelegate<bool>();
+                var onAdded = scopeTable.Get("OnAdded").Function.GetDelegate();
+                var onRemoved = scopeTable.Get("OnRemoved").Function.GetDelegate();
 
-            var onRemoved = t.Get("OnRemoved").Function.GetDelegate();
+                var scope = new ModifierScope(name, ProcessEffect,
+                    target => checkCondition.Invoke(target),
+                    target => onAdded.Invoke(target),
+                    target => onRemoved.Invoke(target));
 
-            _cache = new ModifierCore(Name, holderType, additionalInfo, ProcessEffect,
-                holder => conditionChecker.Invoke(holder),
-                holder => onAdded.Invoke(),
-                holder => onRemoved.Invoke(holder));
+                scopeDict.Add(name, scope);
+
+                List<ModifierEffect> ProcessEffect(IModifierHolder target)
+                {
+                    var dict = getEffect.Invoke(target);
+                    var data = GameDataStorage.Instance.GetGameData<ResourceData>();
+
+                    return (from kv in dict
+                        select new ModifierEffect(data.GetResourceDirectly(kv.Key), (int)kv.Value)).ToList();
+                }
+            }
+
+            _cache = new ModifierCore(Name, holderType, additionalDesc, scopeDict);
 
             return true;
-
-            List<ModifierEffect> ProcessEffect(IModifierHolder target)
-            {
-                var dict = effectDictGetter.Invoke(target);
-                var data = GameDataStorage.Instance.GetGameData<ResourceData>();
-
-                return (from kv in dict
-                        select new ModifierEffect(data.GetResourceDirectly(kv.Key), (int)kv.Value)).ToList();
-            }
         }
 
         public ModifierCore Create() => _cache;

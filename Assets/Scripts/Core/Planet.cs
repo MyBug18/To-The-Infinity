@@ -82,20 +82,65 @@ namespace Core
             }
         }
 
-        public void AddModifier(string modifierName, int leftMonth = -1, IReadOnlyList<HexTileCoord> tiles = null)
+        public void AddModifierDirectly(string modifierName, int leftMonth, IReadOnlyList<HexTileCoord> tiles)
         {
             var m = new Modifier(GameDataStorage.Instance.GetGameData<ModifierData>().GetModifierDirectly(modifierName),
                 leftMonth, tiles);
 
-            _modifiers.Add(m);
+            if (m.Core.TargetType != TypeName)
+                return;
 
-            // TODO: Also add modifiers to buildings, etc.
-
-            if (m.Core.TargetType == TypeName)
-                m.Core.OnAdded(this);
+            AddModifier(m);
         }
 
-        public void RecalculateModifierEffect() => ModifierEffect = this.GetModifierEffect();
+        public void AddModifier(Modifier m)
+        {
+            _modifiers.Add(m);
+
+            if (m.IsRelated(TypeName))
+                m.Core.Scope[TypeName].OnAdded(this);
+
+            // TODO: Also add modifier to buildings, etc.
+        }
+
+        public void RemoveModifierDirectly(string modifierName)
+        {
+            for (var i = 0; i < _modifiers.Count; i++)
+            {
+                var m = _modifiers[i];
+
+                if (m.Core.Name != modifierName) continue;
+                if(m.Core.TargetType != TypeName) continue;
+
+                _modifiers.RemoveAt(i);
+                if (m.IsRelated(TypeName))
+                    m.Core.Scope[TypeName].OnRemoved(this);
+
+                break;
+            }
+
+            // TODO: Also remove modifier to buildings, etc
+        }
+
+        public void RemoveModifierFromUpward(string modifierName)
+        {
+            for (var i = 0; i < _modifiers.Count; i++)
+            {
+                var m = _modifiers[i];
+
+                if (m.Core.Name != modifierName) continue;
+
+                _modifiers.RemoveAt(i);
+                if (m.IsRelated(TypeName))
+                    m.Core.Scope[TypeName].OnRemoved(this);
+
+                break;
+            }
+
+            // TODO: Also remove modifier to buildings, etc
+        }
+
+        public void RecalculateModifierEffect() => ModifierEffect = this.GetModifiersEffect();
 
         public void SubscribeEvent(string eventType, Closure luaFunction)
         {
