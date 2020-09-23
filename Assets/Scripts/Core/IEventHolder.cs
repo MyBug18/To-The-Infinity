@@ -2,7 +2,7 @@
 
 namespace Core
 {
-    public interface IEventHolder
+    public interface IEventHolder : ITypeNameHolder
     {
         void SubscribeEvent(string eventType, Closure luaFunction);
 

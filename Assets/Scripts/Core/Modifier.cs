@@ -3,10 +3,8 @@ using System.Collections.Generic;
 
 namespace Core
 {
-    public interface IModifierHolder
+    public interface IModifierHolder : ITypeNameHolder
     {
-        string TypeName { get; }
-
         IReadOnlyList<Modifier> Modifiers { get; }
 
         void AddModifierDirectly(string modifierName, int leftMonth, IReadOnlyList<HexTileCoord> tiles);
