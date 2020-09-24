@@ -4,12 +4,9 @@
     {
         public string Name { get; }
 
-        public int MoveCost { get; }
-
-        public TileSpecialResourceType(string name, int moveCost)
+        public TileSpecialResourceType(string name)
         {
             Name = name;
-            MoveCost = moveCost;
         }
     }
 }

@@ -31,12 +31,12 @@ namespace Core.GameData
             throw new System.NotImplementedException();
         }
 
-        public TileSpecialResourceTypePrototype GetPrototype(string name)
+        public TileSpecialResourceType GetDirectly(string name)
         {
             if (!_data.TryGetValue(name, out var result))
-                return HasDefaultValue ? _default : null;
+                return HasDefaultValue ? _default.Create() : null;
 
-            return result;
+            return result.Create();
         }
     }
 }

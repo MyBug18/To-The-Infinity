@@ -6,8 +6,6 @@ namespace Core.GameData
     {
         public string Name { get; private set; }
 
-        public int MoveCost { get; private set; }
-
         public string TypeName => "TileSpecialResourceType";
 
         public string FilePath { get; }
@@ -23,9 +21,8 @@ namespace Core.GameData
         {
             Name = luaScript.Globals.Get("Name").String;
 
-            MoveCost = (int)luaScript.Globals.Get("MoveCost").Number;
+            _cache = new TileSpecialResourceType(Name);
 
-            _cache = new TileSpecialResourceType(Name, MoveCost);
             return true;
         }
 

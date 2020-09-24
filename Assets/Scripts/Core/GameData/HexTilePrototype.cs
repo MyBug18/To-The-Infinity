@@ -11,8 +11,6 @@ namespace Core.GameData
 
         public string FilePath { get; }
 
-        public int MoveCost { get; private set; }
-
         public IReadOnlyList<(int value, string resName)> ResChanceMap { get; private set; }
 
         public HexTilePrototype(string filePath)
@@ -23,7 +21,6 @@ namespace Core.GameData
         public bool Load(Script luaScript)
         {
             Name = luaScript.Globals.Get("Name").String;
-            MoveCost = (int)luaScript.Globals.Get("MoveCost").Number;
 
             var resChanceMap =
                 luaScript.Globals.Get("ResChanceMap").Table.Pairs
@@ -56,9 +53,9 @@ namespace Core.GameData
                 return new HexTile(tileMap, coord, Name, null);
 
             var specialResource = GameDataStorage.Instance.GetGameData<TileSpecialResourceTypeData>()
-                .GetPrototype(specialResourceName);
+                .GetDirectly(specialResourceName);
 
-            return new HexTile(tileMap, coord, Name, specialResource.Create());
+            return new HexTile(tileMap, coord, Name, specialResource);
         }
     }
 }
