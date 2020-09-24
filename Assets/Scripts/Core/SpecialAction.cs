@@ -19,13 +19,10 @@ namespace Core
 
         private readonly ISpecialActionHolder _owner;
 
-        public bool IsActivatedThisTurn { get; private set; }
-
         public SpecialAction(SpecialActionCore core, ISpecialActionHolder owner)
         {
             _core = core;
             _owner = owner;
-            IsActivatedThisTurn = false;
         }
 
         public string Name => _core.Name;
@@ -36,7 +33,7 @@ namespace Core
 
         public bool IsVisible => _core.IsVisible(_owner);
 
-        public bool IsAvailable => !IsActivatedThisTurn && _core.IsAvailable(_owner);
+        public bool IsAvailable => _core.IsAvailable(_owner);
 
         public IReadOnlyCollection<HexTileCoord> AvailableTiles => _core.GetAvailableTiles(_owner);
 
@@ -48,14 +45,8 @@ namespace Core
 
             _owner.ConsumeSpecialActionCost(_core.Cost);
             _core.DoAction(_owner, coord);
-            IsActivatedThisTurn = true;
 
             return true;
-        }
-
-        public void Reset()
-        {
-            IsActivatedThisTurn = false;
         }
     }
 
