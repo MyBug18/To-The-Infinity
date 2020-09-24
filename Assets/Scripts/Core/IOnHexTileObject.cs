@@ -12,15 +12,4 @@ namespace Core
 
         void StartNewTurn(int month);
     }
-
-    public interface IUnit : IOnHexTileObject
-    {
-        int MaxMovePoint { get; }
-
-        int RemainMovePoint { get; }
-
-        List<HexTileCoord> GetMovableTiles();
-
-        bool Move(HexTileCoord coord);
-    }
 }
