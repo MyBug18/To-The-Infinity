@@ -37,7 +37,7 @@ namespace Core.GameData
             _cache = new SpecialActionCore(Name, needCoordinate, cost,
                 owner => isVisible.Invoke(owner),
                 owner => isAvailable.Invoke(owner),
-                owner => getAvailableTiles.Invoke(owner),
+                owner => new HashSet<HexTileCoord>(getAvailableTiles.Invoke(owner)),
                 (owner, coord) => doAction.Invoke(owner, coord));
 
             return true;

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Core
 {
@@ -37,12 +38,12 @@ namespace Core
 
         public bool IsAvailable => !IsActivatedThisTurn && _core.IsAvailable(_owner);
 
-        public List<HexTileCoord> GetAvailableTiles => _core.GetAvailableTiles(_owner);
+        public IReadOnlyCollection<HexTileCoord> AvailableTiles => _core.GetAvailableTiles(_owner);
 
         public bool DoAction(HexTileCoord coord)
         {
-            if (!_core.IsVisible(_owner) || !IsAvailable ||
-                _core.NeedCoordinate && !GetAvailableTiles.Contains(coord)) return false;
+            if (!IsVisible || !IsAvailable ||
+                NeedCoordinate && !AvailableTiles.Contains(coord)) return false;
             if (!_owner.CheckSpecialActionCost(_core.Cost)) return false;
 
             _owner.ConsumeSpecialActionCost(_core.Cost);
@@ -70,7 +71,7 @@ namespace Core
 
         private readonly Func<ISpecialActionHolder, bool> _availableChecker;
 
-        private readonly Func<ISpecialActionHolder, List<HexTileCoord>> _availableCoordsGetter;
+        private readonly Func<ISpecialActionHolder, HashSet<HexTileCoord>> _availableCoordsGetter;
 
         private readonly Action<ISpecialActionHolder, HexTileCoord> _doAction;
 
@@ -78,7 +79,7 @@ namespace Core
             Dictionary<ResourceInfoHolder, int> cost,
             Func<ISpecialActionHolder, bool> visibleChecker,
             Func<ISpecialActionHolder, bool> availableChecker,
-            Func<ISpecialActionHolder, List<HexTileCoord>> availableCoordsGetter,
+            Func<ISpecialActionHolder, HashSet<HexTileCoord>> availableCoordsGetter,
             Action<ISpecialActionHolder, HexTileCoord> doAction)
         {
             Name = name;
@@ -94,7 +95,7 @@ namespace Core
 
         public bool IsAvailable(ISpecialActionHolder owner) => _availableChecker(owner);
 
-        public List<HexTileCoord> GetAvailableTiles(ISpecialActionHolder owner) => _availableCoordsGetter(owner);
+        public IReadOnlyCollection<HexTileCoord> GetAvailableTiles(ISpecialActionHolder owner) => _availableCoordsGetter(owner);
 
         public void DoAction(ISpecialActionHolder owner, HexTileCoord coord) => _doAction(owner, coord);
     }
