@@ -7,13 +7,9 @@ namespace Core
     {
         IReadOnlyList<Modifier> Modifiers { get; }
 
-        void AddModifierDirectly(string modifierName, int leftMonth, IReadOnlyList<HexTileCoord> tiles);
+        void AddModifier(string modifierName, int leftMonth, IReadOnlyList<HexTileCoord> tiles, bool isDirect);
 
-        void AddModifier(Modifier m);
-
-        void RemoveModifierDirectly(string modifierName);
-
-        void RemoveModifierFromUpward(string modifierName);
+        void RemoveModifier(string modifierName, bool isDirect);
     }
 
     public readonly struct Modifier
@@ -81,16 +77,20 @@ namespace Core
 
         private readonly Action<IModifierHolder> _onRemoved;
 
+        public IReadOnlyDictionary<string, Action<IModifierHolder>> TriggerEvent { get; }
+
         public ModifierScope(string scopeName,
             Func<IModifierHolder, List<ModifierEffect>> getEffect,
             Func<IModifierHolder, bool> conditionChecker,
-            Action<IModifierHolder> onAdded, Action<IModifierHolder> onRemoved)
+            Action<IModifierHolder> onAdded, Action<IModifierHolder> onRemoved,
+            IReadOnlyDictionary<string, Action<IModifierHolder>> triggerEvent)
         {
             ScopeName = scopeName;
             _getEffect = getEffect;
             _conditionChecker = conditionChecker;
             _onAdded = onAdded;
             _onRemoved = onRemoved;
+            TriggerEvent = triggerEvent;
         }
 
         public bool CheckCondition(IModifierHolder target) => _conditionChecker(target);

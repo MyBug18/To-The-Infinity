@@ -1,4 +1,5 @@
-﻿using Core.GameData;
+﻿using System;
+using Core.GameData;
 using System.Collections.Generic;
 
 namespace Core
@@ -19,64 +20,6 @@ namespace Core
             TileMap.StartNewTurn(month);
         }
 
-        public void AddModifierDirectly(string modifierName, int leftMonth, IReadOnlyList<HexTileCoord> tiles)
-        {
-            var m = new Modifier(GameDataStorage.Instance.GetGameData<ModifierData>().GetModifierDirectly(modifierName),
-                leftMonth, tiles);
-
-            if (m.Core.TargetType != TypeName)
-                return;
-
-            AddModifier(m);
-        }
-
-        public void AddModifier(Modifier m)
-        {
-            _modifiers.Add(m);
-
-            if (m.IsRelated(TypeName))
-                m.Core.Scope[TypeName].OnAdded(this);
-
-            // TODO: Also add modifier to buildings, etc.
-        }
-
-        public void RemoveModifierDirectly(string modifierName)
-        {
-            for (var i = 0; i < _modifiers.Count; i++)
-            {
-                var m = _modifiers[i];
-
-                if (m.Core.Name != modifierName) continue;
-                if(m.Core.TargetType != TypeName) continue;
-
-                _modifiers.RemoveAt(i);
-                if (m.IsRelated(TypeName))
-                    m.Core.Scope[TypeName].OnRemoved(this);
-
-                break;
-            }
-
-            // TODO: Also remove modifier to buildings, etc
-        }
-
-        public void RemoveModifierFromUpward(string modifierName)
-        {
-            for (var i = 0; i < _modifiers.Count; i++)
-            {
-                var m = _modifiers[i];
-
-                if (m.Core.Name != modifierName) continue;
-
-                _modifiers.RemoveAt(i);
-                if (m.IsRelated(TypeName))
-                    m.Core.Scope[TypeName].OnRemoved(this);
-
-                break;
-            }
-
-            // TODO: Also remove modifier to buildings, etc
-        }
-
         private void ReduceModifiersLeftMonth(int month)
         {
             for (var i = _modifiers.Count - 1; i >= 0; i--)
@@ -87,11 +30,80 @@ namespace Core
                 if (m.LeftMonth - month <= 0)
                 {
                     _modifiers.RemoveAt(i);
+
+                    if (m.IsRelated(TypeName))
+                    {
+                        var scope = m.Core.Scope[TypeName];
+
+                        scope.OnRemoved(this);
+
+                        RegisterModifierEvent(m.Core.Name, scope.TriggerEvent, true);
+                    }
+
                     continue;
                 }
 
                 _modifiers[i] = m.ReduceLeftMonth(month);
             }
+        }
+
+        private void RegisterModifierEvent(string modifierName,
+            IReadOnlyDictionary<string, Action<IModifierHolder>> events, bool isRemoving = false)
+        {
+            foreach (var kv in events)
+            {
+                switch (kv.Key)
+                {
+
+                }
+            }
+        }
+
+        public void AddModifier(string modifierName, int leftMonth, IReadOnlyList<HexTileCoord> tiles, bool isDirect)
+        {
+            var m = new Modifier(GameDataStorage.Instance.GetGameData<ModifierData>().GetModifierDirectly(modifierName),
+                leftMonth, tiles);
+
+            if (isDirect && m.Core.TargetType != TypeName)
+                return;
+
+            _modifiers.Add(m);
+
+            if (m.IsRelated(TypeName))
+            {
+                var scope = m.Core.Scope[TypeName];
+
+                scope.OnAdded(this);
+
+                RegisterModifierEvent(m.Core.Name, scope.TriggerEvent);
+            }
+
+            // TODO: Also add modifier to buildings, etc.
+        }
+
+        public void RemoveModifier(string modifierName, bool isDirect)
+        {
+            for (var i = 0; i < _modifiers.Count; i++)
+            {
+                var m = _modifiers[i];
+
+                if (isDirect && m.Core.Name != modifierName) continue;
+                if(m.Core.TargetType != TypeName) continue;
+
+                _modifiers.RemoveAt(i);
+                if (m.IsRelated(TypeName))
+                {
+                    var scope = m.Core.Scope[TypeName];
+
+                    scope.OnRemoved(this);
+
+                    RegisterModifierEvent(m.Core.Name, scope.TriggerEvent, true);
+                }
+
+                break;
+            }
+
+            // TODO: Also remove modifier to buildings, etc
         }
     }
 }

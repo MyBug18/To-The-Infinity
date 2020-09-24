@@ -1,4 +1,5 @@
-﻿using Core.GameData;
+﻿using System;
+using Core.GameData;
 using System.Collections.Generic;
 using MoonSharp.Interpreter;
 
@@ -34,6 +35,8 @@ namespace Core
 
         public bool IsColonizing { get; private set; }
 
+        #region Pop
+
         private readonly List<Pop> _pops = new List<Pop>();
 
         public IReadOnlyList<Pop> Pops => _pops;
@@ -44,10 +47,20 @@ namespace Core
 
         public const float BasePopGrowth = 5.0f;
 
+        #endregion
+
+        #region TriggerEvent
+
+        private readonly Dictionary<string, Action> _onPopBirth = new Dictionary<string, Action>();
+
+        #endregion
+
         private readonly Dictionary<ResourceInfoHolder, float> _planetaryResourceKeep =
             new Dictionary<ResourceInfoHolder, float>();
 
         public IReadOnlyDictionary<ResourceInfoHolder, float> PlanetaryResourceKeep => _planetaryResourceKeep;
+
+
 
         public void StartNewTurn(int month)
         {
@@ -75,6 +88,16 @@ namespace Core
                 if (m.LeftMonth - month <= 0)
                 {
                     _modifiers.RemoveAt(i);
+
+                    if (m.IsRelated(TypeName))
+                    {
+                        var scope = m.Core.Scope[TypeName];
+
+                        scope.OnRemoved(this);
+
+                        RegisterModifierEvent(m.Core.Name, scope.TriggerEvent, true);
+                    }
+
                     continue;
                 }
 
@@ -82,57 +105,63 @@ namespace Core
             }
         }
 
-        public void AddModifierDirectly(string modifierName, int leftMonth, IReadOnlyList<HexTileCoord> tiles)
+        private void RegisterModifierEvent(string modifierName,
+            IReadOnlyDictionary<string, Action<IModifierHolder>> events, bool isRemoving = false)
+        {
+            foreach (var kv in events)
+            {
+                switch (kv.Key)
+                {
+                    case "OnPopBirth":
+                        if (isRemoving)
+                            _onPopBirth.Remove(modifierName);
+                        else
+                            _onPopBirth.Add(modifierName, () => kv.Value.Invoke(this));
+                        break;
+                }
+            }
+        }
+
+        public void AddModifier(string modifierName, int leftMonth, IReadOnlyList<HexTileCoord> tiles, bool isDirect)
         {
             var m = new Modifier(GameDataStorage.Instance.GetGameData<ModifierData>().GetModifierDirectly(modifierName),
                 leftMonth, tiles);
 
-            if (m.Core.TargetType != TypeName)
+            if (isDirect && m.Core.TargetType != TypeName)
                 return;
 
-            AddModifier(m);
-        }
-
-        public void AddModifier(Modifier m)
-        {
             _modifiers.Add(m);
 
             if (m.IsRelated(TypeName))
-                m.Core.Scope[TypeName].OnAdded(this);
+            {
+                var scope = m.Core.Scope[TypeName];
+
+                scope.OnAdded(this);
+
+                RegisterModifierEvent(m.Core.Name, scope.TriggerEvent);
+            }
 
             // TODO: Also add modifier to buildings, etc.
         }
 
-        public void RemoveModifierDirectly(string modifierName)
+        public void RemoveModifier(string modifierName, bool isDirect)
         {
             for (var i = 0; i < _modifiers.Count; i++)
             {
                 var m = _modifiers[i];
 
-                if (m.Core.Name != modifierName) continue;
+                if (isDirect && m.Core.Name != modifierName) continue;
                 if(m.Core.TargetType != TypeName) continue;
 
                 _modifiers.RemoveAt(i);
                 if (m.IsRelated(TypeName))
-                    m.Core.Scope[TypeName].OnRemoved(this);
+                {
+                    var scope = m.Core.Scope[TypeName];
 
-                break;
-            }
+                    scope.OnRemoved(this);
 
-            // TODO: Also remove modifier to buildings, etc
-        }
-
-        public void RemoveModifierFromUpward(string modifierName)
-        {
-            for (var i = 0; i < _modifiers.Count; i++)
-            {
-                var m = _modifiers[i];
-
-                if (m.Core.Name != modifierName) continue;
-
-                _modifiers.RemoveAt(i);
-                if (m.IsRelated(TypeName))
-                    m.Core.Scope[TypeName].OnRemoved(this);
+                    RegisterModifierEvent(m.Core.Name, scope.TriggerEvent, true);
+                }
 
                 break;
             }
@@ -141,15 +170,5 @@ namespace Core
         }
 
         public void RecalculateModifierEffect() => ModifierEffect = this.GetModifiersEffect();
-
-        public void SubscribeEvent(string eventType, Closure luaFunction)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void UnsubscribeEvent(string eventType, Closure luaFunction)
-        {
-            throw new System.NotImplementedException();
-        }
     }
 }

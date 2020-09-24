@@ -27,3 +27,9 @@ Scope.Game.OnRemoved =
 function (target)
 
 end
+
+Scope.Game.TriggerEvent = {}
+Scope.Game.TriggerEvent.OnTechFinished =
+function (target)
+
+end

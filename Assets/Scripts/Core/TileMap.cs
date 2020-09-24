@@ -99,6 +99,9 @@ namespace Core
             return true;
         }
 
+        public bool IsTileObjectExists(string typeName, HexTileCoord coord)
+            => _onTileMapObjects.TryGetValue(coord, out var objDict) && objDict.ContainsKey(typeName);
+
         public IEnumerator<HexTile> GetEnumerator() =>
             _tileMap.SelectMany(tileArray => tileArray).GetEnumerator();
 
