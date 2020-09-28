@@ -18,9 +18,9 @@ namespace Core
 
         public readonly int LeftMonth;
 
-        public readonly IReadOnlyList<HexTileCoord> Tiles;
+        public readonly IReadOnlyCollection<HexTileCoord> Tiles;
 
-        public Modifier(ModifierCore core, int leftMonth = -1, IReadOnlyList<HexTileCoord> tiles = null)
+        public Modifier(ModifierCore core, int leftMonth = -1, IReadOnlyCollection<HexTileCoord> tiles = null)
         {
             Core = core;
             LeftMonth = leftMonth;
