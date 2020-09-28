@@ -29,7 +29,7 @@ namespace Core
 
         public bool NeedCoordinate => _core.NeedCoordinate;
 
-        public IReadOnlyDictionary<ResourceInfoHolder, int> Cost => _core.Cost;
+        public IReadOnlyDictionary<ResourceInfoHolder, int> GetCost(HexTileCoord coord) => _core.GetCost(_owner, coord);
 
         public bool IsVisible => _core.IsVisible(_owner);
 
@@ -39,11 +39,12 @@ namespace Core
 
         public bool DoAction(HexTileCoord coord)
         {
-            if (!IsVisible || !IsAvailable ||
-                NeedCoordinate && !AvailableTiles.Contains(coord)) return false;
-            if (!_owner.CheckSpecialActionCost(_core.Cost)) return false;
+            if (!IsVisible) return false;
+            if (!IsAvailable) return false;
+            if (NeedCoordinate && !AvailableTiles.Contains(coord)) return false;
+            if (!_owner.CheckSpecialActionCost(GetCost(coord))) return false;
 
-            _owner.ConsumeSpecialActionCost(_core.Cost);
+            _owner.ConsumeSpecialActionCost(GetCost(coord));
             _core.DoAction(_owner, coord);
 
             return true;
@@ -56,7 +57,7 @@ namespace Core
 
         public bool NeedCoordinate { get; }
 
-        public Dictionary<ResourceInfoHolder, int> Cost { get; }
+        private readonly Func<ISpecialActionHolder, HexTileCoord, IReadOnlyDictionary<ResourceInfoHolder, int>> _costGetter;
 
         private readonly Func<ISpecialActionHolder, bool> _visibleChecker;
 
@@ -67,7 +68,7 @@ namespace Core
         private readonly Action<ISpecialActionHolder, HexTileCoord> _doAction;
 
         public SpecialActionCore(string name, bool needCoordinate,
-            Dictionary<ResourceInfoHolder, int> cost,
+            Func<ISpecialActionHolder, HexTileCoord, IReadOnlyDictionary<ResourceInfoHolder, int>> costGetter,
             Func<ISpecialActionHolder, bool> visibleChecker,
             Func<ISpecialActionHolder, bool> availableChecker,
             Func<ISpecialActionHolder, HashSet<HexTileCoord>> availableCoordsGetter,
@@ -75,12 +76,14 @@ namespace Core
         {
             Name = name;
             NeedCoordinate = needCoordinate;
-            Cost = cost;
+            _costGetter = costGetter;
             _visibleChecker = visibleChecker;
             _availableChecker = availableChecker;
             _availableCoordsGetter = availableCoordsGetter;
             _doAction = doAction;
         }
+
+        public IReadOnlyDictionary<ResourceInfoHolder, int> GetCost(ISpecialActionHolder owner, HexTileCoord coord) => _costGetter(owner, coord);
 
         public bool IsVisible(ISpecialActionHolder owner) => _visibleChecker(owner);
 
