@@ -6,13 +6,28 @@ namespace Core
 {
     public sealed class StarSystem : ITileMapHolder
     {
+        public readonly Game Game;
+
         public string TypeName => nameof(StarSystem);
 
         public TileMap TileMap { get; }
 
         private readonly List<Modifier> _modifiers = new List<Modifier>();
 
-        public IReadOnlyList<Modifier> Modifiers => _modifiers;
+        public IEnumerable<Modifier> Modifiers
+        {
+            get
+            {
+                // TODO: Change this to Game Modifiers
+                var upwardModifiers = new List<Modifier>();
+
+                foreach (var m in upwardModifiers)
+                    yield return m;
+
+                foreach (var m in _modifiers)
+                    yield return m;
+            }
+        }
 
         public void StartNewTurn(int month)
         {
@@ -59,51 +74,55 @@ namespace Core
             }
         }
 
-        public void AddModifier(string modifierName, int leftMonth, IReadOnlyList<HexTileCoord> tiles, bool isDirect)
+        public void AddModifier(string modifierName, int leftMonth, IReadOnlyList<HexTileCoord> tiles)
         {
             var m = new Modifier(GameDataStorage.Instance.GetGameData<ModifierData>().GetModifierDirectly(modifierName),
                 leftMonth, tiles);
 
-            if (isDirect && m.Core.TargetType != TypeName)
+            if (m.Core.TargetType != TypeName)
                 return;
 
             _modifiers.Add(m);
-
-            if (m.IsRelated(TypeName))
-            {
-                var scope = m.Core.Scope[TypeName];
-
-                scope.OnAdded(this);
-
-                RegisterModifierEvent(m.Core.Name, scope.TriggerEvent);
-            }
-
-            // TODO: Also add modifier to buildings, etc.
+            ApplyModifierChangeToDownward(m, false);
         }
 
-        public void RemoveModifier(string modifierName, bool isDirect)
+        public void RemoveModifier(string modifierName)
         {
             for (var i = 0; i < _modifiers.Count; i++)
             {
                 var m = _modifiers[i];
 
-                if (isDirect && m.Core.Name != modifierName) continue;
+                if (m.Core.Name != modifierName) continue;
                 if(m.Core.TargetType != TypeName) continue;
 
                 _modifiers.RemoveAt(i);
-                if (m.IsRelated(TypeName))
-                {
-                    var scope = m.Core.Scope[TypeName];
+                ApplyModifierChangeToDownward(m, true);
 
+                break;
+            }
+        }
+
+        public void ApplyModifierChangeToDownward(Modifier m, bool isRemoving)
+        {
+            if (m.IsRelated(TypeName))
+            {
+                var scope = m.Core.Scope[TypeName];
+
+                if (isRemoving)
+                {
                     scope.OnRemoved(this);
 
                     RegisterModifierEvent(m.Core.Name, scope.TriggerEvent, true);
                 }
+                else
+                {
+                    scope.OnAdded(this);
 
-                break;
+                    RegisterModifierEvent(m.Core.Name, scope.TriggerEvent, false);
+                }
             }
 
-            // TODO: Also remove modifier to buildings, etc
+            TileMap.ApplyModifierChangeToTileObjects(m, isRemoving);
         }
     }
 }

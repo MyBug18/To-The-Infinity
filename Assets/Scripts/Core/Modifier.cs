@@ -1,15 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using MoonSharp.Interpreter;
 
 namespace Core
 {
     public interface IModifierHolder : ITypeNameHolder
     {
-        IReadOnlyList<Modifier> Modifiers { get; }
+        IEnumerable<Modifier> Modifiers { get; }
 
-        void AddModifier(string modifierName, int leftMonth, IReadOnlyList<HexTileCoord> tiles, bool isDirect);
+        void AddModifier(string modifierName, int leftMonth, IReadOnlyList<HexTileCoord> tiles);
 
-        void RemoveModifier(string modifierName, bool isDirect);
+        void RemoveModifier(string modifierName);
+
+        [MoonSharpHidden]
+        void ApplyModifierChangeToDownward(Modifier m, bool isRemoving);
     }
 
     public readonly struct Modifier
@@ -20,6 +25,8 @@ namespace Core
 
         public readonly IReadOnlyCollection<HexTileCoord> Tiles;
 
+        public bool IsPermanent => LeftMonth != -1;
+
         public Modifier(ModifierCore core, int leftMonth = -1, IReadOnlyCollection<HexTileCoord> tiles = null)
         {
             Core = core;
@@ -29,9 +36,10 @@ namespace Core
 
         public bool IsRelated(string typeName) => Core.Scope.ContainsKey(typeName);
 
-        public bool IsTileLimited => Tiles != null;
-
-        public bool IsPermanent => LeftMonth != -1;
+        /// <summary>
+        /// Returns true if modifier has no tile limit or the parameter is in it's effect range
+        /// </summary>
+        public bool IsInEffectRange(HexTileCoord coord) => Tiles == null || Tiles.Contains(coord);
 
         public Modifier ReduceLeftMonth(int month) =>
             new Modifier(Core, LeftMonth == -1 ? -1 : LeftMonth - month, Tiles);

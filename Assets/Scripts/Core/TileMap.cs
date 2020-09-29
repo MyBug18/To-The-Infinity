@@ -83,20 +83,29 @@ namespace Core
              where obj.TypeName == nameof(T)
              select (T)obj).ToList();
 
-        public bool AddTileObject(string typeName, string name, HexTileCoord coord)
+        public void AddTileObject(string typeName, string name, HexTileCoord coord)
         {
             var gameData = GameDataStorage.Instance.GetGameData(typeName);
 
             if (gameData == null)
-                return false;
+                return;
 
             switch (gameData)
             {
                 default:
-                    return false;
+                    return;
             }
+        }
 
-            return true;
+        public void ApplyModifierChangeToTileObjects(Modifier m, bool isRemoving)
+        {
+            foreach (var objs in _onTileMapObjects
+                // Should not apply effect to tile out of it's effect range
+                .Where(objDict => m.IsInEffectRange(objDict.Key))
+                .SelectMany(objDict => objDict.Value)
+                .Select(x => x.Value))
+                // Tile limit should not remain after apply
+                objs.ApplyModifierChangeToDownward(m.WithoutTileLimit(), isRemoving);
         }
 
         public bool IsTileObjectExists(string typeName, HexTileCoord coord)
