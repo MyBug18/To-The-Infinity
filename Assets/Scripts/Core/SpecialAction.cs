@@ -57,39 +57,48 @@ namespace Core
 
         public bool NeedCoordinate { get; }
 
-        private readonly Func<ISpecialActionHolder, HexTileCoord, IReadOnlyDictionary<ResourceInfoHolder, int>> _costGetter;
-
         private readonly Func<ISpecialActionHolder, bool> _visibleChecker;
 
         private readonly Func<ISpecialActionHolder, bool> _availableChecker;
 
-        private readonly Func<ISpecialActionHolder, HashSet<HexTileCoord>> _availableCoordsGetter;
+        private readonly Func<ISpecialActionHolder, IReadOnlyCollection<HexTileCoord>> _availableCoordsGetter;
+
+        private readonly Func<ISpecialActionHolder, HexTileCoord, IReadOnlyCollection<HexTileCoord>> _effectRangeGetter;
+
+        private readonly Func<ISpecialActionHolder, HexTileCoord, IReadOnlyDictionary<ResourceInfoHolder, int>> _costGetter;
 
         private readonly Action<ISpecialActionHolder, HexTileCoord> _doAction;
 
         public SpecialActionCore(string name, bool needCoordinate,
-            Func<ISpecialActionHolder, HexTileCoord, IReadOnlyDictionary<ResourceInfoHolder, int>> costGetter,
             Func<ISpecialActionHolder, bool> visibleChecker,
             Func<ISpecialActionHolder, bool> availableChecker,
-            Func<ISpecialActionHolder, HashSet<HexTileCoord>> availableCoordsGetter,
+            Func<ISpecialActionHolder, IReadOnlyCollection<HexTileCoord>> availableCoordsGetter,
+            Func<ISpecialActionHolder, HexTileCoord, IReadOnlyCollection<HexTileCoord>> effectRangeGetter,
+            Func<ISpecialActionHolder, HexTileCoord, IReadOnlyDictionary<ResourceInfoHolder, int>> costGetter,
             Action<ISpecialActionHolder, HexTileCoord> doAction)
         {
             Name = name;
             NeedCoordinate = needCoordinate;
-            _costGetter = costGetter;
             _visibleChecker = visibleChecker;
             _availableChecker = availableChecker;
             _availableCoordsGetter = availableCoordsGetter;
+            _effectRangeGetter = effectRangeGetter;
+            _costGetter = costGetter;
             _doAction = doAction;
         }
-
-        public IReadOnlyDictionary<ResourceInfoHolder, int> GetCost(ISpecialActionHolder owner, HexTileCoord coord) => _costGetter(owner, coord);
 
         public bool IsVisible(ISpecialActionHolder owner) => _visibleChecker(owner);
 
         public bool IsAvailable(ISpecialActionHolder owner) => _availableChecker(owner);
 
-        public IReadOnlyCollection<HexTileCoord> GetAvailableTiles(ISpecialActionHolder owner) => _availableCoordsGetter(owner);
+        public IReadOnlyCollection<HexTileCoord> GetAvailableTiles(ISpecialActionHolder owner) =>
+            _availableCoordsGetter(owner);
+
+        public IReadOnlyCollection<HexTileCoord> GetEffectRange(ISpecialActionHolder owner, HexTileCoord coord) =>
+            _effectRangeGetter(owner, coord);
+
+        public IReadOnlyDictionary<ResourceInfoHolder, int> GetCost(ISpecialActionHolder owner, HexTileCoord coord) =>
+            _costGetter(owner, coord);
 
         public void DoAction(ISpecialActionHolder owner, HexTileCoord coord) => _doAction(owner, coord);
     }
