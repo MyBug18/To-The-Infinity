@@ -4,15 +4,6 @@ using System.Linq;
 
 namespace Core
 {
-    public interface ISpecialActionHolder : ITypeNameHolder
-    {
-        IReadOnlyList<SpecialAction> SpecialActions { get; }
-
-        bool CheckSpecialActionCost(IReadOnlyDictionary<ResourceInfoHolder, int> cost);
-
-        void ConsumeSpecialActionCost(IReadOnlyDictionary<ResourceInfoHolder, int> cost);
-    }
-
     public sealed class SpecialAction
     {
         private readonly SpecialActionCore _core;

@@ -1,7 +1,6 @@
 ﻿using System;
 using Core.GameData;
 using System.Collections.Generic;
-using MoonSharp.Interpreter;
 
 namespace Core
 {
@@ -17,7 +16,7 @@ namespace Core
 
         public string Name { get; }
 
-        public HexTile Tile { get; }
+        public HexTile CurrentTile { get; }
 
         private readonly List<Modifier> _modifiers = new List<Modifier>();
 
@@ -25,7 +24,7 @@ namespace Core
         {
             get
             {
-                var upwardModifiers = Tile.TileMap.Holder.Modifiers;
+                var upwardModifiers = CurrentTile.TileMap.Holder.Modifiers;
 
                 foreach (var m in upwardModifiers)
                     yield return m;

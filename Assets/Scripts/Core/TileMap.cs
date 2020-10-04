@@ -5,11 +5,6 @@ using System.Linq;
 
 namespace Core
 {
-    public interface ITileMapHolder : IModifierHolder
-    {
-        TileMap TileMap { get; }
-    }
-
     public sealed class TileMap : IEnumerable<HexTile>
     {
         public ITileMapHolder Holder { get; }
@@ -95,6 +90,32 @@ namespace Core
                 default:
                     return;
             }
+        }
+
+        public void AddTileObject(IOnHexTileObject obj, HexTileCoord coord)
+        {
+            if (!_onTileMapObjects.ContainsKey(coord))
+                _onTileMapObjects.Add(coord, new Dictionary<string, IOnHexTileObject>());
+
+            var objDict = _onTileMapObjects[coord];
+            if (objDict.ContainsKey(obj.TypeName)) return;
+
+            objDict[obj.TypeName] = obj;
+        }
+
+        public void RemoveTileObject(string typeName, HexTileCoord coord)
+        {
+            if (!IsValidCoord(coord)) return;
+
+            if (!_onTileMapObjects.TryGetValue(coord, out var objs)) return;
+
+            if (!objs.ContainsKey(typeName)) return;
+
+            objs.Remove(typeName);
+
+            // Remove dictionary if there is no object left
+            if (objs.Count == 0)
+                _onTileMapObjects.Remove(coord);
         }
 
         public void ApplyModifierChangeToTileObjects(Modifier m, bool isRemoving)

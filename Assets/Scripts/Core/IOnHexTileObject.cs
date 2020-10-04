@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Core
+﻿namespace Core
 {
     public interface IOnHexTileObject : IModifierHolder, ISpecialActionHolder
     {
@@ -8,7 +6,7 @@ namespace Core
 
         string Name { get; }
 
-        HexTile Tile { get; }
+        HexTile CurrentTile { get; }
 
         void StartNewTurn(int month);
     }

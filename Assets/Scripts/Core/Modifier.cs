@@ -1,22 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using MoonSharp.Interpreter;
 
 namespace Core
 {
-    public interface IModifierHolder : ITypeNameHolder
-    {
-        IEnumerable<Modifier> Modifiers { get; }
-
-        void AddModifier(string modifierName, int leftMonth, IReadOnlyList<HexTileCoord> tiles);
-
-        void RemoveModifier(string modifierName);
-
-        [MoonSharpHidden]
-        void ApplyModifierChangeToDownward(Modifier m, bool isRemoving);
-    }
-
     public readonly struct Modifier
     {
         public readonly ModifierCore Core;
