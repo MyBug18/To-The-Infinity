@@ -27,20 +27,18 @@ namespace Core.GameData
 
             var data = GameDataStorage.Instance.GetGameData<ResourceData>();
 
-            var isVisible = luaScript.Globals.Get("IsVisible").Function.GetDelegate<bool>();
             var isAvailable = luaScript.Globals.Get("IsAvailable").Function.GetDelegate<bool>();
             var getAvailableTiles =
                 luaScript.Globals.Get("GetAvailableTiles").Function.GetDelegate<List<HexTileCoord>>();
-            var getEffectRange =
-                luaScript.Globals.Get("GetEffectRange").Function.GetDelegate<List<HexTileCoord>>();
+            var previewEffectRange =
+                luaScript.Globals.Get("PreviewEffectRange").Function.GetDelegate<List<HexTileCoord>>();
             var getCost = luaScript.Globals.Get("GetCost").Function.GetDelegate<Dictionary<string, int>>();
             var doAction = luaScript.Globals.Get("DoAction").Function.GetDelegate();
 
             _cache = new SpecialActionCore(Name, needCoordinate,
-                owner => isVisible.Invoke(owner),
                 owner => isAvailable.Invoke(owner),
                 owner => getAvailableTiles.Invoke(owner),
-                (owner, coord) => getEffectRange.Invoke(owner, coord),
+                (owner, coord) => previewEffectRange.Invoke(owner, coord),
                 ProcessCost,
                 (owner, coord) => doAction.Invoke(owner, coord));
 
