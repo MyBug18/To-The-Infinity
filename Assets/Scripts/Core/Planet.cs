@@ -34,7 +34,7 @@ namespace Core
             }
         }
 
-        public IReadOnlyDictionary<ResourceInfoHolder, int> ModifierEffect { get; private set; }
+        public IReadOnlyDictionary<string, int> ModifierEffect { get; private set; }
 
         /// <summary>
         /// 0 if totally uninhabitable,
@@ -66,10 +66,10 @@ namespace Core
 
         #endregion
 
-        private readonly Dictionary<ResourceInfoHolder, float> _planetaryResourceKeep =
-            new Dictionary<ResourceInfoHolder, float>();
+        private readonly Dictionary<string, float> _planetaryResourceKeep =
+            new Dictionary<string, float>();
 
-        public IReadOnlyDictionary<ResourceInfoHolder, float> PlanetaryResourceKeep => _planetaryResourceKeep;
+        public IReadOnlyDictionary<string, float> PlanetaryResourceKeep => _planetaryResourceKeep;
 
 
 
@@ -79,12 +79,12 @@ namespace Core
             TileMap.StartNewTurn(month);
         }
 
-        public bool CheckSpecialActionCost(IReadOnlyDictionary<ResourceInfoHolder, int> cost)
+        public bool CheckSpecialActionCost(IReadOnlyDictionary<string, int> cost)
         {
             throw new System.NotImplementedException();
         }
 
-        public void ConsumeSpecialActionCost(IReadOnlyDictionary<ResourceInfoHolder, int> cost)
+        public void ConsumeSpecialActionCost(IReadOnlyDictionary<string, int> cost)
         {
             throw new System.NotImplementedException();
         }

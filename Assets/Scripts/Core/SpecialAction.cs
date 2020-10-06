@@ -20,7 +20,7 @@ namespace Core
 
         public bool NeedCoordinate => _core.NeedCoordinate;
 
-        public IReadOnlyDictionary<ResourceInfoHolder, int> GetCost(HexTileCoord coord) => _core.GetCost(_owner, coord);
+        public IReadOnlyDictionary<string, int> GetCost(HexTileCoord coord) => _core.GetCost(_owner, coord);
 
         public bool IsAvailable => _core.IsAvailable(_owner);
 
@@ -51,7 +51,7 @@ namespace Core
 
         private readonly Func<ISpecialActionHolder, HexTileCoord, IReadOnlyCollection<HexTileCoord>> _previewEffectRangeGetter;
 
-        private readonly Func<ISpecialActionHolder, HexTileCoord, IReadOnlyDictionary<ResourceInfoHolder, int>> _costGetter;
+        private readonly Func<ISpecialActionHolder, HexTileCoord, IReadOnlyDictionary<string, int>> _costGetter;
 
         private readonly Action<ISpecialActionHolder, HexTileCoord> _doAction;
 
@@ -59,7 +59,7 @@ namespace Core
             Func<ISpecialActionHolder, bool> availableChecker,
             Func<ISpecialActionHolder, IReadOnlyCollection<HexTileCoord>> availableCoordsGetter,
             Func<ISpecialActionHolder, HexTileCoord, IReadOnlyCollection<HexTileCoord>> previewEffectRangeGetter,
-            Func<ISpecialActionHolder, HexTileCoord, IReadOnlyDictionary<ResourceInfoHolder, int>> costGetter,
+            Func<ISpecialActionHolder, HexTileCoord, IReadOnlyDictionary<string, int>> costGetter,
             Action<ISpecialActionHolder, HexTileCoord> doAction)
         {
             Name = name;
@@ -79,7 +79,7 @@ namespace Core
         public IReadOnlyCollection<HexTileCoord> PreviewEffectRange(ISpecialActionHolder owner, HexTileCoord coord) =>
             _previewEffectRangeGetter(owner, coord);
 
-        public IReadOnlyDictionary<ResourceInfoHolder, int> GetCost(ISpecialActionHolder owner, HexTileCoord coord) =>
+        public IReadOnlyDictionary<string, int> GetCost(ISpecialActionHolder owner, HexTileCoord coord) =>
             _costGetter(owner, coord);
 
         public void DoAction(ISpecialActionHolder owner, HexTileCoord coord) => _doAction(owner, coord);

@@ -8,13 +8,13 @@ namespace Core
         public static TValue TryGetValueWithDefault<TKey, TValue>(this IReadOnlyDictionary<TKey, TValue> dict, TKey key,
             TValue defaultValue) => dict.TryGetValue(key, out var result) ? result : defaultValue;
 
-        public static IReadOnlyDictionary<ResourceInfoHolder, int> GetModifiersEffect(this IModifierHolder holder)
+        public static IReadOnlyDictionary<string, int> GetModifiersEffect(this IModifierHolder holder)
         {
             var mutex = new object();
-            var result = new Dictionary<ResourceInfoHolder, int>();
+            var result = new Dictionary<string, int>();
 
             Parallel.ForEach(holder.Modifiers,
-                () => new Dictionary<ResourceInfoHolder, int>(),
+                () => new Dictionary<string, int>(),
                 (m, loop, acc) =>
                 {
                     if (!m.IsRelated(holder.TypeName))
@@ -27,10 +27,10 @@ namespace Core
 
                     foreach (var info in scope.GetEffects(holder))
                     {
-                        if (!acc.ContainsKey(info.ResourceInfo))
-                            acc.Add(info.ResourceInfo, 0);
+                        if (!acc.ContainsKey(info.EffectInfo))
+                            acc.Add(info.EffectInfo, 0);
 
-                        acc[info.ResourceInfo] += info.Amount;
+                        acc[info.EffectInfo] += info.Amount;
                     }
 
                     return acc;

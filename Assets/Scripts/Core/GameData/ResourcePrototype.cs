@@ -24,8 +24,6 @@ namespace Core.GameData
 
         public string FilePath { get; }
 
-        private ResourceInfoHolder _cache;
-
         public ResourcePrototype(string filePath)
         {
             FilePath = filePath;
@@ -44,11 +42,7 @@ namespace Core.GameData
 
             MaxAmount = (int)luaScript.Globals.Get("MaxAmount").Number;
 
-            _cache = new ResourceInfoHolder(Name, ResourceType);
-
             return true;
         }
-
-        public ResourceInfoHolder Create() => _cache;
     }
 }

@@ -25,8 +25,6 @@ namespace Core.GameData
 
             var needCoordinate = luaScript.Globals.Get("NeedCoordinate").Boolean;
 
-            var data = GameDataStorage.Instance.GetGameData<ResourceData>();
-
             var isAvailable = luaScript.Globals.Get("IsAvailable").Function.GetDelegate<bool>();
             var getAvailableTiles =
                 luaScript.Globals.Get("GetAvailableTiles").Function.GetDelegate<List<HexTileCoord>>();
@@ -44,8 +42,8 @@ namespace Core.GameData
 
             return true;
 
-            Dictionary<ResourceInfoHolder, int> ProcessCost(ISpecialActionHolder owner, HexTileCoord coord)
-                => getCost.Invoke(owner, coord).ToDictionary(kv => data.GetResourceDirectly(kv.Key), kv => kv.Value);
+            Dictionary<string, int> ProcessCost(ISpecialActionHolder owner, HexTileCoord coord)
+                => getCost.Invoke(owner, coord).ToDictionary(kv => kv.Key, kv => kv.Value);
         }
 
         public SpecialAction Create(ISpecialActionHolder owner) => new SpecialAction(_cache, owner);

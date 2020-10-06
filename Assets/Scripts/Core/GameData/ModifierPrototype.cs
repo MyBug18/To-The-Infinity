@@ -55,11 +55,20 @@ namespace Core.GameData
 
                 List<ModifierEffect> ProcessEffect(IModifierHolder target)
                 {
-                    var dict = getEffect.Invoke(target);
-                    var data = GameDataStorage.Instance.GetGameData<ResourceData>();
+                    var result = new List<ModifierEffect>();
 
-                    return (from kv in dict
-                        select new ModifierEffect(data.GetResourceDirectly(kv.Key), (int)kv.Value)).ToList();
+                    var dict = getEffect.Invoke(target);
+                    foreach (var kv in dict)
+                    {
+                        var additionalInfo = new List<string>();
+                        var tokens = kv.Key.Split('_');
+                        for (var i = 1; i < tokens.Length; i++)
+                            additionalInfo.Add(tokens[i]);
+
+                        result.Add(new ModifierEffect(tokens[0], additionalInfo, (int) kv.Value));
+                    }
+
+                    return result;
                 }
             }
 

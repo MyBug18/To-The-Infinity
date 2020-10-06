@@ -6,8 +6,8 @@ namespace Core
     {
         IReadOnlyList<SpecialAction> SpecialActions { get; }
 
-        bool CheckSpecialActionCost(IReadOnlyDictionary<ResourceInfoHolder, int> cost);
+        bool CheckSpecialActionCost(IReadOnlyDictionary<string, int> cost);
 
-        void ConsumeSpecialActionCost(IReadOnlyDictionary<ResourceInfoHolder, int> cost);
+        void ConsumeSpecialActionCost(IReadOnlyDictionary<string, int> cost);
     }
 }

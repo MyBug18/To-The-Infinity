@@ -17,5 +17,7 @@
             Name = name;
             SpecialResource = specialResource;
         }
+
+        public bool HasTileObject(string typeName) => TileMap.IsTileObjectExists(typeName, Coord);
     }
 }

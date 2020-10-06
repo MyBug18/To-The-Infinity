@@ -99,13 +99,16 @@ namespace Core
 
     public readonly struct ModifierEffect
     {
-        public ResourceInfoHolder ResourceInfo { get; }
+        public string EffectInfo { get; }
+
+        public IReadOnlyList<string> AdditionalInfos { get; }
 
         public int Amount { get; }
 
-        public ModifierEffect(ResourceInfoHolder resourceInfo, int amount)
+        public ModifierEffect(string effectInfo, IReadOnlyList<string> additionalInfos, int amount)
         {
-            ResourceInfo = resourceInfo;
+            EffectInfo = effectInfo;
+            AdditionalInfos = additionalInfos;
             Amount = amount;
         }
     }
