@@ -157,7 +157,7 @@ namespace Core
 
         public void ApplyModifierChangeToDownward(Modifier m, bool isRemoving)
         {
-            if (m.IsRelated(TypeName))
+            if (m.IsRelated(TypeName, IdentifierName))
             {
                 var scope = m.Core.Scope[TypeName];
 

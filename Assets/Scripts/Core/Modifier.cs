@@ -21,7 +21,9 @@ namespace Core
             Tiles = tiles;
         }
 
-        public bool IsRelated(string typeName) => Core.Scope.ContainsKey(typeName);
+        public bool IsRelated(string typeName, string identifierName) =>
+            Core.Scope.TryGetValue(typeName, out var scope) &&
+            (scope.TargetIdentifierName == "All" || scope.TargetIdentifierName == identifierName);
 
         /// <summary>
         /// Returns true if modifier has no tile limit or the parameter is in it's effect range
@@ -62,7 +64,9 @@ namespace Core
 
     public sealed class ModifierScope
     {
-        public string ScopeName { get; }
+        public string TargetTypeName { get; }
+
+        public string TargetIdentifierName { get; }
 
         private readonly Func<IModifierHolder, List<ModifierEffect>> _getEffect;
 
@@ -74,13 +78,14 @@ namespace Core
 
         public IReadOnlyDictionary<string, Action<IModifierHolder>> TriggerEvent { get; }
 
-        public ModifierScope(string scopeName,
+        public ModifierScope(string targetTypeName, string targetIdentifierName,
             Func<IModifierHolder, List<ModifierEffect>> getEffect,
             Func<IModifierHolder, bool> conditionChecker,
             Action<IModifierHolder> onAdded, Action<IModifierHolder> onRemoved,
             IReadOnlyDictionary<string, Action<IModifierHolder>> triggerEvent)
         {
-            ScopeName = scopeName;
+            TargetTypeName = targetTypeName;
+            TargetIdentifierName = targetIdentifierName;
             _getEffect = getEffect;
             _conditionChecker = conditionChecker;
             _onAdded = onAdded;

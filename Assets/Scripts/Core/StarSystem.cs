@@ -46,7 +46,7 @@ namespace Core
                 {
                     _modifiers.RemoveAt(i);
 
-                    if (m.IsRelated(TypeName))
+                    if (m.IsRelated(TypeName, "All"))
                     {
                         var scope = m.Core.Scope[TypeName];
 
@@ -63,7 +63,7 @@ namespace Core
         }
 
         private void RegisterModifierEvent(string modifierName,
-            IReadOnlyDictionary<string, Action<IModifierHolder>> events, bool isRemoving = false)
+            IReadOnlyDictionary<string, Action<IModifierHolder>> events, bool isRemoving)
         {
             foreach (var kv in events)
             {
@@ -104,7 +104,7 @@ namespace Core
 
         public void ApplyModifierChangeToDownward(Modifier m, bool isRemoving)
         {
-            if (m.IsRelated(TypeName))
+            if (m.IsRelated(TypeName, "All"))
             {
                 var scope = m.Core.Scope[TypeName];
 

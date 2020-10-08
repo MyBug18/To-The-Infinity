@@ -37,6 +37,7 @@ namespace Core.GameData
                 var name = nameTable.Key.String;
                 var scopeTable = nameTable.Value.Table;
 
+                var identifierName = scopeTable.Get("IdentifierName").String;
                 var getEffect = scopeTable.Get("GetEffect").Function.GetDelegate<Dictionary<string, object>>();
                 var checkCondition = scopeTable.Get("CheckCondition").Function.GetDelegate<bool>();
                 var onAdded = scopeTable.Get("OnAdded").Function.GetDelegate();
@@ -45,7 +46,7 @@ namespace Core.GameData
                     .ToDictionary<TablePair, string, Action<IModifierHolder>>(kv => kv.Key.String,
                         kv => target => kv.Value.Function.GetDelegate().Invoke(target));
 
-                var scope = new ModifierScope(name, ProcessEffect,
+                var scope = new ModifierScope(name, identifierName, ProcessEffect,
                     target => checkCondition.Invoke(target),
                     target => onAdded.Invoke(target),
                     target => onRemoved.Invoke(target),
