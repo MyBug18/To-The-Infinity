@@ -8,7 +8,7 @@ namespace Core.GameData
 {
     public sealed class TileMapPrototype : ILuaHolder
     {
-        public string Name { get; private set; }
+        public string IdentifierName { get; private set; }
 
         public string TypeName => "TileMap";
 
@@ -23,7 +23,7 @@ namespace Core.GameData
 
         public bool Load(Script luaScript)
         {
-            Name = luaScript.Globals.Get("Name").String;
+            IdentifierName = luaScript.Globals.Get("Name").String;
             _tileInfoMaker = luaScript.Globals.Get("MakeTile").Function.GetDelegate<Dictionary<string, object>>();
 
             return true;

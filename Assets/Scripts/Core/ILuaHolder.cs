@@ -5,7 +5,7 @@ public interface ILuaHolder
     /// <summary>
     /// The name of it.
     /// </summary>
-    string Name { get; }
+    string IdentifierName { get; }
 
     /// <summary>
     /// Which type it is.

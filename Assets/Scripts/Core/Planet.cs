@@ -14,7 +14,9 @@ namespace Core
 
         public IReadOnlyList<SpecialAction> SpecialActions { get; }
 
-        public string Name { get; }
+        public string IdentifierName { get; }
+
+        public string CustomName { get; private set; }
 
         public HexTile CurrentTile { get; }
 

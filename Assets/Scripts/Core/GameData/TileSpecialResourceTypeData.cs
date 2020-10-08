@@ -15,15 +15,15 @@ namespace Core.GameData
         {
             if (!(luaHolder is TileSpecialResourceTypePrototype tsrth)) return;
 
-            if (_data.ContainsKey(tsrth.Name)) return;
+            if (_data.ContainsKey(tsrth.IdentifierName)) return;
 
-            if (tsrth.Name == "Default")
+            if (tsrth.IdentifierName == "Default")
             {
                 _default = tsrth;
                 return;
             }
 
-            _data[tsrth.Name] = tsrth;
+            _data[tsrth.IdentifierName] = tsrth;
         }
 
         public void OnGameInitialized(Game game)

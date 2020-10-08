@@ -15,15 +15,15 @@ namespace Core.GameData
         {
             if (!(luaHolder is SpecialActionPrototype sap)) return;
 
-            if (_data.ContainsKey(sap.Name)) return;
+            if (_data.ContainsKey(sap.IdentifierName)) return;
 
-            if (sap.Name == "Default")
+            if (sap.IdentifierName == "Default")
             {
                 _default = sap;
                 return;
             }
 
-            _data[sap.Name] = sap;
+            _data[sap.IdentifierName] = sap;
         }
 
         public void OnGameInitialized(Game _)

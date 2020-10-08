@@ -12,7 +12,7 @@ namespace Core.GameData
             {"Research", ResourceType.Research},
         };
 
-        public string Name { get; private set; }
+        public string IdentifierName { get; private set; }
 
         public string TypeName => "Resource";
 
@@ -31,7 +31,7 @@ namespace Core.GameData
 
         public bool Load(Script luaScript)
         {
-            Name = luaScript.Globals.Get("Name").String;
+            IdentifierName = luaScript.Globals.Get("Name").String;
 
             if (!StringTypeMap.TryGetValue(luaScript.Globals.Get("ResourceType").String, out var value))
                 return false;

@@ -18,21 +18,21 @@ namespace Core.GameData
         {
             if (!(luaHolder is PopSlotPrototype psp)) return;
 
-            if (_data.ContainsKey(psp.Name)) return;
+            if (_data.ContainsKey(psp.IdentifierName)) return;
 
-            if (psp.Name == "Default")
+            if (psp.IdentifierName == "Default")
             {
                 _default = psp;
                 return;
             }
 
-            _data[psp.Name] = psp;
-            AllJobName.Add(psp.Name);
+            _data[psp.IdentifierName] = psp;
+            AllJobName.Add(psp.IdentifierName);
 
             if (!AllGroupInfo.ContainsKey(psp.Group))
                 AllGroupInfo.Add(psp.Group, new List<string>());
 
-            AllGroupInfo[psp.Group].Add(psp.Name);
+            AllGroupInfo[psp.Group].Add(psp.IdentifierName);
         }
 
         public void OnGameInitialized(Game _)

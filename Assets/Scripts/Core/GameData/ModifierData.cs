@@ -14,15 +14,15 @@ namespace Core.GameData
         {
             if (!(luaHolder is ModifierPrototype mp)) return;
 
-            if (_data.ContainsKey(mp.Name)) return;
+            if (_data.ContainsKey(mp.IdentifierName)) return;
 
-            if (mp.Name == "Default")
+            if (mp.IdentifierName == "Default")
             {
                 _default = mp;
                 return;
             }
 
-            _data[mp.Name] = mp;
+            _data[mp.IdentifierName] = mp;
         }
 
         public void OnGameInitialized(Game _)

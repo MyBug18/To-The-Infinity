@@ -7,7 +7,7 @@ namespace Core.GameData
 {
     public sealed class ModifierPrototype : ILuaHolder
     {
-        public string Name { get; private set; }
+        public string IdentifierName { get; private set; }
 
         public string TypeName => "Modifier";
 
@@ -24,7 +24,7 @@ namespace Core.GameData
         {
             var t = luaScript.Globals;
 
-            Name = t.Get("Name").String;
+            IdentifierName = t.Get("Name").String;
 
             var additionalDesc = t.Get("AdditionalDesc").String;
 
@@ -72,7 +72,7 @@ namespace Core.GameData
                 }
             }
 
-            _cache = new ModifierCore(Name, holderType, additionalDesc, scopeDict);
+            _cache = new ModifierCore(IdentifierName, holderType, additionalDesc, scopeDict);
 
             return true;
         }

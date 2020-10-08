@@ -6,7 +6,7 @@ namespace Core.GameData
 {
     public sealed class SpecialActionPrototype : ILuaHolder
     {
-        public string Name { get; private set; }
+        public string IdentifierName { get; private set; }
 
         public string TypeName { get; }
 
@@ -21,7 +21,7 @@ namespace Core.GameData
 
         public bool Load(Script luaScript)
         {
-            Name = luaScript.Globals.Get("Name").String;
+            IdentifierName = luaScript.Globals.Get("Name").String;
 
             var needCoordinate = luaScript.Globals.Get("NeedCoordinate").Boolean;
 
@@ -33,7 +33,7 @@ namespace Core.GameData
             var getCost = luaScript.Globals.Get("GetCost").Function.GetDelegate<Dictionary<string, int>>();
             var doAction = luaScript.Globals.Get("DoAction").Function.GetDelegate();
 
-            _cache = new SpecialActionCore(Name, needCoordinate,
+            _cache = new SpecialActionCore(IdentifierName, needCoordinate,
                 owner => isAvailable.Invoke(owner),
                 owner => getAvailableTiles.Invoke(owner),
                 (owner, coord) => previewEffectRange.Invoke(owner, coord),

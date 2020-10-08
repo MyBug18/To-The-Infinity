@@ -4,7 +4,9 @@
     {
         string Owner { get; }
 
-        string Name { get; }
+        string IdentifierName { get; }
+
+        string CustomName { get; }
 
         HexTile CurrentTile { get; }
 

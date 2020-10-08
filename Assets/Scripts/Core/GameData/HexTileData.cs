@@ -14,15 +14,15 @@ namespace Core.GameData
         {
             if (!(luaHolder is HexTilePrototype htp)) return;
 
-            if (_data.ContainsKey(htp.Name)) return;
+            if (_data.ContainsKey(htp.IdentifierName)) return;
 
-            if (htp.Name == "Default")
+            if (htp.IdentifierName == "Default")
             {
                 _default = htp;
                 return;
             }
 
-            _data[htp.Name] = htp;
+            _data[htp.IdentifierName] = htp;
         }
 
         public void OnGameInitialized(Game game)

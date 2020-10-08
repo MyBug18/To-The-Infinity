@@ -35,15 +35,15 @@ namespace Core.GameData
         {
             if (!(luaHolder is ResourcePrototype rp)) return;
 
-            if (_data.ContainsKey(rp.Name) || _factors.Contains(rp.Name)) return;
+            if (_data.ContainsKey(rp.IdentifierName) || _factors.Contains(rp.IdentifierName)) return;
 
-            if (rp.Name == "Default")
+            if (rp.IdentifierName == "Default")
             {
                 _default = rp;
                 return;
             }
 
-            _data[rp.Name] = rp;
+            _data[rp.IdentifierName] = rp;
         }
 
         public void OnGameInitialized(Game _)

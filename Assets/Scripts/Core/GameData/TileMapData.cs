@@ -14,15 +14,15 @@ namespace Core.GameData
         {
             if (!(luaHolder is TileMapPrototype tmp)) return;
 
-            if (_data.ContainsKey(tmp.Name)) return;
+            if (_data.ContainsKey(tmp.IdentifierName)) return;
 
-            if (tmp.Name == "Default")
+            if (tmp.IdentifierName == "Default")
             {
                 _default = tmp;
                 return;
             }
 
-            _data[tmp.Name] = tmp;
+            _data[tmp.IdentifierName] = tmp;
         }
 
         public void OnGameInitialized(Game _)

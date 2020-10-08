@@ -6,7 +6,7 @@ namespace Core.GameData
 {
     public sealed class HexTilePrototype : ILuaHolder
     {
-        public string Name { get; private set; }
+        public string IdentifierName { get; private set; }
         public string TypeName => "HexTile";
 
         public string FilePath { get; }
@@ -20,7 +20,7 @@ namespace Core.GameData
 
         public bool Load(Script luaScript)
         {
-            Name = luaScript.Globals.Get("Name").String;
+            IdentifierName = luaScript.Globals.Get("Name").String;
 
             var resChanceMap =
                 luaScript.Globals.Get("ResChanceMap").Table.Pairs
@@ -50,12 +50,12 @@ namespace Core.GameData
             }
 
             if (string.IsNullOrEmpty(specialResourceName))
-                return new HexTile(tileMap, coord, Name, null);
+                return new HexTile(tileMap, coord, IdentifierName, null);
 
             var specialResource = GameDataStorage.Instance.GetGameData<TileSpecialResourceTypeData>()
                 .GetDirectly(specialResourceName);
 
-            return new HexTile(tileMap, coord, Name, specialResource);
+            return new HexTile(tileMap, coord, IdentifierName, specialResource);
         }
     }
 }

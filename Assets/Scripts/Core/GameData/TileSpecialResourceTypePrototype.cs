@@ -4,7 +4,7 @@ namespace Core.GameData
 {
     public sealed class TileSpecialResourceTypePrototype : ILuaHolder
     {
-        public string Name { get; private set; }
+        public string IdentifierName { get; private set; }
 
         public string TypeName => "TileSpecialResourceType";
 
@@ -19,9 +19,9 @@ namespace Core.GameData
 
         public bool Load(Script luaScript)
         {
-            Name = luaScript.Globals.Get("Name").String;
+            IdentifierName = luaScript.Globals.Get("Name").String;
 
-            _cache = new TileSpecialResourceType(Name);
+            _cache = new TileSpecialResourceType(IdentifierName);
 
             return true;
         }

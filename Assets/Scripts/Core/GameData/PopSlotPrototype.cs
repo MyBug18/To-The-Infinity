@@ -9,7 +9,7 @@ namespace Core.GameData
 
         public string FilePath { get; }
 
-        public string Name { get; private set; }
+        public string IdentifierName { get; private set; }
 
         public string Group { get; private set; }
 
@@ -23,7 +23,7 @@ namespace Core.GameData
 
         public bool Load(Script luaScript)
         {
-            Name = luaScript.Globals.Get("Name").String;
+            IdentifierName = luaScript.Globals.Get("Name").String;
             Group = luaScript.Globals.Get("Group").String;
 
             var yield = new Dictionary<string, float>();
