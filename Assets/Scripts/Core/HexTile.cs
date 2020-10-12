@@ -10,6 +10,8 @@
 
         public TileSpecialResourceType SpecialResource { get; }
 
+        public int StarShipMovePoint => 1;
+
         public HexTile(TileMap tileMap, HexTileCoord coord, string name, TileSpecialResourceType specialResource)
         {
             TileMap = tileMap;
