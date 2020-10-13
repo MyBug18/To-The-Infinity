@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using MoonSharp.Interpreter;
 
 namespace Core
 {
@@ -76,13 +77,13 @@ namespace Core
 
         private readonly Action<IModifierHolder> _onRemoved;
 
-        public IReadOnlyDictionary<string, Action<IModifierHolder>> TriggerEvent { get; }
+        public IReadOnlyDictionary<string, ScriptFunctionDelegate> TriggerEvent { get; }
 
         public ModifierScope(string targetTypeName, string targetIdentifierName,
             Func<IModifierHolder, List<ModifierEffect>> getEffect,
             Func<IModifierHolder, bool> conditionChecker,
             Action<IModifierHolder> onAdded, Action<IModifierHolder> onRemoved,
-            IReadOnlyDictionary<string, Action<IModifierHolder>> triggerEvent)
+            IReadOnlyDictionary<string, ScriptFunctionDelegate> triggerEvent)
         {
             TargetTypeName = targetTypeName;
             TargetIdentifierName = targetIdentifierName;

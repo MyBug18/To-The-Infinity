@@ -43,8 +43,8 @@ namespace Core.GameData
                 var onAdded = scopeTable.Get("OnAdded").Function.GetDelegate();
                 var onRemoved = scopeTable.Get("OnRemoved").Function.GetDelegate();
                 var triggerEvent = scopeTable.Get("TriggerEvent").Table.Pairs
-                    .ToDictionary<TablePair, string, Action<IModifierHolder>>(kv => kv.Key.String,
-                        kv => target => kv.Value.Function.GetDelegate().Invoke(target));
+                    .ToDictionary(kv => kv.Key.String,
+                        kv  => kv.Value.Function.GetDelegate());
 
                 var scope = new ModifierScope(name, identifierName, ProcessEffect,
                     target => checkCondition.Invoke(target),

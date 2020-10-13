@@ -31,7 +31,7 @@ namespace Core.GameData
             var previewEffectRange =
                 luaScript.Globals.Get("PreviewEffectRange").Function.GetDelegate<List<HexTileCoord>>();
             var getCost = luaScript.Globals.Get("GetCost").Function.GetDelegate<Dictionary<string, int>>();
-            var doAction = luaScript.Globals.Get("DoAction").Function.GetDelegate();
+            var doAction = luaScript.Globals.Get("DoAction").Function.GetDelegate<bool>();
 
             _cache = new SpecialActionCore(IdentifierName, needCoordinate,
                 owner => isAvailable.Invoke(owner),

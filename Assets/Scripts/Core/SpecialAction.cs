@@ -53,14 +53,14 @@ namespace Core
 
         private readonly Func<ISpecialActionHolder, HexTileCoord, IReadOnlyDictionary<string, int>> _costGetter;
 
-        private readonly Action<ISpecialActionHolder, HexTileCoord> _doAction;
+        private readonly Func<ISpecialActionHolder, HexTileCoord, bool> _doAction;
 
         public SpecialActionCore(string name, bool needCoordinate,
             Func<ISpecialActionHolder, bool> availableChecker,
             Func<ISpecialActionHolder, IReadOnlyCollection<HexTileCoord>> availableCoordsGetter,
             Func<ISpecialActionHolder, HexTileCoord, IReadOnlyCollection<HexTileCoord>> previewEffectRangeGetter,
             Func<ISpecialActionHolder, HexTileCoord, IReadOnlyDictionary<string, int>> costGetter,
-            Action<ISpecialActionHolder, HexTileCoord> doAction)
+            Func<ISpecialActionHolder, HexTileCoord, bool> doAction)
         {
             Name = name;
             NeedCoordinate = needCoordinate;
@@ -82,6 +82,6 @@ namespace Core
         public IReadOnlyDictionary<string, int> GetCost(ISpecialActionHolder owner, HexTileCoord coord) =>
             _costGetter(owner, coord);
 
-        public void DoAction(ISpecialActionHolder owner, HexTileCoord coord) => _doAction(owner, coord);
+        public bool DoAction(ISpecialActionHolder owner, HexTileCoord coord) => _doAction(owner, coord);
     }
 }

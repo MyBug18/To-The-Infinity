@@ -1,6 +1,7 @@
 ﻿using System;
 using Core.GameData;
 using System.Collections.Generic;
+using MoonSharp.Interpreter;
 
 namespace Core
 {
@@ -63,7 +64,7 @@ namespace Core
         }
 
         private void RegisterModifierEvent(string modifierName,
-            IReadOnlyDictionary<string, Action<IModifierHolder>> events, bool isRemoving)
+            IReadOnlyDictionary<string, ScriptFunctionDelegate> events, bool isRemoving)
         {
             foreach (var kv in events)
             {
