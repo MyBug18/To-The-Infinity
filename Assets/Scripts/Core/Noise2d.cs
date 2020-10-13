@@ -7,25 +7,32 @@ namespace Core
 {
     public static class Noise2d
     {
-        private static readonly Random Random = new Random();
+        private static Random _random;
         private static int[] _permutation;
 
-        private static readonly Vector2[] Gradients;
+        private static Vector2[] _gradients;
 
-        static Noise2d()
+        public static int Seed { get; private set; }
+
+        public static void InitializeGradSeed(int? seed)
         {
-            CalculatePermutation(out _permutation);
-            CalculateGradients(out Gradients);
+            Seed = seed ?? UnityEngine.Random.Range(int.MinValue, int.MaxValue);
+            _random = new Random(Seed);
+            CalculateGradients();
         }
 
-        public static float[,] GenerateNoiseMap(int width, int height, int octaves)
+        /// <summary>
+        /// Seed must be same with the seed of tileMap
+        /// </summary>
+        /// <returns></returns>
+        public static float[,] GenerateNoiseMap(int width, int height, int octaves, int? seed)
         {
             var result = new float[width, height];
 
             var min = float.MaxValue;
             var max = float.MinValue;
 
-            Reseed();
+            CalculatePermutation(seed);
 
             var frequency = 5f;
             var amplitude = 1f;
@@ -63,46 +70,40 @@ namespace Core
             return result;
         }
 
-        private static void CalculatePermutation(out int[] p)
+        private static void CalculatePermutation(int? seed)
         {
-            p = Enumerable.Range(0, 256).ToArray();
+            var r = seed == null ? new Random() : new Random(seed.Value);
+
+            _permutation = Enumerable.Range(0, 256).ToArray();
 
             // shuffle the array
-            for (var i = 0; i < p.Length; i++)
+            for (var i = 0; i < _permutation.Length; i++)
             {
-                var source = Random.Next(p.Length);
+                var source = r.Next(_permutation.Length);
 
-                var t = p[i];
-                p[i] = p[source];
-                p[source] = t;
+                var t = _permutation[i];
+                _permutation[i] = _permutation[source];
+                _permutation[source] = t;
             }
         }
 
-        /// <summary>
-        /// generate a new permutation.
-        /// </summary>
-        private static void Reseed()
+        private static void CalculateGradients()
         {
-            CalculatePermutation(out _permutation);
-        }
+            _gradients = new Vector2[256];
 
-        private static void CalculateGradients(out Vector2[] grad)
-        {
-            grad = new Vector2[256];
-
-            for (var i = 0; i < grad.Length; i++)
+            for (var i = 0; i < _gradients.Length; i++)
             {
                 Vector2 gradient;
 
                 do
                 {
-                    gradient = new Vector2((float)(Random.NextDouble() * 2 - 1),
-                        (float)(Random.NextDouble() * 2 - 1));
+                    gradient = new Vector2((float)(_random.NextDouble() * 2 - 1),
+                        (float)(_random.NextDouble() * 2 - 1));
                 } while (gradient.LengthSquared() >= 1);
 
                 gradient = Vector2.Normalize(gradient);
 
-                grad[i] = gradient;
+                _gradients[i] = gradient;
             }
         }
 
@@ -133,7 +134,7 @@ namespace Core
                 var index = _permutation[(int)ij.X % _permutation.Length];
                 index = _permutation[(index + (int)ij.Y) % _permutation.Length];
 
-                var grad = Gradients[index % Gradients.Length];
+                var grad = _gradients[index % _gradients.Length];
 
                 total += Q(uv.X, uv.Y) * Vector2.Dot(grad, uv);
             }

@@ -16,11 +16,14 @@ namespace Core
 
         public int Radius { get; }
 
-        public TileMap(ITileMapHolder holder, HexTile[][] tileMap, int radius)
+        public int Seed { get; }
+
+        public TileMap(ITileMapHolder holder, HexTile[][] tileMap, int radius, int seed)
         {
             Holder = holder;
             _tileMap = tileMap;
             Radius = radius;
+            Seed = seed;
         }
 
         public void StartNewTurn(int month)

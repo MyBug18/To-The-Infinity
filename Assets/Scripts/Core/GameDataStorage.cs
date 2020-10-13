@@ -42,6 +42,7 @@ namespace Core
         public void Initialize()
         {
             InitializeMoonSharp();
+            Noise2d.InitializeGradSeed(null);
 
             var pathList = Directory.GetFiles(Path.Combine(Application.streamingAssetsPath, "CoreData"),
                     "*.lua", SearchOption.AllDirectories);

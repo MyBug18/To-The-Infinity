@@ -29,12 +29,14 @@ namespace Core.GameData
             return true;
         }
 
-        public TileMap Create(ITileMapHolder holder, int radius)
+        public TileMap Create(ITileMapHolder holder, int radius, int? seed = null)
         {
+            var tileMapSeed = seed ?? UnityEngine.Random.Range(int.MinValue, int.MaxValue);
+
             var size = 2 * radius + 1;
 
-            var noiseTask = new Task<float[,]>(() => Noise2d.GenerateNoiseMap(size, size, 2));
-            var randomTask = new Task<float[,]>(() => MakeRandomMap(size));
+            var noiseTask = new Task<float[,]>(() => Noise2d.GenerateNoiseMap(size, size, 2, seed));
+            var randomTask = new Task<float[,]>(() => MakeRandomMap(size, tileMapSeed));
 
             noiseTask.Start();
             randomTask.Start();
@@ -58,7 +60,7 @@ namespace Core.GameData
             var noiseMap = noiseTask.Result;
             var randomMap = randomTask.Result;
 
-            var result = new TileMap(holder, tileMap, radius);
+            var result = new TileMap(holder, tileMap, radius, tileMapSeed);
 
             Parallel.For(0, lineCount.Sum(), i =>
             {
@@ -94,9 +96,9 @@ namespace Core.GameData
                 return (x, y);
             }
 
-            static float[,] MakeRandomMap(int size)
+            static float[,] MakeRandomMap(int size, int seed)
             {
-                var r = new Random();
+                var r = new Random(seed);
 
                 var result = new float[size, size];
 
