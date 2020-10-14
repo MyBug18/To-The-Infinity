@@ -7,7 +7,7 @@ namespace Core
     {
         IEnumerable<Modifier> Modifiers { get; }
 
-        void AddModifier(string modifierName, int leftMonth, IReadOnlyList<HexTileCoord> tiles);
+        void AddModifier(string modifierName, int leftMonth);
 
         void RemoveModifier(string modifierName);
 

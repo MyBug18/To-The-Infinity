@@ -7,11 +7,11 @@ namespace Core
 {
     public readonly struct Modifier
     {
-        public readonly ModifierCore Core;
+        public ModifierCore Core { get; }
 
-        public readonly int LeftMonth;
+        public int LeftMonth { get; }
 
-        public readonly IReadOnlyCollection<HexTileCoord> Tiles;
+        public IReadOnlyCollection<HexTileCoord> Tiles { get; }
 
         public bool IsPermanent => LeftMonth != -1;
 

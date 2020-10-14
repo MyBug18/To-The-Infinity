@@ -1,6 +1,7 @@
 ﻿using System;
 using Core.GameData;
 using System.Collections.Generic;
+using System.Linq;
 using MoonSharp.Interpreter;
 
 namespace Core
@@ -21,7 +22,7 @@ namespace Core
 
         public HexTile CurrentTile { get; }
 
-        private readonly List<Modifier> _modifiers = new List<Modifier>();
+        private readonly Dictionary<string, Modifier> _modifiers = new Dictionary<string, Modifier>();
 
         public IEnumerable<Modifier> Modifiers
         {
@@ -32,7 +33,7 @@ namespace Core
                 foreach (var m in upwardModifiers)
                     yield return m;
 
-                foreach (var m in _modifiers)
+                foreach (var m in _modifiers.Values)
                     yield return m;
             }
         }
@@ -84,30 +85,45 @@ namespace Core
 
         public bool CheckSpecialActionCost(IReadOnlyDictionary<string, int> cost)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public void ConsumeSpecialActionCost(IReadOnlyDictionary<string, int> cost)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         private void ReduceModifiersLeftMonth(int month)
         {
-            for (var i = _modifiers.Count - 1; i >= 0; i--)
+            var toRemoveList = new List<string>();
+
+            foreach (var name in _modifiers.Keys)
             {
-                var m = _modifiers[i];
+                var m = _modifiers[name];
                 if (m.IsPermanent) continue;
 
                 if (m.LeftMonth - month <= 0)
                 {
-                    _modifiers.RemoveAt(i);
-                    ApplyModifierChangeToDownward(m, true);
-
+                    toRemoveList.Add(name);
                     continue;
                 }
 
-                _modifiers[i] = m.ReduceLeftMonth(month);
+                _modifiers[name] = m.ReduceLeftMonth(month);
+            }
+
+            foreach (var name in toRemoveList)
+            {
+                var m = _modifiers[name];
+
+                _modifiers.Remove(name);
+
+                if (!m.IsRelated(TypeName, "All")) continue;
+
+                var scope = m.Core.Scope[TypeName];
+
+                scope.OnRemoved(this);
+
+                RegisterModifierEvent(m.Core.Name, scope.TriggerEvent, true);
             }
         }
 
@@ -128,32 +144,27 @@ namespace Core
             }
         }
 
-        public void AddModifier(string modifierName, int leftMonth, IReadOnlyList<HexTileCoord> tiles)
+        public void AddModifier(string modifierName, int leftMonth)
         {
+            if (_modifiers.ContainsKey(modifierName)) return;
+
             var m = new Modifier(GameDataStorage.Instance.GetGameData<ModifierData>().GetModifierDirectly(modifierName),
-                leftMonth, tiles);
+                leftMonth);
 
             if (m.Core.TargetType != TypeName)
                 return;
 
-            _modifiers.Add(m);
+            _modifiers.Add(modifierName, m);
             ApplyModifierChangeToDownward(m, false);
         }
 
         public void RemoveModifier(string modifierName)
         {
-            for (var i = 0; i < _modifiers.Count; i++)
-            {
-                var m = _modifiers[i];
+            if (!_modifiers.ContainsKey(modifierName)) return;
 
-                if (m.Core.Name != modifierName) continue;
-                if(m.Core.TargetType != TypeName) continue;
-
-                _modifiers.RemoveAt(i);
-                ApplyModifierChangeToDownward(m, true);
-
-                break;
-            }
+            var m = _modifiers[modifierName];
+            _modifiers.Remove(modifierName);
+            ApplyModifierChangeToDownward(m, true);
         }
 
         public void ApplyModifierChangeToDownward(Modifier m, bool isRemoving)
