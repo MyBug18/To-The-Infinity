@@ -128,8 +128,7 @@ namespace Core
                 .Where(objDict => m.IsInEffectRange(objDict.Key))
                 .SelectMany(objDict => objDict.Value)
                 .Select(x => x.Value))
-                // Tile limit should not remain after apply
-                objs.ApplyModifierChangeToDownward(m.WithoutTileLimit(), isRemoving);
+                objs.ApplyModifierChangeToDownward(m, isRemoving);
         }
 
         public bool IsTileObjectExists(string typeName, HexTileCoord coord)

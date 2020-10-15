@@ -5,11 +5,11 @@ using MoonSharp.Interpreter;
 
 namespace Core
 {
-    public readonly struct Modifier
+    public class Modifier
     {
         public ModifierCore Core { get; }
 
-        public int LeftMonth { get; }
+        public int LeftMonth { get; private set; }
 
         public IReadOnlyCollection<HexTileCoord> Tiles { get; }
 
@@ -31,10 +31,12 @@ namespace Core
         /// </summary>
         public bool IsInEffectRange(HexTileCoord coord) => Tiles == null || Tiles.Contains(coord);
 
-        public Modifier ReduceLeftMonth(int month) =>
-            new Modifier(Core, LeftMonth == -1 ? -1 : LeftMonth - month, Tiles);
+        public void ReduceLeftMonth(int month)
+        {
+            if (LeftMonth == -1) return;
 
-        public Modifier WithoutTileLimit() => new Modifier(Core, LeftMonth);
+            LeftMonth -= month;
+        }
     }
 
     public sealed class ModifierCore : IEquatable<ModifierCore>

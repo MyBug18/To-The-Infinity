@@ -108,7 +108,7 @@ namespace Core
                     continue;
                 }
 
-                _modifiers[name] = m.ReduceLeftMonth(month);
+                _modifiers[name].ReduceLeftMonth(month);
             }
 
             foreach (var name in toRemoveList)
@@ -189,7 +189,5 @@ namespace Core
 
             TileMap.ApplyModifierChangeToTileObjects(m, isRemoving);
         }
-
-        public void RecalculateModifierEffect() => ModifierEffect = this.GetModifiersEffect();
     }
 }
