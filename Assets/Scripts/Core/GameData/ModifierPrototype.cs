@@ -1,5 +1,4 @@
-﻿using System;
-using MoonSharp.Interpreter;
+﻿using MoonSharp.Interpreter;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -36,17 +35,15 @@ namespace Core.GameData
             {
                 var name = nameTable.Key.String;
                 var scopeTable = nameTable.Value.Table;
-
-                var identifierName = scopeTable.Get("IdentifierName").String;
                 var getEffect = scopeTable.Get("GetEffect").Function.GetDelegate<Dictionary<string, object>>();
                 var checkCondition = scopeTable.Get("CheckCondition").Function.GetDelegate<bool>();
                 var onAdded = scopeTable.Get("OnAdded").Function.GetDelegate();
                 var onRemoved = scopeTable.Get("OnRemoved").Function.GetDelegate();
                 var triggerEvent = scopeTable.Get("TriggerEvent").Table.Pairs
                     .ToDictionary(kv => kv.Key.String,
-                        kv  => kv.Value.Function.GetDelegate());
+                        kv => kv.Value.Function.GetDelegate());
 
-                var scope = new ModifierScope(name, identifierName, ProcessEffect,
+                var scope = new ModifierScope(name, ProcessEffect,
                     target => checkCondition.Invoke(target),
                     target => onAdded.Invoke(target),
                     target => onRemoved.Invoke(target),
@@ -66,7 +63,7 @@ namespace Core.GameData
                         for (var i = 1; i < tokens.Length; i++)
                             additionalInfo.Add(tokens[i]);
 
-                        result.Add(new ModifierEffect(tokens[0], additionalInfo, (int) kv.Value));
+                        result.Add(new ModifierEffect(tokens[0], additionalInfo, (int)kv.Value));
                     }
 
                     return result;

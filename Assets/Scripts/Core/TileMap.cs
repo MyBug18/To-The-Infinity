@@ -123,11 +123,7 @@ namespace Core
 
         public void ApplyModifierChangeToTileObjects(Modifier m, bool isRemoving)
         {
-            foreach (var objs in _onTileMapObjects
-                // Should not apply effect to tile out of it's effect range
-                .Where(objDict => m.IsInEffectRange(objDict.Key))
-                .SelectMany(objDict => objDict.Value)
-                .Select(x => x.Value))
+            foreach (var objs in _onTileMapObjects.SelectMany(objDict => objDict.Value.Values))
                 objs.ApplyModifierChangeToDownward(m, isRemoving);
         }
 

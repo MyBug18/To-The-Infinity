@@ -1,8 +1,7 @@
-﻿using System;
-using Core.GameData;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Core.GameData;
 using MoonSharp.Interpreter;
+using System;
+using System.Collections.Generic;
 
 namespace Core
 {
@@ -62,20 +61,18 @@ namespace Core
 
         public const float BasePopGrowth = 5.0f;
 
-        #endregion
+        #endregion Pop
 
         #region TriggerEvent
 
         private readonly Dictionary<string, Action> _onPopBirth = new Dictionary<string, Action>();
 
-        #endregion
+        #endregion TriggerEvent
 
         private readonly Dictionary<string, float> _planetaryResourceKeep =
             new Dictionary<string, float>();
 
         public IReadOnlyDictionary<string, float> PlanetaryResourceKeep => _planetaryResourceKeep;
-
-
 
         public void StartNewTurn(int month)
         {
@@ -117,7 +114,7 @@ namespace Core
 
                 _modifiers.Remove(name);
 
-                if (!m.IsRelated(TypeName, "All")) continue;
+                if (!m.IsRelated(TypeName)) continue;
 
                 var scope = m.Core.Scope[TypeName];
 
@@ -169,7 +166,7 @@ namespace Core
 
         public void ApplyModifierChangeToDownward(Modifier m, bool isRemoving)
         {
-            if (m.IsRelated(TypeName, IdentifierName))
+            if (m.IsRelated(TypeName))
             {
                 var scope = m.Core.Scope[TypeName];
 

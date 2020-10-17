@@ -1,8 +1,6 @@
-﻿using System;
-using Core.GameData;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Core.GameData;
 using MoonSharp.Interpreter;
+using System.Collections.Generic;
 
 namespace Core
 {
@@ -61,7 +59,7 @@ namespace Core
 
                 _modifiers.Remove(name);
 
-                if (!m.IsRelated(TypeName, "All")) continue;
+                if (!m.IsRelated(TypeName)) continue;
 
                 var scope = m.Core.Scope[TypeName];
 
@@ -78,7 +76,6 @@ namespace Core
             {
                 switch (kv.Key)
                 {
-
                 }
             }
         }
@@ -108,7 +105,7 @@ namespace Core
 
         public void ApplyModifierChangeToDownward(Modifier m, bool isRemoving)
         {
-            if (m.IsRelated(TypeName, "All"))
+            if (m.IsRelated(TypeName))
             {
                 var scope = m.Core.Scope[TypeName];
 

@@ -17,7 +17,7 @@ namespace Core
                 () => new Dictionary<string, int>(),
                 (m, loop, acc) =>
                 {
-                    if (!m.IsRelated(holder.TypeName, "All"))
+                    if (!m.IsRelated(holder.TypeName))
                         return acc;
 
                     var scope = m.Core.Scope[holder.TypeName];

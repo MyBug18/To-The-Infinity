@@ -1,7 +1,6 @@
-﻿using System;
+﻿using MoonSharp.Interpreter;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using MoonSharp.Interpreter;
 
 namespace Core
 {
@@ -11,25 +10,15 @@ namespace Core
 
         public int LeftMonth { get; private set; }
 
-        public IReadOnlyCollection<HexTileCoord> Tiles { get; }
-
         public bool IsPermanent => LeftMonth != -1;
 
-        public Modifier(ModifierCore core, int leftMonth = -1, IReadOnlyCollection<HexTileCoord> tiles = null)
+        public Modifier(ModifierCore core, int leftMonth = -1)
         {
             Core = core;
             LeftMonth = leftMonth;
-            Tiles = tiles;
         }
 
-        public bool IsRelated(string typeName, string identifierName) =>
-            Core.Scope.TryGetValue(typeName, out var scope) &&
-            (scope.TargetIdentifierName == "All" || scope.TargetIdentifierName == identifierName);
-
-        /// <summary>
-        /// Returns true if modifier has no tile limit or the parameter is in it's effect range
-        /// </summary>
-        public bool IsInEffectRange(HexTileCoord coord) => Tiles == null || Tiles.Contains(coord);
+        public bool IsRelated(string typeName) => Core.Scope.ContainsKey(typeName);
 
         public void ReduceLeftMonth(int month)
         {
@@ -69,8 +58,6 @@ namespace Core
     {
         public string TargetTypeName { get; }
 
-        public string TargetIdentifierName { get; }
-
         private readonly Func<IModifierHolder, List<ModifierEffect>> _getEffect;
 
         private readonly Func<IModifierHolder, bool> _conditionChecker;
@@ -81,14 +68,13 @@ namespace Core
 
         public IReadOnlyDictionary<string, ScriptFunctionDelegate> TriggerEvent { get; }
 
-        public ModifierScope(string targetTypeName, string targetIdentifierName,
+        public ModifierScope(string targetTypeName,
             Func<IModifierHolder, List<ModifierEffect>> getEffect,
             Func<IModifierHolder, bool> conditionChecker,
             Action<IModifierHolder> onAdded, Action<IModifierHolder> onRemoved,
             IReadOnlyDictionary<string, ScriptFunctionDelegate> triggerEvent)
         {
             TargetTypeName = targetTypeName;
-            TargetIdentifierName = targetIdentifierName;
             _getEffect = getEffect;
             _conditionChecker = conditionChecker;
             _onAdded = onAdded;
