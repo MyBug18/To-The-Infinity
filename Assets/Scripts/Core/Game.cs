@@ -2,9 +2,13 @@ using System.Collections.Generic;
 
 namespace Core
 {
-    public sealed class Game
+    public sealed class Game : ITypeNameHolder
     {
         public static Game Instance { get; private set; }
+
+        public string TypeName => nameof(Game);
+
+        public string Guid { get; }
 
         public int GameSpeed { get; }
 
@@ -12,9 +16,16 @@ namespace Core
 
         private HashSet<string> _enemyOwners = new HashSet<string>();
 
+        private readonly Dictionary<string, ITypeNameHolder> _guidObjectMap = new Dictionary<string, ITypeNameHolder>();
+
         public Game(int gameSpeed)
         {
             Instance = this;
+
+            var guid = System.Guid.NewGuid().ToString();
+
+            Guid = guid;
+            _guidObjectMap[guid] = this;
 
             GameSpeed = gameSpeed;
         }

@@ -6,9 +6,9 @@ namespace Core
 {
     public sealed class StarSystem : ITileMapHolder
     {
-        public readonly Game Game;
-
         public string TypeName => nameof(StarSystem);
+
+        public string Guid { get; }
 
         public TileMap TileMap { get; }
 

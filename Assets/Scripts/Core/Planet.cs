@@ -9,6 +9,8 @@ namespace Core
     {
         public string TypeName => nameof(Planet);
 
+        public string Guid { get; }
+
         public string Owner { get; }
 
         public TileMap TileMap { get; }
