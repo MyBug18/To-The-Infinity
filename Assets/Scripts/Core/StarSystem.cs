@@ -80,12 +80,12 @@ namespace Core
             }
         }
 
-        public void AddModifier(string modifierName, int leftMonth)
+        public void AddModifier(string modifierName, IDictionary<string, object> info, int leftMonth)
         {
             if (_modifiers.ContainsKey(modifierName)) return;
 
             var m = new Modifier(GameDataStorage.Instance.GetGameData<ModifierData>().GetModifierDirectly(modifierName),
-                leftMonth);
+                info, leftMonth);
 
             if (m.Core.TargetType != TypeName)
                 return;

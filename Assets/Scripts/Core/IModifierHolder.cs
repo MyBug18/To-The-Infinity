@@ -7,7 +7,7 @@ namespace Core
     {
         IEnumerable<Modifier> Modifiers { get; }
 
-        void AddModifier(string modifierName, int leftMonth);
+        void AddModifier(string modifierName, IDictionary<string, object> info, int leftMonth);
 
         void RemoveModifier(string modifierName);
 

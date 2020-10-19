@@ -44,18 +44,18 @@ namespace Core.GameData
                         kv => kv.Value.Function.GetDelegate());
 
                 var scope = new ModifierScope(name, ProcessEffect,
-                    target => checkCondition.Invoke(target),
-                    target => onAdded.Invoke(target),
-                    target => onRemoved.Invoke(target),
+                    (target, info) => checkCondition.Invoke(target, info),
+                    (target, info) => onAdded.Invoke(target, info),
+                    (target, info) => onRemoved.Invoke(target, info),
                     triggerEvent);
 
                 scopeDict.Add(name, scope);
 
-                List<ModifierEffect> ProcessEffect(IModifierHolder target)
+                List<ModifierEffect> ProcessEffect(IModifierHolder target, IDictionary<string, object> info)
                 {
                     var result = new List<ModifierEffect>();
 
-                    var dict = getEffect.Invoke(target);
+                    var dict = getEffect.Invoke(target, info);
                     foreach (var kv in dict)
                     {
                         var additionalInfo = new List<string>();

@@ -1,6 +1,7 @@
 ﻿using MoonSharp.Interpreter;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Core
 {
@@ -12,9 +13,23 @@ namespace Core
 
         public bool IsPermanent => LeftMonth != -1;
 
-        public Modifier(ModifierCore core, int leftMonth = -1)
+        public IDictionary<string, object> Info { get; }
+
+        public Modifier(ModifierCore core, IDictionary<string, object> info, int leftMonth = -1)
         {
             Core = core;
+
+            // Cut off not primitive type
+            var toRemoveList = (from kv in info where !kv.Value.GetType().IsPrimitive select kv.Key).ToList();
+
+            foreach (var s in toRemoveList)
+            {
+                // TODO: Log Warning
+                info.Remove(s);
+            }
+
+            Info = info;
+            Core.SetInfo(info);
             LeftMonth = leftMonth;
         }
 
@@ -52,26 +67,35 @@ namespace Core
         public bool Equals(ModifierCore m) => m != null && Name == m.Name;
 
         public override int GetHashCode() => Name.GetHashCode();
+
+        public void SetInfo(IDictionary<string, object> info)
+        {
+            foreach (var s in Scope.Values)
+                s.SetInfo(info);
+        }
     }
 
     public sealed class ModifierScope
     {
         public string TargetTypeName { get; }
 
-        private readonly Func<IModifierHolder, List<ModifierEffect>> _getEffect;
+        private IDictionary<string, object> _info = new Dictionary<string, object>();
 
-        private readonly Func<IModifierHolder, bool> _conditionChecker;
+        private readonly Func<IModifierHolder, IDictionary<string, object>, List<ModifierEffect>> _getEffect;
 
-        private readonly Action<IModifierHolder> _onAdded;
+        private readonly Func<IModifierHolder, IDictionary<string, object>, bool> _conditionChecker;
 
-        private readonly Action<IModifierHolder> _onRemoved;
+        private readonly Action<IModifierHolder, IDictionary<string, object>> _onAdded;
+
+        private readonly Action<IModifierHolder, IDictionary<string, object>> _onRemoved;
 
         public IReadOnlyDictionary<string, ScriptFunctionDelegate> TriggerEvent { get; }
 
         public ModifierScope(string targetTypeName,
-            Func<IModifierHolder, List<ModifierEffect>> getEffect,
-            Func<IModifierHolder, bool> conditionChecker,
-            Action<IModifierHolder> onAdded, Action<IModifierHolder> onRemoved,
+            Func<IModifierHolder, IDictionary<string, object>, List<ModifierEffect>> getEffect,
+            Func<IModifierHolder, IDictionary<string, object>, bool> conditionChecker,
+            Action<IModifierHolder, IDictionary<string, object>> onAdded,
+            Action<IModifierHolder, IDictionary<string, object>> onRemoved,
             IReadOnlyDictionary<string, ScriptFunctionDelegate> triggerEvent)
         {
             TargetTypeName = targetTypeName;
@@ -82,13 +106,15 @@ namespace Core
             TriggerEvent = triggerEvent;
         }
 
-        public bool CheckCondition(IModifierHolder target) => _conditionChecker(target);
+        public void SetInfo(IDictionary<string, object> info) => _info = info;
 
-        public IReadOnlyList<ModifierEffect> GetEffects(IModifierHolder target) => _getEffect(target);
+        public bool CheckCondition(IModifierHolder holder) => _conditionChecker(holder, _info);
 
-        public void OnAdded(IModifierHolder holder) => _onAdded(holder);
+        public IReadOnlyList<ModifierEffect> GetEffects(IModifierHolder holder) => _getEffect(holder, _info);
 
-        public void OnRemoved(IModifierHolder holder) => _onRemoved(holder);
+        public void OnAdded(IModifierHolder holder) => _onAdded(holder, _info);
+
+        public void OnRemoved(IModifierHolder holder) => _onRemoved(holder, _info);
     }
 
     public readonly struct ModifierEffect

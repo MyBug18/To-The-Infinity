@@ -53,5 +53,15 @@ namespace Core
 
             return false;
         }
+
+        public bool IsObjectExists(string guid) => _guidObjectMap.ContainsKey(guid);
+
+        public ITypeNameHolder GetObject(string guid)
+        {
+            if (_guidObjectMap.TryGetValue(guid, out var result)) return result;
+
+            // TODO: Log warning
+            return null;
+        }
     }
 }
