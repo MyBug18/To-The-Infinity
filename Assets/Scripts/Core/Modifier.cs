@@ -18,6 +18,13 @@ namespace Core
         public Modifier(ModifierCore core, IDictionary<string, object> info, int leftMonth = -1)
         {
             Core = core;
+            LeftMonth = leftMonth;
+
+            if (info == null)
+            {
+                Info = new Dictionary<string, object>();
+                return;
+            }
 
             // Cut off not primitive type
             var toRemoveList = (from kv in info where !kv.Value.GetType().IsPrimitive select kv.Key).ToList();
@@ -30,7 +37,6 @@ namespace Core
 
             Info = info;
             Core.SetInfo(info);
-            LeftMonth = leftMonth;
         }
 
         public bool IsRelated(string typeName) => Core.Scope.ContainsKey(typeName);

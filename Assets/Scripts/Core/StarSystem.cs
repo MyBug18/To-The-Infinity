@@ -103,6 +103,26 @@ namespace Core
             ApplyModifierChangeToDownward(m, true);
         }
 
+        public object GetModifierInfoValue(string modifierName, string valueName)
+        {
+            if (!_modifiers.ContainsKey(modifierName)) return null;
+
+            var info = _modifiers[modifierName].Info;
+
+            return info.TryGetValue(valueName, out var result) ? result : null;
+        }
+
+        public void SetModifierInfoValue(string modifierName, string valueName, object value)
+        {
+            if (!value.GetType().IsPrimitive) return;
+
+            if (!_modifiers.ContainsKey(modifierName)) return;
+
+            _modifiers[modifierName].Info[valueName] = value;
+        }
+
+        public bool HasModifier(string modifierName) => _modifiers.ContainsKey(modifierName);
+
         public void ApplyModifierChangeToDownward(Modifier m, bool isRemoving)
         {
             if (m.IsRelated(TypeName))
