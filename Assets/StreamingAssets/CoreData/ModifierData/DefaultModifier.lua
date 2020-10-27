@@ -2,6 +2,7 @@
 
 Name = "Default"
 TargetType = "Game"
+IsTileLimited = false
 
 AdditionalDesc = "DefaultDesc"
 

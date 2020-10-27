@@ -38,15 +38,18 @@ namespace Core
 
         public string TargetType { get; }
 
+        public bool IsTileLimited { get; }
+
         public string AdditionalDesc { get; }
 
         public IReadOnlyDictionary<string, ModifierScope> Scope { get; }
 
-        public ModifierCore(string name, string targetType, string additionalDesc,
+        public ModifierCore(string name, string targetType, bool isTileLimited, string additionalDesc,
             IReadOnlyDictionary<string, ModifierScope> scope)
         {
             Name = name;
             TargetType = targetType;
+            IsTileLimited = isTileLimited;
             AdditionalDesc = additionalDesc;
             Scope = scope;
         }

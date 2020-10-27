@@ -152,7 +152,7 @@ namespace Core
             var m = new Modifier(GameDataStorage.Instance.GetGameData<ModifierData>().GetModifierDirectly(modifierName),
                 adderGuid, leftMonth);
 
-            if (m.Core.TargetType != TypeName)
+            if (m.Core.TargetType != TypeName || m.Core.IsTileLimited)
                 return;
 
             _modifiers.Add(modifierName, m);

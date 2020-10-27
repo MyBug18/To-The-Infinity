@@ -25,6 +25,8 @@ namespace Core.GameData
 
             IdentifierName = t.Get("Name").String;
 
+            var isTileLimited = t.Get("IsTileLimited").Boolean;
+
             var additionalDesc = t.Get("AdditionalDesc").String;
 
             var holderType = t.Get("TargetType").String;
@@ -66,7 +68,7 @@ namespace Core.GameData
                 }
             }
 
-            _cache = new ModifierCore(IdentifierName, holderType, additionalDesc, scopeDict);
+            _cache = new ModifierCore(IdentifierName, holderType, isTileLimited, additionalDesc, scopeDict);
 
             return true;
         }
