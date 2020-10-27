@@ -37,25 +37,21 @@ namespace Core.GameData
                 var scopeTable = nameTable.Value.Table;
                 var getEffect = scopeTable.Get("GetEffect").Function.GetDelegate<Dictionary<string, object>>();
                 var checkCondition = scopeTable.Get("CheckCondition").Function.GetDelegate<bool>();
-                var onAdded = scopeTable.Get("OnAdded").Function.GetDelegate();
-                var onRemoved = scopeTable.Get("OnRemoved").Function.GetDelegate();
                 var triggerEvent = scopeTable.Get("TriggerEvent").Table.Pairs
                     .ToDictionary(kv => kv.Key.String,
                         kv => kv.Value.Function.GetDelegate());
 
                 var scope = new ModifierScope(name, ProcessEffect,
-                    (target, info) => checkCondition.Invoke(target, info),
-                    (target, info) => onAdded.Invoke(target, info),
-                    (target, info) => onRemoved.Invoke(target, info),
+                    (target, adderGuid) => checkCondition.Invoke(target, adderGuid),
                     triggerEvent);
 
                 scopeDict.Add(name, scope);
 
-                List<ModifierEffect> ProcessEffect(IModifierHolder target, IDictionary<string, object> info)
+                List<ModifierEffect> ProcessEffect(IModifierHolder target, string adderGuid)
                 {
                     var result = new List<ModifierEffect>();
 
-                    var dict = getEffect.Invoke(target, info);
+                    var dict = getEffect.Invoke(target, adderGuid);
                     foreach (var kv in dict)
                     {
                         var additionalInfo = new List<string>();

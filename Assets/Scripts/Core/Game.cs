@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Core
 {
-    public sealed class Game : ITypeNameHolder
+    public sealed class Game : IInfinityObject
     {
         public static Game Instance { get; private set; }
 
@@ -16,7 +16,9 @@ namespace Core
 
         private HashSet<string> _enemyOwners = new HashSet<string>();
 
-        private readonly Dictionary<string, ITypeNameHolder> _guidObjectMap = new Dictionary<string, ITypeNameHolder>();
+        private readonly Dictionary<string, object> _customValues = new Dictionary<string, object>();
+
+        private readonly Dictionary<string, IInfinityObject> _guidObjectMap = new Dictionary<string, IInfinityObject>();
 
         public Game(int gameSpeed)
         {
@@ -56,12 +58,21 @@ namespace Core
 
         public bool IsObjectExists(string guid) => _guidObjectMap.ContainsKey(guid);
 
-        public ITypeNameHolder GetObject(string guid)
+        public IInfinityObject GetObject(string guid)
         {
             if (_guidObjectMap.TryGetValue(guid, out var result)) return result;
 
             // TODO: Log warning
             return null;
+        }
+
+        public object GetCustomValue(string key) => _customValues.TryGetValue(key, out var result) ? result : null;
+
+        public void SetCustomValue(string key, object value)
+        {
+            if (!value.GetType().IsPrimitive && value.GetType() != typeof(string)) return;
+
+            _customValues[key] = value;
         }
     }
 }

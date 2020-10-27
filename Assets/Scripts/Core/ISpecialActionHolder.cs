@@ -2,7 +2,7 @@
 
 namespace Core
 {
-    public interface ISpecialActionHolder : ITypeNameHolder
+    public interface ISpecialActionHolder : IInfinityObject
     {
         IReadOnlyList<SpecialAction> SpecialActions { get; }
 

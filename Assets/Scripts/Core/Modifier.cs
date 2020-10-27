@@ -1,11 +1,10 @@
 ﻿using MoonSharp.Interpreter;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Core
 {
-    public class Modifier
+    public sealed class Modifier
     {
         public ModifierCore Core { get; }
 
@@ -13,30 +12,14 @@ namespace Core
 
         public bool IsPermanent => LeftMonth != -1;
 
-        public IDictionary<string, object> Info { get; }
+        public string AdderGuid { get; }
 
-        public Modifier(ModifierCore core, IDictionary<string, object> info, int leftMonth = -1)
+        public Modifier(ModifierCore core, string adderGuid, int leftMonth = -1)
         {
             Core = core;
+            AdderGuid = adderGuid;
+            Core.SetAdder(AdderGuid);
             LeftMonth = leftMonth;
-
-            if (info == null)
-            {
-                Info = new Dictionary<string, object>();
-                return;
-            }
-
-            // Cut off not primitive type
-            var toRemoveList = (from kv in info where !kv.Value.GetType().IsPrimitive select kv.Key).ToList();
-
-            foreach (var s in toRemoveList)
-            {
-                // TODO: Log Warning
-                info.Remove(s);
-            }
-
-            Info = info;
-            Core.SetInfo(info);
         }
 
         public bool IsRelated(string typeName) => Core.Scope.ContainsKey(typeName);
@@ -74,53 +57,56 @@ namespace Core
 
         public override int GetHashCode() => Name.GetHashCode();
 
-        public void SetInfo(IDictionary<string, object> info)
+        public void SetAdder(string adderGuid)
         {
             foreach (var s in Scope.Values)
-                s.SetInfo(info);
+                s.SetInfo(adderGuid);
         }
     }
 
     public sealed class ModifierScope
     {
+        private static readonly Action<IModifierHolder> DummyFunction = _ => { };
+
         public string TargetTypeName { get; }
 
-        private IDictionary<string, object> _info = new Dictionary<string, object>();
+        private string _adderGuid;
 
-        private readonly Func<IModifierHolder, IDictionary<string, object>, List<ModifierEffect>> _getEffect;
+        private readonly Func<IModifierHolder, string, List<ModifierEffect>> _getEffect;
 
-        private readonly Func<IModifierHolder, IDictionary<string, object>, bool> _conditionChecker;
-
-        private readonly Action<IModifierHolder, IDictionary<string, object>> _onAdded;
-
-        private readonly Action<IModifierHolder, IDictionary<string, object>> _onRemoved;
+        private readonly Func<IModifierHolder, string, bool> _conditionChecker;
 
         public IReadOnlyDictionary<string, ScriptFunctionDelegate> TriggerEvent { get; }
 
+        public readonly Action<IModifierHolder> OnAdded, OnRemoved;
+
         public ModifierScope(string targetTypeName,
-            Func<IModifierHolder, IDictionary<string, object>, List<ModifierEffect>> getEffect,
-            Func<IModifierHolder, IDictionary<string, object>, bool> conditionChecker,
-            Action<IModifierHolder, IDictionary<string, object>> onAdded,
-            Action<IModifierHolder, IDictionary<string, object>> onRemoved,
+            Func<IModifierHolder, string, List<ModifierEffect>> getEffect,
+            Func<IModifierHolder, string, bool> conditionChecker,
             IReadOnlyDictionary<string, ScriptFunctionDelegate> triggerEvent)
         {
             TargetTypeName = targetTypeName;
             _getEffect = getEffect;
             _conditionChecker = conditionChecker;
-            _onAdded = onAdded;
-            _onRemoved = onRemoved;
             TriggerEvent = triggerEvent;
+
+            OnAdded = TriggerEvent.TryGetValue("OnAdded", out var onAdded)
+                ? target => onAdded.Invoke(target, _adderGuid)
+                : DummyFunction;
+
+            OnRemoved = TriggerEvent.TryGetValue("OnRemoved", out var onRemoved)
+                ? target => onRemoved.Invoke(target, _adderGuid)
+                : DummyFunction;
         }
 
-        public void SetInfo(IDictionary<string, object> info) => _info = info;
+        public void SetInfo(string adderGuid)
+        {
+            _adderGuid = adderGuid;
+        }
 
-        public bool CheckCondition(IModifierHolder holder) => _conditionChecker(holder, _info);
+        public bool CheckCondition(IModifierHolder holder) => _conditionChecker(holder, _adderGuid);
 
-        public IReadOnlyList<ModifierEffect> GetEffects(IModifierHolder holder) => _getEffect(holder, _info);
-
-        public void OnAdded(IModifierHolder holder) => _onAdded(holder, _info);
-
-        public void OnRemoved(IModifierHolder holder) => _onRemoved(holder, _info);
+        public IReadOnlyList<ModifierEffect> GetEffects(IModifierHolder holder) => _getEffect(holder, _adderGuid);
     }
 
     public readonly struct ModifierEffect

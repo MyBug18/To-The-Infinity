@@ -9,27 +9,27 @@ Scope = {}
 Scope.Game = {}
 
 Scope.Game.GetEffect =
-function (target)
+function (target, adderGuid)
     return {}
 end
 
 Scope.Game.CheckCondition =
-function (target)
+function (target, adderGuid)
     return false
 end
 
-Scope.Game.OnAdded =
-function (target)
-
-end
-
-Scope.Game.OnRemoved =
-function (target)
-
-end
-
 Scope.Game.TriggerEvent = {}
+Scope.Game.TriggerEvent.OnAdded =
+function (target, adderGuid)
+
+end
+
+Scope.Game.TriggerEvent.OnRemoved =
+function (target, adderGuid)
+
+end
+
 Scope.Game.TriggerEvent.OnTechFinished =
-function (target)
+function (target, adderGuid)
 
 end

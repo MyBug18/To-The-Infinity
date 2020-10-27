@@ -29,6 +29,8 @@ namespace Core
             }
         }
 
+        private readonly Dictionary<string, object> _customValues = new Dictionary<string, object>();
+
         public void StartNewTurn(int month)
         {
             ReduceModifiersLeftMonth(month);
@@ -80,12 +82,12 @@ namespace Core
             }
         }
 
-        public void AddModifier(string modifierName, IDictionary<string, object> info, int leftMonth)
+        public void AddModifier(string modifierName, string adderGuid, int leftMonth)
         {
             if (_modifiers.ContainsKey(modifierName)) return;
 
             var m = new Modifier(GameDataStorage.Instance.GetGameData<ModifierData>().GetModifierDirectly(modifierName),
-                info, leftMonth);
+                adderGuid, leftMonth);
 
             if (m.Core.TargetType != TypeName)
                 return;
@@ -103,22 +105,13 @@ namespace Core
             ApplyModifierChangeToDownward(m, true);
         }
 
-        public object GetModifierInfoValue(string modifierName, string valueName)
+        public object GetCustomValue(string key) => _customValues.TryGetValue(key, out var result) ? result : null;
+
+        public void SetCustomValue(string key, object value)
         {
-            if (!_modifiers.ContainsKey(modifierName)) return null;
+            if (!value.GetType().IsPrimitive && value.GetType() != typeof(string)) return;
 
-            var info = _modifiers[modifierName].Info;
-
-            return info.TryGetValue(valueName, out var result) ? result : null;
-        }
-
-        public void SetModifierInfoValue(string modifierName, string valueName, object value)
-        {
-            if (!value.GetType().IsPrimitive) return;
-
-            if (!_modifiers.ContainsKey(modifierName)) return;
-
-            _modifiers[modifierName].Info[valueName] = value;
+            _customValues[key] = value;
         }
 
         public bool HasModifier(string modifierName) => _modifiers.ContainsKey(modifierName);
