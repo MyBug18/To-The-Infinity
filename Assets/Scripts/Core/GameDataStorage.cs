@@ -38,11 +38,11 @@ namespace Core
                 {"TileSpecialResourceType", new TileSpecialResourceTypeData()},
             };
 
-        [MoonSharpHidden]
         public void Initialize()
         {
             InitializeMoonSharp();
             Noise2d.InitializeGradSeed(null);
+            Logger.Instance.Initialize();
 
             var pathList = Directory.GetFiles(Path.Combine(Application.streamingAssetsPath, "CoreData"),
                     "*.lua", SearchOption.AllDirectories);
@@ -56,6 +56,8 @@ namespace Core
                 luaHolderList[i] = null;
 
                 var script = new Script();
+
+                script.Globals["Logger"] = Logger.Instance;
 
                 script.DoString(File.ReadAllText(path));
 
@@ -99,10 +101,9 @@ namespace Core
 
             customConverters.SetScriptToClrCustomConversion(
                 DataType.Table, typeof(HexTileCoord), v =>
-                    new HexTileCoord((int)v.Table.Get("Q").Number, (int)v.Table.Get("R").Number));
+                    new HexTileCoord((int) v.Table.Get("Q").Number, (int) v.Table.Get("R").Number));
         }
 
-        [MoonSharpHidden]
         public T GetGameData<T>() where T : IGameData
         {
             const string typeName = nameof(T);
