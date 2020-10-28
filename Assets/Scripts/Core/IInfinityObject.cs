@@ -18,7 +18,7 @@
         /// <summary>
         /// Gets object with string key
         /// </summary>
-        object GetCustomValue(string key);
+        object GetCustomValue(string key, object defaultValue);
 
         /// <summary>
         /// Sets custom value with given key

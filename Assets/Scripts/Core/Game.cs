@@ -66,7 +66,7 @@ namespace Core
             return null;
         }
 
-        public object GetCustomValue(string key) => _customValues.TryGetValue(key, out var result) ? result : null;
+        public object GetCustomValue(string key, object defaultValue) => _customValues.TryGetValue(key, out var result) ? result : defaultValue;
 
         public void SetCustomValue(string key, object value)
         {
