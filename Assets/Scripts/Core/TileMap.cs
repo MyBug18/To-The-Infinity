@@ -121,9 +121,12 @@ namespace Core
                 _onTileMapObjects.Remove(coord);
         }
 
-        public void ApplyModifierChangeToTileObjects(Modifier m, bool isRemoving)
+        public void ApplyModifierChangeToTileObjects(ModifierCore m, bool isRemoving,
+            HashSet<HexTileCoord> pureRange = null)
         {
-            foreach (var objs in _onTileMapObjects.SelectMany(objDict => objDict.Value.Values))
+            foreach (var objs in _onTileMapObjects
+                .Where(objs => pureRange == null || pureRange.Contains(objs.Key))
+                .SelectMany(objDict => objDict.Value.Values))
                 objs.ApplyModifierChangeToDownward(m, isRemoving);
         }
 

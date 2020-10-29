@@ -13,7 +13,6 @@ namespace Core
 
         bool HasModifier(string modifierName);
 
-        [MoonSharpHidden]
-        void ApplyModifierChangeToDownward(Modifier m, bool isRemoving);
+        void ApplyModifierChangeToDownward(ModifierCore m, bool isRemoving);
     }
 }
