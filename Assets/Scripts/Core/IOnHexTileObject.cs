@@ -15,5 +15,7 @@ namespace Core
         IEnumerable<TiledModifier> AffectedTiledModifiers { get; }
 
         void StartNewTurn(int month);
+
+        void TeleportToTile(HexTile tile);
     }
 }

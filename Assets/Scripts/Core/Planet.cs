@@ -6,6 +6,7 @@ using System.Linq;
 
 namespace Core
 {
+    [MoonSharpUserData]
     public sealed class Planet : ITileMapHolder, IOnHexTileObject
     {
         public string TypeName => nameof(Planet);
@@ -26,6 +27,7 @@ namespace Core
 
         private readonly Dictionary<string, Modifier> _modifiers = new Dictionary<string, Modifier>();
 
+        [MoonSharpHidden]
         public IEnumerable<Modifier> Modifiers
         {
             get
@@ -43,9 +45,8 @@ namespace Core
 
         private readonly Dictionary<string, TiledModifier> _tiledModifiers = new Dictionary<string, TiledModifier>();
 
+        [MoonSharpHidden]
         public IEnumerable<TiledModifier> TiledModifiers => _tiledModifiers.Values;
-
-        public IReadOnlyDictionary<string, int> ModifierEffect { get; private set; }
 
         /// <summary>
         /// 0 if totally uninhabitable,
@@ -88,6 +89,57 @@ namespace Core
         {
             ReduceModifiersLeftMonth(month);
             TileMap.StartNewTurn(month);
+        }
+
+        public void TeleportToTile(HexTile tile)
+        {
+            var destHolder = tile.TileMap.Holder;
+
+            if (destHolder.TypeName != nameof(StarSystem))
+            {
+                Logger.Instance.LogWarning(nameof(TeleportToTile), "Planet can exist only on StarSystem!");
+                return;
+            }
+
+            var toRemove = new HashSet<ModifierCore>();
+            var toAdd = new HashSet<ModifierCore>(destHolder.TiledModifiers.Select(x => x.Core));
+
+            foreach (var m in AffectedTiledModifiers)
+            {
+                var core = m.Core;
+
+                if (toAdd.Contains(core))
+                    toAdd.Remove(core);
+                else
+                    toRemove.Add(core);
+            }
+
+            // Should consider not tiled modifier when the tilemap changes
+            if (CurrentTile.TileMap.Holder != destHolder)
+            {
+                foreach (var m in destHolder.Modifiers)
+                    toAdd.Add(m.Core);
+
+                foreach (var m in Modifiers)
+                {
+                    var core = m.Core;
+
+                    if (toAdd.Contains(core))
+                        toAdd.Remove(core);
+                    else
+                        toRemove.Add(core);
+                }
+            }
+
+            // Remove modifier before detaching
+            foreach (var mc in toRemove)
+                ApplyModifierChangeToDownward(mc, true);
+            CurrentTile.RemoveTileObject(TypeName);
+
+            // Add modifier after attaching
+            tile.AddTileObject(this);
+            foreach (var mc in toAdd)
+                ApplyModifierChangeToDownward(mc, false);
         }
 
         public object GetCustomValue(string key, object defaultValue) =>
@@ -213,6 +265,7 @@ namespace Core
             ApplyModifierChangeToDownward(m.Core, true);
         }
 
+        [MoonSharpHidden]
         public void ApplyModifierChangeToDownward(ModifierCore m, bool isRemoving)
         {
             if (m.Scope.ContainsKey(TypeName))

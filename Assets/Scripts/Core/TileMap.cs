@@ -2,9 +2,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using MoonSharp.Interpreter;
 
 namespace Core
 {
+    [MoonSharpUserData]
     public sealed class TileMap : IEnumerable<HexTile>
     {
         public ITileMapHolder Holder { get; }
@@ -26,6 +28,7 @@ namespace Core
             Seed = seed;
         }
 
+        [MoonSharpHidden]
         public void StartNewTurn(int month)
         {
             foreach (var obj in _onTileMapObjects.Values.SelectMany(objs => objs.Values))
@@ -69,7 +72,9 @@ namespace Core
         }
 
         public IReadOnlyList<IOnHexTileObject> GetAllTileObjects(HexTileCoord coord) =>
-            !_onTileMapObjects.TryGetValue(coord, out var result) ? new List<IOnHexTileObject>() : result.Values.ToList();
+            !_onTileMapObjects.TryGetValue(coord, out var result)
+                ? new List<IOnHexTileObject>()
+                : result.Values.ToList();
 
         /// <summary>
         /// Gets collection of OnHexTileObject with given type.
@@ -81,7 +86,7 @@ namespace Core
              where obj.TypeName == nameof(T)
              select (T)obj).ToList();
 
-        public void AddTileObject(string typeName, string name, HexTileCoord coord)
+        public void AddTileObjectWithName(string typeName, string name, HexTileCoord coord)
         {
             var gameData = GameDataStorage.Instance.GetGameData(typeName);
 
@@ -121,6 +126,7 @@ namespace Core
                 _onTileMapObjects.Remove(coord);
         }
 
+        [MoonSharpHidden]
         public void ApplyModifierChangeToTileObjects(ModifierCore m, bool isRemoving,
             HashSet<HexTileCoord> pureRange = null)
         {
@@ -177,7 +183,7 @@ namespace Core
                     return ring[i];
             }
 
-            throw new InvalidOperationException("Chance generator has broken!");
+            return ring[0];
         }
     }
 }

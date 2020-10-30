@@ -1,5 +1,8 @@
-﻿namespace Core
+﻿using MoonSharp.Interpreter;
+
+namespace Core
 {
+    [MoonSharpUserData]
     public sealed class HexTile
     {
         public TileMap TileMap { get; }
@@ -21,5 +24,12 @@
         }
 
         public bool HasTileObject(string typeName) => TileMap.IsTileObjectExists(typeName, Coord);
+
+        public void AddTileObjectWithName(string typeName, string name) =>
+            TileMap.AddTileObjectWithName(typeName, name, Coord);
+
+        public void AddTileObject(IOnHexTileObject obj) => TileMap.AddTileObject(obj, Coord);
+
+        public void RemoveTileObject(string typeName) => TileMap.RemoveTileObject(typeName, Coord);
     }
 }

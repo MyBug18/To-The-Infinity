@@ -33,6 +33,10 @@ namespace Core
 
             LeftMonth -= month;
         }
+
+        public override bool Equals(object obj) => obj is Modifier m && Core == m.Core;
+
+        public override int GetHashCode() => Core.GetHashCode();
     }
 
     public sealed class TiledModifier
@@ -141,6 +145,10 @@ namespace Core
         }
 
         public bool IsInRange(HexTileCoord coord) => _infos.Values.Any(info => info.Tiles.Contains(coord));
+
+        public override bool Equals(object obj) => obj is TiledModifier m && Core == m.Core;
+
+        public override int GetHashCode() => Core.GetHashCode();
     }
 
     public sealed class TiledModifierInfo

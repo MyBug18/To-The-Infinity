@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 namespace Core
 {
+    [MoonSharpUserData]
     public sealed class StarSystem : ITileMapHolder
     {
         public string TypeName => nameof(StarSystem);
@@ -14,6 +15,7 @@ namespace Core
 
         private readonly Dictionary<string, Modifier> _modifiers = new Dictionary<string, Modifier>();
 
+        [MoonSharpHidden]
         public IEnumerable<Modifier> Modifiers
         {
             get
@@ -31,6 +33,7 @@ namespace Core
 
         private readonly Dictionary<string, TiledModifier> _tiledModifiers = new Dictionary<string, TiledModifier>();
 
+        [MoonSharpHidden]
         public IEnumerable<TiledModifier> TiledModifiers => _tiledModifiers.Values;
 
         private readonly Dictionary<string, object> _customValues = new Dictionary<string, object>();
@@ -148,6 +151,7 @@ namespace Core
             ApplyModifierChangeToDownward(m.Core, true);
         }
 
+        [MoonSharpHidden]
         public void ApplyModifierChangeToDownward(ModifierCore m, bool isRemoving)
         {
             if (m.Scope.ContainsKey(TypeName))
