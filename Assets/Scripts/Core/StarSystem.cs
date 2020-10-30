@@ -103,6 +103,51 @@ namespace Core
             }
         }
 
+        public void AddModifier(string modifierName, string adderGuid, int leftMonth)
+        {
+            if (_modifiers.ContainsKey(modifierName))
+            {
+                Logger.Instance.LogWarning(nameof(AddModifier),
+                    $"Trying to add modifier \"{modifierName}\" which already exists!");
+                return;
+            }
+
+            var core = GameDataStorage.Instance.GetGameData<ModifierData>().GetModifierDirectly(modifierName);
+
+            if (core.TargetType != TypeName)
+            {
+                Logger.Instance.LogWarning(nameof(AddModifier),
+                    $"Modifier \"{modifierName}\" is not for {TypeName}, but for {core.TargetType}!");
+                return;
+            }
+
+            if (core.IsTileLimited)
+            {
+                Logger.Instance.LogWarning(nameof(AddModifier),
+                    $"Modifier \"{modifierName}\" is a tile limited modifier!, but tried to use as a tile unlimited modifier!");
+                return;
+            }
+
+            var m = new Modifier(core, adderGuid, leftMonth);
+
+            _modifiers.Add(modifierName, m);
+            ApplyModifierChangeToDownward(m.Core, false);
+        }
+
+        public void RemoveModifier(string modifierName)
+        {
+            if (!_modifiers.ContainsKey(modifierName))
+            {
+                Logger.Instance.LogWarning(nameof(RemoveModifier),
+                    $"Trying to remove modifier \"{modifierName}\" which doesn't exist!");
+                return;
+            }
+
+            var m = _modifiers[modifierName];
+            _modifiers.Remove(modifierName);
+            ApplyModifierChangeToDownward(m.Core, true);
+        }
+
         public void ApplyModifierChangeToDownward(ModifierCore m, bool isRemoving)
         {
             if (m.Scope.ContainsKey(TypeName))
@@ -126,49 +171,6 @@ namespace Core
             TileMap.ApplyModifierChangeToTileObjects(m, isRemoving);
         }
 
-        public void AddModifier(string modifierName, string adderGuid, int leftMonth)
-        {
-            if (_modifiers.ContainsKey(modifierName))
-            {
-                Logger.Instance.LogWarning($"Trying to add modifier \"{modifierName}\" which already exists!");
-                return;
-            }
-
-            var core = GameDataStorage.Instance.GetGameData<ModifierData>().GetModifierDirectly(modifierName);
-
-            if (core.TargetType != TypeName)
-            {
-                Logger.Instance.LogWarning(
-                    $"Modifier \"{modifierName}\" is not for {TypeName}, but for {core.TargetType}!");
-                return;
-            }
-
-            if (core.IsTileLimited)
-            {
-                Logger.Instance.LogWarning(
-                    $"Modifier \"{modifierName}\" is a tile limited modifier!, but tried to use as a tile unlimited modifier!");
-                return;
-            }
-
-            var m = new Modifier(core, adderGuid, leftMonth);
-
-            _modifiers.Add(modifierName, m);
-            ApplyModifierChangeToDownward(m.Core, false);
-        }
-
-        public void RemoveModifier(string modifierName)
-        {
-            if (!_modifiers.ContainsKey(modifierName))
-            {
-                Logger.Instance.LogWarning($"Trying to remove modifier \"{modifierName}\" which doesn't exist!");
-                return;
-            }
-
-            var m = _modifiers[modifierName];
-            _modifiers.Remove(modifierName);
-            ApplyModifierChangeToDownward(m.Core, true);
-        }
-
         public bool HasModifier(string modifierName) => _modifiers.ContainsKey(modifierName);
 
         public void AddTiledModifierRange(string modifierName, string adderGuid, string rangeKeyName, List<HexTileCoord> tiles, int leftMonth)
@@ -179,14 +181,14 @@ namespace Core
 
                 if (core.TargetType != TypeName)
                 {
-                    Logger.Instance.LogWarning(
+                    Logger.Instance.LogWarning(nameof(AddTiledModifierRange),
                         $"Modifier \"{modifierName}\" is not for \"{TypeName}\", but for \"{core.TargetType}\"!");
                     return;
                 }
 
                 if (!core.IsTileLimited)
                 {
-                    Logger.Instance.LogWarning(
+                    Logger.Instance.LogWarning(nameof(AddTiledModifierRange),
                         $"Modifier \"{modifierName}\" is not a tile limited modifier, but tried to use as a tile limited modifier!");
                     return;
                 }
@@ -202,14 +204,14 @@ namespace Core
             {
                 if (m.AdderGuid != adderGuid)
                 {
-                    Logger.Instance.LogWarning(
+                    Logger.Instance.LogWarning(nameof(AddTiledModifierRange),
                         $"Modifier \"{modifierName}\" has already added by different object : \"{m.AdderGuid}\"!");
                     return;
                 }
 
                 if (m.Infos.ContainsKey(rangeKeyName))
                 {
-                    Logger.Instance.LogWarning(
+                    Logger.Instance.LogWarning(nameof(AddTiledModifierRange),
                         $"Range key name \"{rangeKeyName}\" already exists in modifier \"{m.Name}\"!");
                     return;
                 }
@@ -224,14 +226,14 @@ namespace Core
         {
             if (!_tiledModifiers.TryGetValue(modifierName, out var m))
             {
-                Logger.Instance.LogWarning(
+                Logger.Instance.LogWarning(nameof(MoveTiledModifierRange),
                     $"Trying to access modifier \"{modifierName}\" which doesn't exist!");
                 return;
             }
 
             if (!m.Infos.ContainsKey(rangeKeyName))
             {
-                Logger.Instance.LogWarning(
+                Logger.Instance.LogWarning(nameof(MoveTiledModifierRange),
                     $"There is no range key \"{rangeKeyName}\" in modifier \"{modifierName}\"!");
                 return;
             }
@@ -246,14 +248,14 @@ namespace Core
         {
             if (!_tiledModifiers.TryGetValue(modifierName, out var m))
             {
-                Logger.Instance.LogWarning(
+                Logger.Instance.LogWarning(nameof(RemoveTiledModifierRange),
                     $"Trying to remove modifier \"{modifierName}\" which doesn't exist!");
                 return;
             }
 
             if (!m.Infos.ContainsKey(rangeKeyName))
             {
-                Logger.Instance.LogWarning(
+                Logger.Instance.LogWarning(nameof(RemoveTiledModifierRange),
                     $"There is no range key \"{rangeKeyName}\" in modifier \"{modifierName}\"!");
                 return;
             }

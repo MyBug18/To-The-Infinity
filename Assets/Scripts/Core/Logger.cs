@@ -40,13 +40,13 @@ namespace Core
 			_sw.WriteLine(DateTime.Now.ToString("T") + " [LOG] " + l);
 		}
 
-		public void LogWarning(string l)
+		public void LogWarning(string nameFailed, string l)
 		{
 #if UNITY_EDITOR
 			Debug.LogWarning(l);
 #endif
 
-			_sw.WriteLine(DateTime.Now.ToString("T") + " [WARNING] " + l);
+			_sw.WriteLine(DateTime.Now.ToString("T") + $" [WARNING] {nameFailed} failed: " + l);
 		}
 
 		public void LogError(string l)
