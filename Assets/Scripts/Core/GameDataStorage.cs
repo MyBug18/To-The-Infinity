@@ -105,10 +105,10 @@ namespace Core
 
             customConverters.SetScriptToClrCustomConversion(
                 DataType.Table, typeof(HexTileCoord), v =>
-                    new HexTileCoord((int) v.Table.Get("Q").Number, (int) v.Table.Get("R").Number));
+                    new HexTileCoord((int)v.Table.Get("Q").Number, (int)v.Table.Get("R").Number));
         }
 
-        public T GetGameData<T>() where T : IGameData => (T) GetGameData(typeof(T).Name);
+        public T GetGameData<T>() where T : IGameData => (T)GetGameData(typeof(T).Name);
 
         public IGameData GetGameData(string dataName)
         {

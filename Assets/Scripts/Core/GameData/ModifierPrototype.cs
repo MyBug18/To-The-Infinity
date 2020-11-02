@@ -58,7 +58,7 @@ namespace Core.GameData
                         for (var i = 1; i < tokens.Length; i++)
                             additionalInfo.Add(tokens[i]);
 
-                        result.Add(new ModifierEffect(tokens[0], additionalInfo, (int) kv.Value));
+                        result.Add(new ModifierEffect(tokens[0], additionalInfo, (int)kv.Value));
                     }
 
                     return result;

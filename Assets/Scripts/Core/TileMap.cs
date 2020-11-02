@@ -83,7 +83,7 @@ namespace Core
             (from objDict in _onTileMapObjects.Values
                 from obj in objDict.Values
                 where obj.TypeName == nameof(T)
-                select (T) obj).ToList();
+                select (T)obj).ToList();
 
         public void AddTileObjectWithName(string typeName, string name, HexTileCoord coord)
         {
@@ -153,7 +153,7 @@ namespace Core
 
             for (var i = 2; i < 8; i++)
             {
-                var walkDir = (TileDirection) (i % 6);
+                var walkDir = (TileDirection)(i % 6);
                 for (var j = 0; j < radius; j++)
                 {
                     // Add only valid coordinates

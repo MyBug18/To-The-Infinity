@@ -20,7 +20,7 @@ namespace Core.GameData
 
             var resChanceMap =
                 luaScript.Globals.Get("ResChanceMap").Table.Pairs
-                    .Select(kv => ((int) kv.Key.Number, kv.Value.String)).ToList();
+                    .Select(kv => ((int)kv.Key.Number, kv.Value.String)).ToList();
 
             resChanceMap.Sort((x, y) => y.Item1.CompareTo(x.Item1));
 

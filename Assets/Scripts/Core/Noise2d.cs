@@ -93,8 +93,8 @@ namespace Core
 
                 do
                 {
-                    gradient = new Vector2((float) (_random.NextDouble() * 2 - 1),
-                        (float) (_random.NextDouble() * 2 - 1));
+                    gradient = new Vector2((float)(_random.NextDouble() * 2 - 1),
+                        (float)(_random.NextDouble() * 2 - 1));
                 } while (gradient.LengthSquared() >= 1);
 
                 gradient = Vector2.Normalize(gradient);
@@ -113,7 +113,7 @@ namespace Core
 
         private static float Noise(float x, float y)
         {
-            var cell = new Vector2((float) Math.Floor(x), (float) Math.Floor(y));
+            var cell = new Vector2((float)Math.Floor(x), (float)Math.Floor(y));
 
             var total = 0f;
 
@@ -124,8 +124,8 @@ namespace Core
                 var ij = cell + n;
                 var uv = new Vector2(x - ij.X, y - ij.Y);
 
-                var index = _permutation[(int) ij.X % _permutation.Length];
-                index = _permutation[(index + (int) ij.Y) % _permutation.Length];
+                var index = _permutation[(int)ij.X % _permutation.Length];
+                index = _permutation[(index + (int)ij.Y) % _permutation.Length];
 
                 var grad = _gradients[index % _gradients.Length];
 

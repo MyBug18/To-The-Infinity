@@ -37,7 +37,7 @@ namespace Core.GameData
 
             IsBasic = luaScript.Globals.Get("IsBasic").Boolean;
 
-            MaxAmount = (int) luaScript.Globals.Get("MaxAmount").Number;
+            MaxAmount = (int)luaScript.Globals.Get("MaxAmount").Number;
 
             return true;
         }

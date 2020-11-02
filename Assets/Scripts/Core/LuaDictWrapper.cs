@@ -11,11 +11,16 @@ namespace Core
     {
         private readonly Dictionary<string, object> _v;
 
+        public LuaDictWrapper(Dictionary<string, object> v) => _v = v;
+
         public object GetValue(string key, object defaultValue) =>
             _v.TryGetValue(key, out var result) ? result : defaultValue;
 
-        public void SetValue(string key, object value) => _v[key] = value;
+        public void SetValue(string key, object value)
+        {
+            if (!value.GetType().IsValueType || value.GetType() != typeof(string)) return;
 
-        public LuaDictWrapper(Dictionary<string, object> v) => _v = v;
+            _v[key] = value;
+        }
     }
 }

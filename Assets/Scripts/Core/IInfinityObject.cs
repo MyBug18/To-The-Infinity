@@ -16,7 +16,6 @@
         string Guid { get; }
 
 
-
         LuaDictWrapper Storage { get; }
     }
 }

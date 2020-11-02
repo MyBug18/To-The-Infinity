@@ -27,12 +27,12 @@ namespace Core.GameData
 
             var yield = new Dictionary<string, float>();
             foreach (var kv in luaScript.Globals.Get("Yield").Table.Pairs)
-                yield[kv.Key.String] = (float) kv.Value.Number;
+                yield[kv.Key.String] = (float)kv.Value.Number;
             BaseYield = yield;
 
             var upkeep = new Dictionary<string, float>();
             foreach (var kv in luaScript.Globals.Get("Upkeep").Table.Pairs)
-                upkeep[kv.Key.String] = (float) kv.Value.Number;
+                upkeep[kv.Key.String] = (float)kv.Value.Number;
             BaseUpkeep = upkeep;
 
             return true;

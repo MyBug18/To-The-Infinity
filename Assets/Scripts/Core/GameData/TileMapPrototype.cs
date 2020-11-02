@@ -93,8 +93,8 @@ namespace Core.GameData
         {
             var dict = _tileInfoMaker.Invoke(coord, noise);
 
-            var name = (string) dict["Name"];
-             var res = (int) (double) dict["ResDecider"];
+            var name = (string)dict["Name"];
+            var res = (int)(double)dict["ResDecider"];
 
             var tileProto = GameDataStorage.Instance.GetGameData<HexTileData>().GetPrototype(name);
             var tile = tileProto.Create(tileMap, coord, res);
