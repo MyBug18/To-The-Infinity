@@ -4,8 +4,6 @@ namespace Core
 {
     public sealed class Game : IInfinityObject
     {
-        private readonly Dictionary<string, object> _customValues = new Dictionary<string, object>();
-
         private readonly HashSet<string> _enemyOwners = new HashSet<string>();
 
         private readonly Dictionary<string, IInfinityObject> _guidObjectMap = new Dictionary<string, IInfinityObject>();
@@ -32,15 +30,7 @@ namespace Core
 
         public string Guid { get; }
 
-        public object GetCustomValue(string key, object defaultValue) =>
-            _customValues.TryGetValue(key, out var result) ? result : defaultValue;
-
-        public void SetCustomValue(string key, object value)
-        {
-            if (!value.GetType().IsPrimitive && value.GetType() != typeof(string)) return;
-
-            _customValues[key] = value;
-        }
+        public LuaDictWrapper Storage { get; } = new LuaDictWrapper(new Dictionary<string, object>());
 
         public void StartNewTurn()
         {

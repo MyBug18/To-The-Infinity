@@ -7,14 +7,14 @@ namespace Core
     [MoonSharpUserData]
     public sealed class StarSystem : ITileMapHolder
     {
-        private readonly Dictionary<string, object> _customValues = new Dictionary<string, object>();
-
         private readonly Dictionary<string, Modifier> _modifiers = new Dictionary<string, Modifier>();
 
         private readonly Dictionary<string, TiledModifier> _tiledModifiers = new Dictionary<string, TiledModifier>();
         public string TypeName => nameof(StarSystem);
 
         public string Guid { get; }
+
+        public LuaDictWrapper Storage { get; } = new LuaDictWrapper(new Dictionary<string, object>());
 
         public TileMap TileMap { get; }
 
@@ -36,16 +36,6 @@ namespace Core
 
         [MoonSharpHidden]
         public IEnumerable<TiledModifier> TiledModifiers => _tiledModifiers.Values;
-
-        public object GetCustomValue(string key, object defaultValue) =>
-            _customValues.TryGetValue(key, out var result) ? result : defaultValue;
-
-        public void SetCustomValue(string key, object value)
-        {
-            if (!value.GetType().IsPrimitive && value.GetType() != typeof(string)) return;
-
-            _customValues[key] = value;
-        }
 
         public void StartNewTurn(int month)
         {

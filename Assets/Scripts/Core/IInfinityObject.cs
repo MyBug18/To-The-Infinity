@@ -15,14 +15,8 @@
         /// </summary>
         string Guid { get; }
 
-        /// <summary>
-        ///     Gets object with string key
-        /// </summary>
-        object GetCustomValue(string key, object defaultValue);
 
-        /// <summary>
-        ///     Sets custom value with given key
-        /// </summary>
-        void SetCustomValue(string key, object value);
+
+        LuaDictWrapper Storage { get; }
     }
 }
