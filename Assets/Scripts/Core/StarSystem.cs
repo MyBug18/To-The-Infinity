@@ -1,19 +1,22 @@
-﻿using Core.GameData;
+﻿using System.Collections.Generic;
+using Core.GameData;
 using MoonSharp.Interpreter;
-using System.Collections.Generic;
 
 namespace Core
 {
     [MoonSharpUserData]
     public sealed class StarSystem : ITileMapHolder
     {
+        private readonly Dictionary<string, object> _customValues = new Dictionary<string, object>();
+
+        private readonly Dictionary<string, Modifier> _modifiers = new Dictionary<string, Modifier>();
+
+        private readonly Dictionary<string, TiledModifier> _tiledModifiers = new Dictionary<string, TiledModifier>();
         public string TypeName => nameof(StarSystem);
 
         public string Guid { get; }
 
         public TileMap TileMap { get; }
-
-        private readonly Dictionary<string, Modifier> _modifiers = new Dictionary<string, Modifier>();
 
         [MoonSharpHidden]
         public IEnumerable<Modifier> Modifiers
@@ -31,18 +34,8 @@ namespace Core
             }
         }
 
-        private readonly Dictionary<string, TiledModifier> _tiledModifiers = new Dictionary<string, TiledModifier>();
-
         [MoonSharpHidden]
         public IEnumerable<TiledModifier> TiledModifiers => _tiledModifiers.Values;
-
-        private readonly Dictionary<string, object> _customValues = new Dictionary<string, object>();
-
-        public void StartNewTurn(int month)
-        {
-            ReduceModifiersLeftMonth(month);
-            TileMap.StartNewTurn(month);
-        }
 
         public object GetCustomValue(string key, object defaultValue) =>
             _customValues.TryGetValue(key, out var result) ? result : defaultValue;
@@ -52,6 +45,12 @@ namespace Core
             if (!value.GetType().IsPrimitive && value.GetType() != typeof(string)) return;
 
             _customValues[key] = value;
+        }
+
+        public void StartNewTurn(int month)
+        {
+            ReduceModifiersLeftMonth(month);
+            TileMap.StartNewTurn(month);
         }
 
         #region Modifier
@@ -177,7 +176,8 @@ namespace Core
 
         public bool HasModifier(string modifierName) => _modifiers.ContainsKey(modifierName);
 
-        public void AddTiledModifierRange(string modifierName, string adderGuid, string rangeKeyName, List<HexTileCoord> tiles, int leftMonth)
+        public void AddTiledModifierRange(string modifierName, string adderGuid, string rangeKeyName,
+            List<HexTileCoord> tiles, int leftMonth)
         {
             if (!_tiledModifiers.TryGetValue(modifierName, out var m))
             {

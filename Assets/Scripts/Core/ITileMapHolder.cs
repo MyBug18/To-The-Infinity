@@ -11,9 +11,10 @@ namespace Core
         IEnumerable<TiledModifier> TiledModifiers { get; }
 
         /// <summary>
-        /// Should not allow same modifier with different adder guid
+        ///     Should not allow same modifier with different adder guid
         /// </summary>
-        void AddTiledModifierRange(string modifierName, string adderGuid, string rangeKeyName, List<HexTileCoord> tiles, int leftMonth);
+        void AddTiledModifierRange(string modifierName, string adderGuid, string rangeKeyName, List<HexTileCoord> tiles,
+            int leftMonth);
 
         void MoveTiledModifierRange(string modifierName, string rangeKeyName, List<HexTileCoord> tiles);
 

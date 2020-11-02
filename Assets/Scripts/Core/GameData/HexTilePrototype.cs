@@ -1,22 +1,18 @@
-﻿using MoonSharp.Interpreter;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using MoonSharp.Interpreter;
 
 namespace Core.GameData
 {
     public sealed class HexTilePrototype : ILuaHolder
     {
+        public HexTilePrototype(string filePath) => FilePath = filePath;
+
+        public IReadOnlyList<(int value, string resName)> ResChanceMap { get; private set; }
         public string IdentifierName { get; private set; }
         public string TypeName => "HexTile";
 
         public string FilePath { get; }
-
-        public IReadOnlyList<(int value, string resName)> ResChanceMap { get; private set; }
-
-        public HexTilePrototype(string filePath)
-        {
-            FilePath = filePath;
-        }
 
         public bool Load(Script luaScript)
         {
@@ -24,7 +20,7 @@ namespace Core.GameData
 
             var resChanceMap =
                 luaScript.Globals.Get("ResChanceMap").Table.Pairs
-                    .Select(kv => ((int)kv.Key.Number, kv.Value.String)).ToList();
+                    .Select(kv => ((int) kv.Key.Number, kv.Value.String)).ToList();
 
             resChanceMap.Sort((x, y) => y.Item1.CompareTo(x.Item1));
 

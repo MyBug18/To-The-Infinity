@@ -1,5 +1,5 @@
-﻿using MoonSharp.Interpreter;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using MoonSharp.Interpreter;
 
 namespace Core.GameData
 {
@@ -12,9 +12,7 @@ namespace Core.GameData
             {"Research", ResourceType.Research},
         };
 
-        public string IdentifierName { get; private set; }
-
-        public string TypeName => "Resource";
+        public ResourcePrototype(string filePath) => FilePath = filePath;
 
         public ResourceType ResourceType { get; private set; }
 
@@ -22,12 +20,11 @@ namespace Core.GameData
 
         public int MaxAmount { get; private set; }
 
-        public string FilePath { get; }
+        public string IdentifierName { get; private set; }
 
-        public ResourcePrototype(string filePath)
-        {
-            FilePath = filePath;
-        }
+        public string TypeName => "Resource";
+
+        public string FilePath { get; }
 
         public bool Load(Script luaScript)
         {
@@ -40,7 +37,7 @@ namespace Core.GameData
 
             IsBasic = luaScript.Globals.Get("IsBasic").Boolean;
 
-            MaxAmount = (int)luaScript.Globals.Get("MaxAmount").Number;
+            MaxAmount = (int) luaScript.Globals.Get("MaxAmount").Number;
 
             return true;
         }

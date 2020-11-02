@@ -3,22 +3,17 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using MoonSharp.Interpreter;
+using Random = UnityEngine.Random;
 
 namespace Core
 {
     [MoonSharpUserData]
     public sealed class TileMap : IEnumerable<HexTile>
     {
-        public ITileMapHolder Holder { get; }
-
-        private readonly HexTile[][] _tileMap;
-
         private readonly Dictionary<HexTileCoord, Dictionary<string, IOnHexTileObject>> _onTileMapObjects =
             new Dictionary<HexTileCoord, Dictionary<string, IOnHexTileObject>>();
 
-        public int Radius { get; }
-
-        public int Seed { get; }
+        private readonly HexTile[][] _tileMap;
 
         public TileMap(ITileMapHolder holder, HexTile[][] tileMap, int radius, int seed)
         {
@@ -28,27 +23,31 @@ namespace Core
             Seed = seed;
         }
 
+        public ITileMapHolder Holder { get; }
+
+        public int Radius { get; }
+
+        public int Seed { get; }
+
+        public IEnumerator<HexTile> GetEnumerator()
+        {
+            return _tileMap.SelectMany(tileArray => tileArray).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
         [MoonSharpHidden]
         public void StartNewTurn(int month)
         {
-            foreach (var obj in _onTileMapObjects.Values.SelectMany(objs => objs.Values))
-            {
-                obj.StartNewTurn(month);
-            }
+            foreach (var obj in _onTileMapObjects.Values.SelectMany(objs => objs.Values)) obj.StartNewTurn(month);
         }
 
         /// <summary>
-        /// Is it valid coordinate on this tile map?
+        ///     Is it valid coordinate on this tile map?
         /// </summary>
-        public bool IsValidCoord(HexTileCoord coord)
-        {
-            return coord.Q + coord.R >= Radius && coord.Q + coord.R <= 3 * Radius;
-        }
+        public bool IsValidCoord(HexTileCoord coord) => coord.Q + coord.R >= Radius && coord.Q + coord.R <= 3 * Radius;
 
-        public bool IsValidCoord(int q, int r)
-        {
-            return q + r >= Radius && q + r <= 3 * Radius;
-        }
+        public bool IsValidCoord(int q, int r) => q + r >= Radius && q + r <= 3 * Radius;
 
         public HexTile GetHexTile(HexTileCoord coord)
         {
@@ -77,14 +76,14 @@ namespace Core
                 : result.Values.ToList();
 
         /// <summary>
-        /// Gets collection of OnHexTileObject with given type.
+        ///     Gets collection of OnHexTileObject with given type.
         /// </summary>
         /// <returns>Returns null if given type is not in the dict.</returns>
         public IReadOnlyList<T> GetTileObjectList<T>() where T : IOnHexTileObject =>
             (from objDict in _onTileMapObjects.Values
-             from obj in objDict.Values
-             where obj.TypeName == nameof(T)
-             select (T)obj).ToList();
+                from obj in objDict.Values
+                where obj.TypeName == nameof(T)
+                select (T) obj).ToList();
 
         public void AddTileObjectWithName(string typeName, string name, HexTileCoord coord)
         {
@@ -136,13 +135,8 @@ namespace Core
                 objs.ApplyModifierChangeToDownward(m, isRemoving);
         }
 
-        public bool IsTileObjectExists(string typeName, HexTileCoord coord)
-            => _onTileMapObjects.TryGetValue(coord, out var objDict) && objDict.ContainsKey(typeName);
-
-        public IEnumerator<HexTile> GetEnumerator() =>
-            _tileMap.SelectMany(tileArray => tileArray).GetEnumerator();
-
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        public bool IsTileObjectExists(string typeName, HexTileCoord coord) =>
+            _onTileMapObjects.TryGetValue(coord, out var objDict) && objDict.ContainsKey(typeName);
 
         public List<HexTileCoord> GetRing(int radius, HexTileCoord? center = null)
         {
@@ -159,7 +153,7 @@ namespace Core
 
             for (var i = 2; i < 8; i++)
             {
-                var walkDir = (TileDirection)(i % 6);
+                var walkDir = (TileDirection) (i % 6);
                 for (var j = 0; j < radius; j++)
                 {
                     // Add only valid coordinates
@@ -168,6 +162,7 @@ namespace Core
                     current = current.AddDirection(walkDir);
                 }
             }
+
             return resultList;
         }
 
@@ -175,7 +170,7 @@ namespace Core
         {
             var ring = GetRing(radius, center);
             var count = ring.Count;
-            var decider = UnityEngine.Random.value;
+            var decider = Random.value;
             for (var i = 0; i < count; i++)
             {
                 var chance = 1.0f / (count - i);

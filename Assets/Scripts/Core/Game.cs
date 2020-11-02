@@ -4,19 +4,9 @@ namespace Core
 {
     public sealed class Game : IInfinityObject
     {
-        public static Game Instance { get; private set; }
-
-        public string TypeName => nameof(Game);
-
-        public string Guid { get; }
-
-        public int GameSpeed { get; }
-
-        public IReadOnlyList<StarSystem> StarSystems { get; }
-
-        private HashSet<string> _enemyOwners = new HashSet<string>();
-
         private readonly Dictionary<string, object> _customValues = new Dictionary<string, object>();
+
+        private readonly HashSet<string> _enemyOwners = new HashSet<string>();
 
         private readonly Dictionary<string, IInfinityObject> _guidObjectMap = new Dictionary<string, IInfinityObject>();
 
@@ -32,12 +22,29 @@ namespace Core
             GameSpeed = gameSpeed;
         }
 
+        public static Game Instance { get; private set; }
+
+        public int GameSpeed { get; }
+
+        public IReadOnlyList<StarSystem> StarSystems { get; }
+
+        public string TypeName => nameof(Game);
+
+        public string Guid { get; }
+
+        public object GetCustomValue(string key, object defaultValue) =>
+            _customValues.TryGetValue(key, out var result) ? result : defaultValue;
+
+        public void SetCustomValue(string key, object value)
+        {
+            if (!value.GetType().IsPrimitive && value.GetType() != typeof(string)) return;
+
+            _customValues[key] = value;
+        }
+
         public void StartNewTurn()
         {
-            foreach (var s in StarSystems)
-            {
-                s.StartNewTurn(GameSpeed);
-            }
+            foreach (var s in StarSystems) s.StartNewTurn(GameSpeed);
         }
 
         public bool IsEnemy(string owner1, string owner2)
@@ -64,15 +71,6 @@ namespace Core
 
             // TODO: Log warning
             return null;
-        }
-
-        public object GetCustomValue(string key, object defaultValue) => _customValues.TryGetValue(key, out var result) ? result : defaultValue;
-
-        public void SetCustomValue(string key, object value)
-        {
-            if (!value.GetType().IsPrimitive && value.GetType() != typeof(string)) return;
-
-            _customValues[key] = value;
         }
     }
 }

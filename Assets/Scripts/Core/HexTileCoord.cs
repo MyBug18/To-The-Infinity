@@ -1,21 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
+using MoonSharp.Interpreter;
 
 namespace Core
 {
     /// <summary>
-    /// Clockwise tile direction
+    ///     Clockwise tile direction
     /// </summary>
     public enum TileDirection
     {
-        Right = 0,      // (+1,  0)
-        UpRight = 1,    // ( 0, +1)
-        UpLeft = 2,     // (-1, +1)
-        Left = 3,       // (-1,  0)
-        DownLeft = 4,   // ( 0, -1)
-        DownRight = 5,  // (+1, -1)
+        Right = 0, // (+1,  0)
+        UpRight = 1, // ( 0, +1)
+        UpLeft = 2, // (-1, +1)
+        Left = 3, // (-1,  0)
+        DownLeft = 4, // ( 0, -1)
+        DownRight = 5, // (+1, -1)
     }
 
+    [MoonSharpUserData]
     public readonly struct HexTileCoord : IEquatable<HexTileCoord>
     {
         public int Q { get; }
@@ -27,14 +29,14 @@ namespace Core
             R = r;
         }
 
-        public readonly static HexTileCoord Right = new HexTileCoord(1, 0);
-        public readonly static HexTileCoord UpRight = new HexTileCoord(0, 1);
-        public readonly static HexTileCoord UpLeft = new HexTileCoord(-1, 1);
-        public readonly static HexTileCoord Left = new HexTileCoord(-1, 0);
-        public readonly static HexTileCoord DownLeft = new HexTileCoord(0, -1);
-        public readonly static HexTileCoord DownRight = new HexTileCoord(1, -1);
+        public static readonly HexTileCoord Right = new HexTileCoord(1, 0);
+        public static readonly HexTileCoord UpRight = new HexTileCoord(0, 1);
+        public static readonly HexTileCoord UpLeft = new HexTileCoord(-1, 1);
+        public static readonly HexTileCoord Left = new HexTileCoord(-1, 0);
+        public static readonly HexTileCoord DownLeft = new HexTileCoord(0, -1);
+        public static readonly HexTileCoord DownRight = new HexTileCoord(1, -1);
 
-        public readonly static HashSet<HexTileCoord> AllDirectionSet = new HashSet<HexTileCoord>
+        public static readonly HashSet<HexTileCoord> AllDirectionSet = new HashSet<HexTileCoord>
         {
             Right,
             UpRight,
@@ -59,7 +61,7 @@ namespace Core
         public static HexTileCoord operator +(HexTileCoord coord1, HexTileCoord coord2) =>
             new HexTileCoord(coord1.Q + coord2.Q, coord1.R + coord2.R);
 
-        public static HexTileCoord operator -(HexTileCoord coord1, HexTileCoord coord2) => coord1 + (-coord2);
+        public static HexTileCoord operator -(HexTileCoord coord1, HexTileCoord coord2) => coord1 + -coord2;
 
         public static bool operator ==(HexTileCoord coord1, HexTileCoord coord2) => coord1.Equals(coord2);
 
@@ -78,7 +80,7 @@ namespace Core
                 TileDirection.Left => this + Left,
                 TileDirection.DownLeft => this + DownLeft,
                 TileDirection.DownRight => this + DownRight,
-                _ => throw new ArgumentOutOfRangeException()
+                _ => throw new ArgumentOutOfRangeException(),
             };
         }
     }

@@ -1,25 +1,21 @@
-﻿using MoonSharp.Interpreter;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using MoonSharp.Interpreter;
+using UnityEngine;
 
 namespace Core.GameData
 {
     public sealed class TileMapPrototype : ILuaHolder
     {
+        private ScriptFunctionDelegate<Dictionary<string, object>> _tileInfoMaker;
+
+        public TileMapPrototype(string filePath) => FilePath = filePath;
+
         public string IdentifierName { get; private set; }
 
         public string TypeName => "TileMap";
 
         public string FilePath { get; }
-
-        private ScriptFunctionDelegate<Dictionary<string, object>> _tileInfoMaker;
-
-        public TileMapPrototype(string filePath)
-        {
-            FilePath = filePath;
-        }
 
         public bool Load(Script luaScript)
         {
@@ -31,19 +27,16 @@ namespace Core.GameData
 
         public TileMap Create(ITileMapHolder holder, int radius, int? seed = null)
         {
-            var tileMapSeed = seed ?? UnityEngine.Random.Range(int.MinValue, int.MaxValue);
+            var tileMapSeed = seed ?? Random.Range(int.MinValue, int.MaxValue);
 
             var size = 2 * radius + 1;
 
-            var noiseTask = new Task<float[,]>(() => Noise2d.GenerateNoiseMap(size, size, 2, seed));
-            var randomTask = new Task<float[,]>(() => MakeRandomMap(size, tileMapSeed));
+            var noiseMap = Noise2d.GenerateNoiseMap(size, size, 2, seed);
+            var randomMap = MakeRandomMap(size, tileMapSeed);
 
-            noiseTask.Start();
-            randomTask.Start();
+            var tileMap = new HexTile[size][];
 
-            var tileMap = new HexTile[radius * 2 + 1][];
-
-            var lineCount = new int[radius * 2 + 1];
+            var lineCount = new int[size];
 
             for (var i = 0; i < radius; i++)
             {
@@ -57,20 +50,21 @@ namespace Core.GameData
                 lineCount[i] = 3 * radius - i + 1;
             }
 
-            var noiseMap = noiseTask.Result;
-            var randomMap = randomTask.Result;
-
             var result = new TileMap(holder, tileMap, radius, tileMapSeed);
 
-            Parallel.For(0, lineCount.Sum(), i =>
+            for (var i = 0; i < lineCount.Sum(); i++)
             {
                 var (x, y) = GetTileMapIndexFromInt(i);
-                var coord = new HexTileCoord(y + (radius - x), x);
+
+                var r = x;
+                var q = r > radius ? y : y + (radius - r);
+
+                var coord = new HexTileCoord(q, r);
                 var noise = noiseMap[coord.Q, coord.R];
                 var rnd = randomMap[coord.Q, coord.R];
 
-                tileMap[x][y] = GenerateTileThreadSafe(result, coord, noise, rnd);
-            });
+                tileMap[x][y] = GenerateTile(result, coord, noise, rnd);
+            }
 
             return result;
 
@@ -83,7 +77,7 @@ namespace Core.GameData
 
                 for (var i = 0; i < lineCount.Length; i++)
                 {
-                    if (left <= lineCount[i])
+                    if (left < lineCount[i])
                     {
                         x = i;
                         y = left;
@@ -98,31 +92,27 @@ namespace Core.GameData
 
             static float[,] MakeRandomMap(int size, int seed)
             {
-                var r = new Random(seed);
+                var r = new System.Random(seed);
 
                 var result = new float[size, size];
 
                 for (var i = 0; i < size; i++)
-                {
-                    for (var j = 0; j < size; j++)
-                    {
-                        result[i, j] = (float)r.NextDouble();
-                    }
-                }
+                for (var j = 0; j < size; j++)
+                    result[i, j] = (float) r.NextDouble();
 
                 return result;
             }
         }
 
-        private HexTile GenerateTileThreadSafe(TileMap tileMap, HexTileCoord coord, float noise, float rnd)
+        private HexTile GenerateTile(TileMap tileMap, HexTileCoord coord, float noise, float rnd)
         {
             var dict = _tileInfoMaker.Invoke(coord, noise, rnd);
 
-            var name = (string)dict["Name"];
-            var res = (int)dict["ResDecider"];
+            var name = (string) dict["Name"];
+            // var res = (int)dict["ResDecider"];
 
             var tileProto = GameDataStorage.Instance.GetGameData<HexTileData>().GetPrototype(name);
-            var tile = tileProto.Create(tileMap, coord, res);
+            var tile = tileProto.Create(tileMap, coord, 0);
 
             return tile;
         }

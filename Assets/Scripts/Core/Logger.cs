@@ -6,63 +6,65 @@ using UnityEngine;
 
 namespace Core
 {
-	[MoonSharpUserData]
-	public class Logger : IDisposable
-	{
-		private static Logger _instance;
+    [MoonSharpUserData]
+    public class Logger : IDisposable
+    {
+        private static Logger _instance;
 
-		[MoonSharpHidden]
-		public static Logger Instance => _instance ??= new Logger();
+        private FileStream _fs;
 
-		private FileStream _fs;
+        private StreamWriter _sw;
 
-		private StreamWriter _sw;
+        [MoonSharpHidden]
+        public static Logger Instance => _instance ??= new Logger();
 
-		[MoonSharpHidden]
-		public void Initialize()
-		{
-			var logDirectoryPath = Path.Combine(Application.dataPath, "log");
+        [MoonSharpHidden]
+        public void Dispose()
+        {
+            _sw.Close();
+            _fs.Close();
+        }
 
-			if (!Directory.Exists(logDirectoryPath))
-				Directory.CreateDirectory(logDirectoryPath);
+        [MoonSharpHidden]
+        public void Initialize()
+        {
+            var logDirectoryPath = Path.Combine(Application.dataPath, "logs");
 
-			_fs = new FileStream(Path.Combine(logDirectoryPath, "Log-" + DateTime.Now.ToString("O") + ".txt"),
-				FileMode.Create, FileAccess.Write);
-			_sw = new StreamWriter(_fs, Encoding.UTF8);
-		}
+            var logName = "Log " + DateTime.Now.ToString("yyyyMMdd") + ".txt";
 
-		public void Log(string l)
-		{
+            if (!Directory.Exists(logDirectoryPath))
+                Directory.CreateDirectory(logDirectoryPath);
+
+            _fs = new FileStream(Path.Combine(logDirectoryPath, logName),
+                FileMode.Create);
+            _sw = new StreamWriter(_fs, Encoding.UTF8);
+        }
+
+        public void Log(string l)
+        {
 #if UNITY_EDITOR
-			Debug.Log(l);
+            Debug.Log(l);
 #endif
 
-			_sw.WriteLine(DateTime.Now.ToString("T") + " [LOG] " + l);
-		}
+            _sw.WriteLine(DateTime.Now.ToString("T") + " [LOG] " + l);
+        }
 
-		public void LogWarning(string nameFailed, string l)
-		{
+        public void LogWarning(string nameFailed, string l)
+        {
 #if UNITY_EDITOR
-			Debug.LogWarning(l);
+            Debug.LogWarning(l);
 #endif
 
-			_sw.WriteLine(DateTime.Now.ToString("T") + $" [WARNING] {nameFailed} failed: " + l);
-		}
+            // _sw.WriteLine(DateTime.Now.ToString("T") + $" [WARNING] {nameFailed} failed: " + l);
+        }
 
-		public void LogError(string l)
-		{
+        public void LogError(string l)
+        {
 #if UNITY_EDITOR
-			Debug.LogError(l);
+            Debug.LogError(l);
 #endif
 
-			_sw.WriteLine(DateTime.Now.ToString("T") + " [ERROR] " + l);
-		}
-
-		[MoonSharpHidden]
-		public void Dispose()
-		{
-			_fs.Close();
-			_sw.Close();
-		}
-	}
+            _sw.WriteLine(DateTime.Now.ToString("T") + " [ERROR] " + l);
+        }
+    }
 }

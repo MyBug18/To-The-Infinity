@@ -5,6 +5,14 @@ namespace Core
     [MoonSharpUserData]
     public sealed class HexTile
     {
+        public HexTile(TileMap tileMap, HexTileCoord coord, string name, TileSpecialResourceType specialResource)
+        {
+            TileMap = tileMap;
+            Coord = coord;
+            Name = name;
+            SpecialResource = specialResource;
+        }
+
         public TileMap TileMap { get; }
 
         public HexTileCoord Coord { get; }
@@ -15,21 +23,21 @@ namespace Core
 
         public int StarShipMovePoint => 1;
 
-        public HexTile(TileMap tileMap, HexTileCoord coord, string name, TileSpecialResourceType specialResource)
-        {
-            TileMap = tileMap;
-            Coord = coord;
-            Name = name;
-            SpecialResource = specialResource;
-        }
-
         public bool HasTileObject(string typeName) => TileMap.IsTileObjectExists(typeName, Coord);
 
-        public void AddTileObjectWithName(string typeName, string name) =>
+        public void AddTileObjectWithName(string typeName, string name)
+        {
             TileMap.AddTileObjectWithName(typeName, name, Coord);
+        }
 
-        public void AddTileObject(IOnHexTileObject obj) => TileMap.AddTileObject(obj, Coord);
+        public void AddTileObject(IOnHexTileObject obj)
+        {
+            TileMap.AddTileObject(obj, Coord);
+        }
 
-        public void RemoveTileObject(string typeName) => TileMap.RemoveTileObject(typeName, Coord);
+        public void RemoveTileObject(string typeName)
+        {
+            TileMap.RemoveTileObject(typeName, Coord);
+        }
     }
 }

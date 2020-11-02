@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Core.GameData
 {
@@ -28,7 +29,7 @@ namespace Core.GameData
 
         public void OnGameInitialized(Game game)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public TileSpecialResourceType GetDirectly(string name)

@@ -1,23 +1,20 @@
-﻿using MoonSharp.Interpreter;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using MoonSharp.Interpreter;
 
 namespace Core.GameData
 {
     public sealed class SpecialActionPrototype : ILuaHolder
     {
+        private SpecialActionCore _cache;
+
+        public SpecialActionPrototype(string filePath) => FilePath = filePath;
+
         public string IdentifierName { get; private set; }
 
         public string TypeName { get; }
 
         public string FilePath { get; }
-
-        private SpecialActionCore _cache;
-
-        public SpecialActionPrototype(string filePath)
-        {
-            FilePath = filePath;
-        }
 
         public bool Load(Script luaScript)
         {
@@ -43,7 +40,9 @@ namespace Core.GameData
             return true;
 
             Dictionary<string, int> ProcessCost(ISpecialActionHolder owner, HexTileCoord coord)
-                => getCost.Invoke(owner, coord).ToDictionary(kv => kv.Key, kv => kv.Value);
+            {
+                return getCost.Invoke(owner, coord).ToDictionary(kv => kv.Key, kv => kv.Value);
+            }
         }
 
         public SpecialAction Create(ISpecialActionHolder owner) => new SpecialAction(_cache, owner);

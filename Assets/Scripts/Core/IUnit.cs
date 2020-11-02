@@ -7,7 +7,7 @@ namespace Core
         int MeleeAttackPower { get; }
 
         /// <summary>
-        /// Key is property of opponent unit
+        ///     Key is property of opponent unit
         /// </summary>
         IReadOnlyDictionary<string, int> MeleeAttackPowerBonus { get; }
 

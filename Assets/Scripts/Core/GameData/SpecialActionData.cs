@@ -30,9 +30,7 @@ namespace Core.GameData
         {
         }
 
-        public SpecialAction GetSpecialActionDirectly(ISpecialActionHolder owner, string name)
-        {
-            return _data.TryGetValue(name, out var result2) ? result2.Create(owner) : _default.Create(owner);
-        }
+        public SpecialAction GetSpecialActionDirectly(ISpecialActionHolder owner, string name) =>
+            _data.TryGetValue(name, out var result2) ? result2.Create(owner) : _default.Create(owner);
     }
 }

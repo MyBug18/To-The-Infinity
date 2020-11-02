@@ -29,8 +29,9 @@ namespace Core.GameData
         {
         }
 
-        public ModifierCore GetModifierDirectly(string name) => !_data.TryGetValue(name, out var proto)
-            ? _default.Create()
-            : proto.Create();
+        public ModifierCore GetModifierDirectly(string name) =>
+            !_data.TryGetValue(name, out var proto)
+                ? _default.Create()
+                : proto.Create();
     }
 }

@@ -8,11 +8,11 @@ namespace Core.GameData
 
         private PopSlotPrototype _default;
 
-        public bool HasDefaultValue => _default != null;
-
         public HashSet<string> AllJobName { get; } = new HashSet<string>();
 
         public Dictionary<string, List<string>> AllGroupInfo { get; } = new Dictionary<string, List<string>>();
+
+        public bool HasDefaultValue => _default != null;
 
         public void AddNewData(ILuaHolder luaHolder)
         {

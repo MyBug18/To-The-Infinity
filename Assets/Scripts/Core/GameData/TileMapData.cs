@@ -29,6 +29,9 @@ namespace Core.GameData
         {
         }
 
-        public TileMapPrototype GetPrototype(string name) => !_data.TryGetValue(name, out var result) ? null : result;
+        public TileMap CreateDirectly(string name, ITileMapHolder holder, int radius, int? seed) =>
+            _data.TryGetValue(name, out var result)
+                ? result.Create(holder, radius, seed)
+                : _default.Create(holder, radius, seed);
     }
 }

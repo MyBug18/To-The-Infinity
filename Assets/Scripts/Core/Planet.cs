@@ -1,76 +1,17 @@
-﻿using Core.GameData;
-using MoonSharp.Interpreter;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Core.GameData;
+using MoonSharp.Interpreter;
 
 namespace Core
 {
     [MoonSharpUserData]
     public sealed class Planet : ITileMapHolder, IOnHexTileObject
     {
-        public string TypeName => nameof(Planet);
-
-        public string Guid { get; }
-
-        public string Owner { get; }
-
-        public TileMap TileMap { get; }
-
-        public IReadOnlyList<SpecialAction> SpecialActions { get; }
-
-        public string IdentifierName { get; }
-
-        public string CustomName { get; private set; }
-
-        public HexTile CurrentTile { get; }
+        private readonly Dictionary<string, object> _customValues = new Dictionary<string, object>();
 
         private readonly Dictionary<string, Modifier> _modifiers = new Dictionary<string, Modifier>();
-
-        [MoonSharpHidden]
-        public IEnumerable<Modifier> Modifiers
-        {
-            get
-            {
-                foreach (var m in CurrentTile.TileMap.Holder.Modifiers)
-                    yield return m;
-
-                foreach (var m in _modifiers.Values)
-                    yield return m;
-            }
-        }
-
-        public IEnumerable<TiledModifier> AffectedTiledModifiers =>
-            CurrentTile.TileMap.Holder.TiledModifiers.Where(m => m.IsInRange(CurrentTile.Coord));
-
-        private readonly Dictionary<string, TiledModifier> _tiledModifiers = new Dictionary<string, TiledModifier>();
-
-        [MoonSharpHidden]
-        public IEnumerable<TiledModifier> TiledModifiers => _tiledModifiers.Values;
-
-        /// <summary>
-        /// 0 if totally uninhabitable,
-        /// 1 if partially inhabitable with serious penalty,
-        /// 2 if partially inhabitable with minor penalty,
-        /// 3 if totally inhabitable without any penalty.
-        /// </summary>
-        public int InhabitableLevel { get; }
-
-        public bool IsColonizing { get; private set; }
-
-        #region Pop
-
-        private readonly List<Pop> _pops = new List<Pop>();
-
-        public IReadOnlyList<Pop> Pops => _pops;
-
-        private readonly List<Pop> _unemployedPops = new List<Pop>();
-
-        public IReadOnlyList<Pop> UnemployedPops => _unemployedPops;
-
-        public const float BasePopGrowth = 5.0f;
-
-        #endregion Pop
 
         #region TriggerEvent
 
@@ -81,9 +22,32 @@ namespace Core
         private readonly Dictionary<string, float> _planetaryResourceKeep =
             new Dictionary<string, float>();
 
+        private readonly Dictionary<string, TiledModifier> _tiledModifiers = new Dictionary<string, TiledModifier>();
+
+        /// <summary>
+        ///     0 if totally uninhabitable,
+        ///     1 if partially inhabitable with serious penalty,
+        ///     2 if partially inhabitable with minor penalty,
+        ///     3 if totally inhabitable without any penalty.
+        /// </summary>
+        public int InhabitableLevel { get; }
+
+        public bool IsColonizing { get; private set; }
+
         public IReadOnlyDictionary<string, float> PlanetaryResourceKeep => _planetaryResourceKeep;
 
-        private readonly Dictionary<string, object> _customValues = new Dictionary<string, object>();
+        public string Owner { get; }
+
+        public IReadOnlyList<SpecialAction> SpecialActions { get; }
+
+        public string IdentifierName { get; }
+
+        public string CustomName { get; private set; }
+
+        public HexTile CurrentTile { get; }
+
+        public IEnumerable<TiledModifier> AffectedTiledModifiers =>
+            CurrentTile.TileMap.Holder.TiledModifiers.Where(m => m.IsInRange(CurrentTile.Coord));
 
         public void StartNewTurn(int month)
         {
@@ -142,6 +106,36 @@ namespace Core
                 ApplyModifierChangeToDownward(mc, false);
         }
 
+        public bool CheckSpecialActionCost(IReadOnlyDictionary<string, int> cost) =>
+            throw new NotImplementedException();
+
+        public void ConsumeSpecialActionCost(IReadOnlyDictionary<string, int> cost)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string TypeName => nameof(Planet);
+
+        public string Guid { get; }
+
+        public TileMap TileMap { get; }
+
+        [MoonSharpHidden]
+        public IEnumerable<Modifier> Modifiers
+        {
+            get
+            {
+                foreach (var m in CurrentTile.TileMap.Holder.Modifiers)
+                    yield return m;
+
+                foreach (var m in _modifiers.Values)
+                    yield return m;
+            }
+        }
+
+        [MoonSharpHidden]
+        public IEnumerable<TiledModifier> TiledModifiers => _tiledModifiers.Values;
+
         public object GetCustomValue(string key, object defaultValue) =>
             _customValues.TryGetValue(key, out var result) ? result : defaultValue;
 
@@ -152,15 +146,19 @@ namespace Core
             _customValues[key] = value;
         }
 
-        public bool CheckSpecialActionCost(IReadOnlyDictionary<string, int> cost)
-        {
-            throw new NotImplementedException();
-        }
+        #region Pop
 
-        public void ConsumeSpecialActionCost(IReadOnlyDictionary<string, int> cost)
-        {
-            throw new NotImplementedException();
-        }
+        private readonly List<Pop> _pops = new List<Pop>();
+
+        public IReadOnlyList<Pop> Pops => _pops;
+
+        private readonly List<Pop> _unemployedPops = new List<Pop>();
+
+        public IReadOnlyList<Pop> UnemployedPops => _unemployedPops;
+
+        public const float BasePopGrowth = 5.0f;
+
+        #endregion Pop
 
         #region Modifier
 
@@ -291,7 +289,8 @@ namespace Core
 
         public bool HasModifier(string modifierName) => _modifiers.ContainsKey(modifierName);
 
-        public void AddTiledModifierRange(string modifierName, string adderGuid, string rangeKeyName, List<HexTileCoord> tiles, int leftMonth)
+        public void AddTiledModifierRange(string modifierName, string adderGuid, string rangeKeyName,
+            List<HexTileCoord> tiles, int leftMonth)
         {
             if (!_tiledModifiers.TryGetValue(modifierName, out var m))
             {

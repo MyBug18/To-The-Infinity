@@ -12,6 +12,8 @@ namespace Core.GameData
 
     public sealed class ResourceData : IGameData
     {
+        private readonly Dictionary<string, ResourcePrototype> _data = new Dictionary<string, ResourcePrototype>();
+
         private readonly HashSet<string> _factors = new HashSet<string>
         {
             "All",
@@ -22,10 +24,8 @@ namespace Core.GameData
             "PopGrowth",
             "Happiness",
 
-            "MovePoint"
+            "MovePoint",
         };
-
-        private readonly Dictionary<string, ResourcePrototype> _data = new Dictionary<string, ResourcePrototype>();
 
         private ResourcePrototype _default;
 

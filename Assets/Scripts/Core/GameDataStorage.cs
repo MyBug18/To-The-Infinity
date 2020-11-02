@@ -1,9 +1,9 @@
-﻿using Core.GameData;
-using MoonSharp.Interpreter;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Core.GameData;
+using MoonSharp.Interpreter;
 using UnityEngine;
 
 namespace Core
@@ -11,8 +11,6 @@ namespace Core
     public sealed class GameDataStorage
     {
         private static GameDataStorage _instance;
-
-        public static GameDataStorage Instance => _instance ??= new GameDataStorage();
 
         private static readonly IReadOnlyDictionary<string, Func<string, ILuaHolder>> LuaHolderMaker =
             new Dictionary<string, Func<string, ILuaHolder>>
@@ -38,6 +36,8 @@ namespace Core
                 {"TileSpecialResourceType", new TileSpecialResourceTypeData()},
             };
 
+        public static GameDataStorage Instance => _instance ??= new GameDataStorage();
+
         public void Initialize()
         {
             InitializeMoonSharp();
@@ -45,7 +45,7 @@ namespace Core
             Logger.Instance.Initialize();
 
             var pathList = Directory.GetFiles(Path.Combine(Application.streamingAssetsPath, "CoreData"),
-                    "*.lua", SearchOption.AllDirectories);
+                "*.lua", SearchOption.AllDirectories);
 
             var luaHolderList = new ILuaHolder[pathList.Length];
 
@@ -93,8 +93,12 @@ namespace Core
             }
         }
 
-        private void InitializeMoonSharp()
+        private static void InitializeMoonSharp()
         {
+#if UNITY_EDITOR
+            UserData.RegisterAssembly();
+#endif
+
             // HardWireType.Initialize();
 
             var customConverters = Script.GlobalOptions.CustomConverters;
@@ -104,16 +108,13 @@ namespace Core
                     new HexTileCoord((int) v.Table.Get("Q").Number, (int) v.Table.Get("R").Number));
         }
 
-        public T GetGameData<T>() where T : IGameData
+        public T GetGameData<T>() where T : IGameData => (T) GetGameData(typeof(T).Name);
+
+        public IGameData GetGameData(string dataName)
         {
-            const string typeName = nameof(T);
+            if (dataName.EndsWith("Data")) dataName = dataName.Substring(0, dataName.Length - 4);
 
-            var gameData = _allData[typeName.Substring(0, typeName.Length - 4)];
-
-            return (T)gameData;
+            return !_allData.TryGetValue(dataName, out var result) ? null : result;
         }
-
-        public IGameData GetGameData(string dataName) =>
-            !_allData.TryGetValue(dataName, out var result) ? null : result;
     }
 }

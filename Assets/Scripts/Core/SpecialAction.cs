@@ -20,11 +20,11 @@ namespace Core
 
         public bool NeedCoordinate => _core.NeedCoordinate;
 
-        public IReadOnlyDictionary<string, int> GetCost(HexTileCoord coord) => _core.GetCost(_owner, coord);
-
         public bool IsAvailable => _core.IsAvailable(_owner);
 
         public IReadOnlyCollection<HexTileCoord> AvailableTiles => _core.GetAvailableTiles(_owner);
+
+        public IReadOnlyDictionary<string, int> GetCost(HexTileCoord coord) => _core.GetCost(_owner, coord);
 
         public bool DoAction(HexTileCoord coord)
         {
@@ -41,19 +41,16 @@ namespace Core
 
     public sealed class SpecialActionCore
     {
-        public string Name { get; }
-
-        public bool NeedCoordinate { get; }
-
         private readonly Func<ISpecialActionHolder, bool> _availableChecker;
 
         private readonly Func<ISpecialActionHolder, IReadOnlyCollection<HexTileCoord>> _availableCoordsGetter;
 
-        private readonly Func<ISpecialActionHolder, HexTileCoord, IReadOnlyCollection<HexTileCoord>> _previewEffectRangeGetter;
-
         private readonly Func<ISpecialActionHolder, HexTileCoord, IReadOnlyDictionary<string, int>> _costGetter;
 
         private readonly Func<ISpecialActionHolder, HexTileCoord, bool> _doAction;
+
+        private readonly Func<ISpecialActionHolder, HexTileCoord, IReadOnlyCollection<HexTileCoord>>
+            _previewEffectRangeGetter;
 
         public SpecialActionCore(string name, bool needCoordinate,
             Func<ISpecialActionHolder, bool> availableChecker,
@@ -70,6 +67,10 @@ namespace Core
             _costGetter = costGetter;
             _doAction = doAction;
         }
+
+        public string Name { get; }
+
+        public bool NeedCoordinate { get; }
 
         public bool IsAvailable(ISpecialActionHolder owner) => _availableChecker(owner);
 

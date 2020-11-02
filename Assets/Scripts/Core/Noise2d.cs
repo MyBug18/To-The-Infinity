@@ -22,7 +22,7 @@ namespace Core
         }
 
         /// <summary>
-        /// Seed must be same with the seed of tileMap
+        ///     Seed must be same with the seed of tileMap
         /// </summary>
         /// <returns></returns>
         public static float[,] GenerateNoiseMap(int width, int height, int octaves, int? seed)
@@ -60,12 +60,8 @@ namespace Core
             }
 
             for (var i = 0; i < width; i++)
-            {
-                for (var j = 0; j < height; j++)
-                {
-                    result[i, j] = (result[i, j] - min) / (max - min);
-                }
-            }
+            for (var j = 0; j < height; j++)
+                result[i, j] = (result[i, j] - min) / (max - min);
 
             return result;
         }
@@ -97,8 +93,8 @@ namespace Core
 
                 do
                 {
-                    gradient = new Vector2((float)(_random.NextDouble() * 2 - 1),
-                        (float)(_random.NextDouble() * 2 - 1));
+                    gradient = new Vector2((float) (_random.NextDouble() * 2 - 1),
+                        (float) (_random.NextDouble() * 2 - 1));
                 } while (gradient.LengthSquared() >= 1);
 
                 gradient = Vector2.Normalize(gradient);
@@ -113,26 +109,23 @@ namespace Core
             return 1f - t * t * t * (t * (t * 6 - 15) + 10);
         }
 
-        private static float Q(float u, float v)
-        {
-            return Drop(u) * Drop(v);
-        }
+        private static float Q(float u, float v) => Drop(u) * Drop(v);
 
         private static float Noise(float x, float y)
         {
-            var cell = new Vector2((float)Math.Floor(x), (float)Math.Floor(y));
+            var cell = new Vector2((float) Math.Floor(x), (float) Math.Floor(y));
 
             var total = 0f;
 
-            var corners = new[] { new Vector2(0, 0), new Vector2(0, 1), new Vector2(1, 0), new Vector2(1, 1) };
+            var corners = new[] {new Vector2(0, 0), new Vector2(0, 1), new Vector2(1, 0), new Vector2(1, 1)};
 
             foreach (var n in corners)
             {
                 var ij = cell + n;
                 var uv = new Vector2(x - ij.X, y - ij.Y);
 
-                var index = _permutation[(int)ij.X % _permutation.Length];
-                index = _permutation[(index + (int)ij.Y) % _permutation.Length];
+                var index = _permutation[(int) ij.X % _permutation.Length];
+                index = _permutation[(index + (int) ij.Y) % _permutation.Length];
 
                 var grad = _gradients[index % _gradients.Length];
 

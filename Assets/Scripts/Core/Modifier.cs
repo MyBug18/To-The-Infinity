@@ -1,12 +1,20 @@
-﻿using MoonSharp.Interpreter;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using MoonSharp.Interpreter;
 
 namespace Core
 {
     public sealed class Modifier
     {
+        public Modifier(ModifierCore core, string adderGuid, int leftMonth = -1)
+        {
+            Core = core;
+            AdderGuid = adderGuid;
+            Core.SetAdder(AdderGuid);
+            LeftMonth = leftMonth;
+        }
+
         public ModifierCore Core { get; }
 
         public string Name => Core.Name;
@@ -16,14 +24,6 @@ namespace Core
         public bool IsPermanent => LeftMonth != -1;
 
         public string AdderGuid { get; }
-
-        public Modifier(ModifierCore core, string adderGuid, int leftMonth = -1)
-        {
-            Core = core;
-            AdderGuid = adderGuid;
-            Core.SetAdder(AdderGuid);
-            LeftMonth = leftMonth;
-        }
 
         public bool IsRelated(string typeName) => Core.Scope.ContainsKey(typeName);
 
@@ -41,15 +41,7 @@ namespace Core
 
     public sealed class TiledModifier
     {
-        public ModifierCore Core { get; }
-
-        public string Name => Core.Name;
-
-        public string AdderGuid { get; }
-
         private readonly Dictionary<string, TiledModifierInfo> _infos = new Dictionary<string, TiledModifierInfo>();
-
-        public IReadOnlyDictionary<string, TiledModifierInfo> Infos => _infos;
 
         public TiledModifier(ModifierCore core, string adderGuid, string rangeKey,
             HashSet<HexTileCoord> tiles, int leftMonth)
@@ -58,6 +50,14 @@ namespace Core
             AdderGuid = adderGuid;
             _infos[rangeKey] = new TiledModifierInfo(tiles, leftMonth);
         }
+
+        public ModifierCore Core { get; }
+
+        public string Name => Core.Name;
+
+        public string AdderGuid { get; }
+
+        public IReadOnlyDictionary<string, TiledModifierInfo> Infos => _infos;
 
         public HashSet<HexTileCoord> ReduceLeftMonth(int month)
         {
@@ -84,7 +84,7 @@ namespace Core
         }
 
         /// <summary>
-        /// Returns pure added tile effect range
+        ///     Returns pure added tile effect range
         /// </summary>
         public HashSet<HexTileCoord> AddTileInfo(string rangeKey,
             HashSet<HexTileCoord> tiles, int leftMonth)
@@ -102,7 +102,7 @@ namespace Core
         }
 
         /// <summary>
-        /// Returns removed range and newly affected range
+        ///     Returns removed range and newly affected range
         /// </summary>
         /// <returns></returns>
         public (HashSet<HexTileCoord> removed, HashSet<HexTileCoord> added) MoveTileInfo(
@@ -127,7 +127,7 @@ namespace Core
         }
 
         /// <summary>
-        /// Returns pure removed tile effect range
+        ///     Returns pure removed tile effect range
         /// </summary>
         public HashSet<HexTileCoord> RemoveTileInfo(string rangeKey)
         {
@@ -144,7 +144,10 @@ namespace Core
             return result;
         }
 
-        public bool IsInRange(HexTileCoord coord) => _infos.Values.Any(info => info.Tiles.Contains(coord));
+        public bool IsInRange(HexTileCoord coord)
+        {
+            return _infos.Values.Any(info => info.Tiles.Contains(coord));
+        }
 
         public override bool Equals(object obj) => obj is TiledModifier m && Core == m.Core;
 
@@ -155,15 +158,15 @@ namespace Core
     {
         private readonly HashSet<HexTileCoord> _tiles;
 
-        public IEnumerable<HexTileCoord> Tiles => _tiles;
-
-        public int LeftMonth { get; private set; }
-
         public TiledModifierInfo(HashSet<HexTileCoord> tiles, int leftMonth)
         {
             _tiles = tiles;
             LeftMonth = leftMonth;
         }
+
+        public IEnumerable<HexTileCoord> Tiles => _tiles;
+
+        public int LeftMonth { get; private set; }
 
         public bool IsPermanent => LeftMonth == -1;
 
@@ -176,16 +179,6 @@ namespace Core
 
     public sealed class ModifierCore : IEquatable<ModifierCore>
     {
-        public string Name { get; }
-
-        public string TargetType { get; }
-
-        public bool IsTileLimited { get; }
-
-        public string AdditionalDesc { get; }
-
-        public IReadOnlyDictionary<string, ModifierScope> Scope { get; }
-
         public ModifierCore(string name, string targetType, bool isTileLimited, string additionalDesc,
             IReadOnlyDictionary<string, ModifierScope> scope)
         {
@@ -196,9 +189,19 @@ namespace Core
             Scope = scope;
         }
 
-        public override bool Equals(object obj) => obj is ModifierCore m && Equals(m);
+        public string Name { get; }
+
+        public string TargetType { get; }
+
+        public bool IsTileLimited { get; }
+
+        public string AdditionalDesc { get; }
+
+        public IReadOnlyDictionary<string, ModifierScope> Scope { get; }
 
         public bool Equals(ModifierCore m) => m != null && Name == m.Name;
+
+        public override bool Equals(object obj) => obj is ModifierCore m && Equals(m);
 
         public override int GetHashCode() => Name.GetHashCode();
 
@@ -213,17 +216,13 @@ namespace Core
     {
         private static readonly Action<IModifierHolder> DummyFunction = _ => { };
 
-        public string TargetTypeName { get; }
-
-        private string _adderGuid;
+        private readonly Func<IModifierHolder, string, bool> _conditionChecker;
 
         private readonly Func<IModifierHolder, string, List<ModifierEffect>> _getEffect;
 
-        private readonly Func<IModifierHolder, string, bool> _conditionChecker;
-
-        public IReadOnlyDictionary<string, ScriptFunctionDelegate> TriggerEvent { get; }
-
         public readonly Action<IModifierHolder> OnAdded, OnRemoved;
+
+        private string _adderGuid;
 
         public ModifierScope(string targetTypeName,
             Func<IModifierHolder, string, List<ModifierEffect>> getEffect,
@@ -243,6 +242,10 @@ namespace Core
                 ? target => onRemoved.Invoke(target, _adderGuid)
                 : DummyFunction;
         }
+
+        public string TargetTypeName { get; }
+
+        public IReadOnlyDictionary<string, ScriptFunctionDelegate> TriggerEvent { get; }
 
         public void SetInfo(string adderGuid)
         {

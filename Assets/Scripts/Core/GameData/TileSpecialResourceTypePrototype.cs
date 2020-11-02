@@ -4,18 +4,15 @@ namespace Core.GameData
 {
     public sealed class TileSpecialResourceTypePrototype : ILuaHolder
     {
+        private TileSpecialResourceType _cache;
+
+        public TileSpecialResourceTypePrototype(string filePath) => FilePath = filePath;
+
         public string IdentifierName { get; private set; }
 
         public string TypeName => "TileSpecialResourceType";
 
         public string FilePath { get; }
-
-        private TileSpecialResourceType _cache;
-
-        public TileSpecialResourceTypePrototype(string filePath)
-        {
-            FilePath = filePath;
-        }
 
         public bool Load(Script luaScript)
         {

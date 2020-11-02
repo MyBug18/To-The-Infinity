@@ -1,23 +1,20 @@
-﻿using MoonSharp.Interpreter;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using MoonSharp.Interpreter;
 
 namespace Core.GameData
 {
     public sealed class ModifierPrototype : ILuaHolder
     {
+        private ModifierCore _cache;
+
+        public ModifierPrototype(string filePath) => FilePath = filePath;
+
         public string IdentifierName { get; private set; }
 
         public string TypeName => "Modifier";
 
-        private ModifierCore _cache;
-
         public string FilePath { get; }
-
-        public ModifierPrototype(string filePath)
-        {
-            FilePath = filePath;
-        }
 
         public bool Load(Script luaScript)
         {
@@ -61,7 +58,7 @@ namespace Core.GameData
                         for (var i = 1; i < tokens.Length; i++)
                             additionalInfo.Add(tokens[i]);
 
-                        result.Add(new ModifierEffect(tokens[0], additionalInfo, (int)kv.Value));
+                        result.Add(new ModifierEffect(tokens[0], additionalInfo, (int) kv.Value));
                     }
 
                     return result;
