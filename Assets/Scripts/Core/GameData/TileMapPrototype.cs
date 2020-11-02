@@ -32,7 +32,6 @@ namespace Core.GameData
             var size = 2 * radius + 1;
 
             var noiseMap = Noise2d.GenerateNoiseMap(size, size, 2, seed);
-            var randomMap = MakeRandomMap(size, tileMapSeed);
 
             var tileMap = new HexTile[size][];
 
@@ -56,14 +55,13 @@ namespace Core.GameData
             {
                 var (x, y) = GetTileMapIndexFromInt(i);
 
+                var q = x > radius ? y : y + (radius - x);
                 var r = x;
-                var q = r > radius ? y : y + (radius - r);
 
                 var coord = new HexTileCoord(q, r);
                 var noise = noiseMap[coord.Q, coord.R];
-                var rnd = randomMap[coord.Q, coord.R];
 
-                tileMap[x][y] = GenerateTile(result, coord, noise, rnd);
+                tileMap[x][y] = GenerateTile(result, coord, noise);
             }
 
             return result;
@@ -89,30 +87,17 @@ namespace Core.GameData
 
                 return (x, y);
             }
-
-            static float[,] MakeRandomMap(int size, int seed)
-            {
-                var r = new System.Random(seed);
-
-                var result = new float[size, size];
-
-                for (var i = 0; i < size; i++)
-                for (var j = 0; j < size; j++)
-                    result[i, j] = (float) r.NextDouble();
-
-                return result;
-            }
         }
 
-        private HexTile GenerateTile(TileMap tileMap, HexTileCoord coord, float noise, float rnd)
+        private HexTile GenerateTile(TileMap tileMap, HexTileCoord coord, float noise)
         {
-            var dict = _tileInfoMaker.Invoke(coord, noise, rnd);
+            var dict = _tileInfoMaker.Invoke(coord, noise);
 
             var name = (string) dict["Name"];
-            // var res = (int)dict["ResDecider"];
+             var res = (int) (double) dict["ResDecider"];
 
             var tileProto = GameDataStorage.Instance.GetGameData<HexTileData>().GetPrototype(name);
-            var tile = tileProto.Create(tileMap, coord, 0);
+            var tile = tileProto.Create(tileMap, coord, res);
 
             return tile;
         }
