@@ -6,6 +6,13 @@ using UnityEngine;
 
 namespace Core
 {
+    public enum LogType
+    {
+        Log,
+        Warning,
+        Error,
+    }
+
     [MoonSharpUserData]
     public class Logger : IDisposable
     {
@@ -40,31 +47,50 @@ namespace Core
             _sw = new StreamWriter(_fs, Encoding.UTF8);
         }
 
-        public void Log(string l)
+        public static void Log(LogType logType, string context, string l)
+        {
+            if (Instance == null) return;
+            switch (logType)
+            {
+                case LogType.Log:
+                    Instance.Log(context, l);
+                    break;
+                case LogType.Warning:
+                    Instance.LogWarning(context, l);
+                    break;
+                case LogType.Error:
+                    Instance.LogError(context, l);
+                    break;
+                default:
+                    throw new NotImplementedException("Logger type not implemented! :" + logType);
+            }
+        }
+
+        public void Log(string context, string l)
         {
 #if UNITY_EDITOR
             Debug.Log(l);
 #endif
 
-            _sw.WriteLine(DateTime.Now.ToString("T") + " [LOG] " + l);
+            _sw.WriteLine(DateTime.Now.ToString("T") + $" [LOG] On {context}" + l);
         }
 
-        public void LogWarning(string nameFailed, string l)
+        public void LogWarning(string context, string l)
         {
 #if UNITY_EDITOR
             Debug.LogWarning(l);
 #endif
 
-            // _sw.WriteLine(DateTime.Now.ToString("T") + $" [WARNING] {nameFailed} failed: " + l);
+            _sw.WriteLine(DateTime.Now.ToString("T") + $" [WARNING] On {context}: " + l);
         }
 
-        public void LogError(string l)
+        public void LogError(string context, string l)
         {
 #if UNITY_EDITOR
             Debug.LogError(l);
 #endif
 
-            _sw.WriteLine(DateTime.Now.ToString("T") + " [ERROR] " + l);
+            _sw.WriteLine(DateTime.Now.ToString("T") + $" [ERROR] On {context}: " + l);
         }
     }
 }
