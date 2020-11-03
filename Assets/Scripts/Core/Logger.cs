@@ -47,9 +47,35 @@ namespace Core
             _sw = new StreamWriter(_fs, Encoding.UTF8);
         }
 
-        public static void Log(LogType logType, string context, string l)
+        private static readonly object Mutex = new object();
+
+        public static void Log(LogType logType, string context, string l, bool forceSync = false)
         {
             if (Instance == null) return;
+
+            if (forceSync)
+            {
+                lock (Mutex)
+                {
+                    switch (logType)
+                    {
+                        case LogType.Log:
+                            Instance.Log(context, l);
+                            break;
+                        case LogType.Warning:
+                            Instance.LogWarning(context, l);
+                            break;
+                        case LogType.Error:
+                            Instance.LogError(context, l);
+                            break;
+                        default:
+                            throw new NotImplementedException("Logger type not implemented! :" + logType);
+                    }
+                }
+
+                return;
+            }
+
             switch (logType)
             {
                 case LogType.Log:
@@ -69,28 +95,28 @@ namespace Core
         public void Log(string context, string l)
         {
 #if UNITY_EDITOR
-            Debug.Log(l);
+            Debug.Log(context + ": " + l);
 #endif
 
-            _sw.WriteLine(DateTime.Now.ToString("T") + $" [LOG] On {context}" + l);
+            _sw.WriteLine(DateTime.Now.ToString("T") + $" [LOG] {context}" + l);
         }
 
         public void LogWarning(string context, string l)
         {
 #if UNITY_EDITOR
-            Debug.LogWarning(l);
+            Debug.LogWarning(context + ": " + l);
 #endif
 
-            _sw.WriteLine(DateTime.Now.ToString("T") + $" [WARNING] On {context}: " + l);
+            _sw.WriteLine(DateTime.Now.ToString("T") + $" [WARNING] {context}: " + l);
         }
 
         public void LogError(string context, string l)
         {
 #if UNITY_EDITOR
-            Debug.LogError(l);
+            Debug.LogError(context + ": " + l);
 #endif
 
-            _sw.WriteLine(DateTime.Now.ToString("T") + $" [ERROR] On {context}: " + l);
+            _sw.WriteLine(DateTime.Now.ToString("T") + $" [ERROR] {context}: " + l);
         }
     }
 }
