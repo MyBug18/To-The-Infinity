@@ -2,9 +2,9 @@
 
 Name = "Default"
 
-function MakeTile (coord, noise)
+function MakeTile (coord, noise, sharedStorage)
     local result = {}
     result.Name = "Default"
-    result.ResDecider = 100
+    result.ResDecider = sharedStorage.GetValue("random", nil).NextDouble()
     return result
 end

@@ -28,6 +28,8 @@ namespace Core.GameData
         public TileMap Create(ITileMapHolder holder, int radius, int? seed = null)
         {
             var tileMapSeed = seed ?? Random.Range(int.MinValue, int.MaxValue);
+            var sharedStorage = new LuaDictWrapper(new Dictionary<string, object>
+                {{"random", new System.Random(tileMapSeed)}});
 
             var size = 2 * radius + 1;
 
@@ -61,7 +63,7 @@ namespace Core.GameData
                 var coord = new HexTileCoord(q, r);
                 var noise = noiseMap[coord.Q, coord.R];
 
-                tileMap[x][y] = GenerateTile(result, coord, noise);
+                tileMap[x][y] = GenerateTile(result, coord, noise, sharedStorage);
             }
 
             return result;
@@ -89,9 +91,9 @@ namespace Core.GameData
             }
         }
 
-        private HexTile GenerateTile(TileMap tileMap, HexTileCoord coord, float noise)
+        private HexTile GenerateTile(TileMap tileMap, HexTileCoord coord, float noise, LuaDictWrapper sharedStorage)
         {
-            var dict = _tileInfoMaker.Invoke(coord, noise);
+            var dict = _tileInfoMaker.Invoke(coord, noise, sharedStorage);
 
             var name = (string)dict["Name"];
             var res = (int)(double)dict["ResDecider"];

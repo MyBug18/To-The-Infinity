@@ -96,6 +96,7 @@ namespace Core
         private static void InitializeMoonSharp()
         {
 #if UNITY_EDITOR
+            UserData.RegisterType<System.Random>();
             UserData.RegisterAssembly();
 #endif
 
