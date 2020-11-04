@@ -15,7 +15,13 @@ namespace Core.GameData
         {
             if (!(luaHolder is SpecialActionPrototype sap)) return;
 
-            if (_data.ContainsKey(sap.IdentifierName)) return;
+            if (_data.ContainsKey(sap.IdentifierName))
+            {
+                Logger.Log(LogType.Warning, sap.FilePath,
+                    $"There is already data with the same name ({sap.IdentifierName}), so it will be ignored!");
+
+                return;
+            }
 
             if (sap.IdentifierName == "Default")
             {

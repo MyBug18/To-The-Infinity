@@ -12,37 +12,50 @@ namespace Core.GameData
 
         public string IdentifierName { get; private set; }
 
-        public string TypeName { get; }
+        public string TypeName => "SpecialAction";
 
         public string FilePath { get; }
 
         public bool Load(Script luaScript)
         {
-            IdentifierName = luaScript.Globals.Get("Name").String;
+            var t = luaScript.Globals;
+
+            if (!t.TryGetString("Name", out var identifierName,
+                MoonSharpUtil.LoadingError("Name", FilePath)))
+                return false;
+
+            IdentifierName = identifierName;
+
+            if (!t.TryGetString("TargetType", out var targetType,
+                MoonSharpUtil.LoadingError("TargetType", FilePath)))
+                return false;
 
             var needCoordinate = luaScript.Globals.Get("NeedCoordinate").Boolean;
 
-            var isAvailable = luaScript.Globals.Get("IsAvailable").Function.GetDelegate<bool>();
-            var getAvailableTiles =
-                luaScript.Globals.Get("GetAvailableTiles").Function.GetDelegate<List<HexTileCoord>>();
-            var previewEffectRange =
-                luaScript.Globals.Get("PreviewEffectRange").Function.GetDelegate<List<HexTileCoord>>();
-            var getCost = luaScript.Globals.Get("GetCost").Function.GetDelegate<Dictionary<string, int>>();
-            var doAction = luaScript.Globals.Get("DoAction").Function.GetDelegate<bool>();
+            if (!t.TryGetLuaFunc<bool>("IsAvailable", out var isAvailable,
+                MoonSharpUtil.LoadingError("IsAvailable", FilePath)))
+                return false;
 
-            _cache = new SpecialActionCore(IdentifierName, needCoordinate,
-                owner => isAvailable.Invoke(owner),
-                owner => getAvailableTiles.Invoke(owner),
-                (owner, coord) => previewEffectRange.Invoke(owner, coord),
-                ProcessCost,
-                (owner, coord) => doAction.Invoke(owner, coord));
+            if (!t.TryGetLuaFunc<HashSet<HexTileCoord>>("GetAvailableTiles", out var getAvailableTiles,
+                MoonSharpUtil.LoadingError("GetAvailableTiles", FilePath)))
+                return false;
+
+            if (!t.TryGetLuaFunc<HashSet<HexTileCoord>>("PreviewEffectRange", out var previewEffectRange,
+                MoonSharpUtil.LoadingError("PreviewEffectRange", FilePath)))
+                return false;
+
+            if (!t.TryGetLuaFunc<Dictionary<string, int>>("GetCost", out var getCost,
+                MoonSharpUtil.LoadingError("GetCost", FilePath)))
+                return false;
+
+            if (!t.TryGetLuaFunc<bool>("DoAction", out var doAction,
+                MoonSharpUtil.LoadingError("DoAction", FilePath)))
+                return false;
+
+            _cache = new SpecialActionCore(IdentifierName, targetType, needCoordinate, isAvailable, getAvailableTiles,
+                previewEffectRange, getCost, doAction);
 
             return true;
-
-            Dictionary<string, int> ProcessCost(ISpecialActionHolder owner, HexTileCoord coord)
-            {
-                return getCost.Invoke(owner, coord).ToDictionary(kv => kv.Key, kv => kv.Value);
-            }
         }
 
         public SpecialAction Create(ISpecialActionHolder owner) => new SpecialAction(_cache, owner);

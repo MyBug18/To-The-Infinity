@@ -114,7 +114,21 @@ namespace Core
                     new HexTileCoord((int)(double)v.Table[1], (int)(double)v.Table[2]));
 
             customConverters.SetScriptToClrCustomConversion(
-                DataType.Tuple, typeof(List<ModifierEffect>), v =>
+                DataType.Table, typeof(HashSet<HexTileCoord>), v =>
+                {
+                    var result = new HashSet<HexTileCoord>();
+
+                    foreach (var kv in v.Table.Pairs)
+                    {
+                        var coord = new HexTileCoord((int)(double)kv.Value.Table[1], (int)(double)kv.Value.Table[2]);
+                        result.Add(coord);
+                    }
+
+                    return result;
+                });
+
+            customConverters.SetScriptToClrCustomConversion(
+                DataType.Table, typeof(List<ModifierEffect>), v =>
                 {
                     var result = new List<ModifierEffect>();
 

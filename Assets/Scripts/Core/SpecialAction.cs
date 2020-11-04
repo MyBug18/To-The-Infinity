@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using MoonSharp.Interpreter;
 
 namespace Core
 {
@@ -41,48 +42,58 @@ namespace Core
 
     public sealed class SpecialActionCore
     {
-        private readonly Func<ISpecialActionHolder, bool> _availableChecker;
+        private readonly ScriptFunctionDelegate<bool> _isAvailable;
 
-        private readonly Func<ISpecialActionHolder, IReadOnlyCollection<HexTileCoord>> _availableCoordsGetter;
+        private readonly ScriptFunctionDelegate<HashSet<HexTileCoord>> _getAvailableTiles;
 
-        private readonly Func<ISpecialActionHolder, HexTileCoord, IReadOnlyDictionary<string, int>> _costGetter;
+        private readonly ScriptFunctionDelegate<HashSet<HexTileCoord>> _previewEffectRange;
 
-        private readonly Func<ISpecialActionHolder, HexTileCoord, bool> _doAction;
+        private readonly ScriptFunctionDelegate<Dictionary<string, int>> _getCost;
 
-        private readonly Func<ISpecialActionHolder, HexTileCoord, IReadOnlyCollection<HexTileCoord>>
-            _previewEffectRangeGetter;
+        private readonly ScriptFunctionDelegate<bool> _doAction;
 
-        public SpecialActionCore(string name, bool needCoordinate,
-            Func<ISpecialActionHolder, bool> availableChecker,
-            Func<ISpecialActionHolder, IReadOnlyCollection<HexTileCoord>> availableCoordsGetter,
-            Func<ISpecialActionHolder, HexTileCoord, IReadOnlyCollection<HexTileCoord>> previewEffectRangeGetter,
-            Func<ISpecialActionHolder, HexTileCoord, IReadOnlyDictionary<string, int>> costGetter,
-            Func<ISpecialActionHolder, HexTileCoord, bool> doAction)
+        public SpecialActionCore(string name, string targetType, bool needCoordinate,
+            ScriptFunctionDelegate<bool> isAvailable,
+            ScriptFunctionDelegate<HashSet<HexTileCoord>> getAvailableTiles,
+            ScriptFunctionDelegate<HashSet<HexTileCoord>> previewEffectRange,
+            ScriptFunctionDelegate<Dictionary<string, int>> getCost,
+            ScriptFunctionDelegate<bool> doAction)
         {
             Name = name;
+            TargetType = targetType;
             NeedCoordinate = needCoordinate;
-            _availableChecker = availableChecker;
-            _availableCoordsGetter = availableCoordsGetter;
-            _previewEffectRangeGetter = previewEffectRangeGetter;
-            _costGetter = costGetter;
+            _isAvailable = isAvailable;
+            _getAvailableTiles = getAvailableTiles;
+            _previewEffectRange = previewEffectRange;
+            _getCost = getCost;
             _doAction = doAction;
         }
 
         public string Name { get; }
 
+        public string TargetType { get; }
+
         public bool NeedCoordinate { get; }
 
-        public bool IsAvailable(ISpecialActionHolder owner) => _availableChecker(owner);
+        public bool IsAvailable(ISpecialActionHolder owner) =>
+            _isAvailable.TryInvoke("AvailableChecker", Name, out var result, owner) && result;
 
-        public IReadOnlyCollection<HexTileCoord> GetAvailableTiles(ISpecialActionHolder owner) =>
-            _availableCoordsGetter(owner);
+        public IReadOnlyCollection<HexTileCoord> GetAvailableTiles(ISpecialActionHolder owner)
+            => _getAvailableTiles.TryInvoke("GetAvailableTiles", Name, out var result, owner)
+                ? result
+                : new HashSet<HexTileCoord>();
 
-        public IReadOnlyCollection<HexTileCoord> PreviewEffectRange(ISpecialActionHolder owner, HexTileCoord coord) =>
-            _previewEffectRangeGetter(owner, coord);
+        public IReadOnlyCollection<HexTileCoord> PreviewEffectRange(ISpecialActionHolder owner, HexTileCoord coord)
+            => _previewEffectRange.TryInvoke("PreviewEffectRange", Name, out var result, owner, coord)
+                ? result
+                : new HashSet<HexTileCoord>();
 
-        public IReadOnlyDictionary<string, int> GetCost(ISpecialActionHolder owner, HexTileCoord coord) =>
-            _costGetter(owner, coord);
+        public IReadOnlyDictionary<string, int> GetCost(ISpecialActionHolder owner, HexTileCoord coord)
+            => _getCost.TryInvoke("GetCost", Name, out var result, owner, coord)
+                ? result
+                : new Dictionary<string, int>();
 
-        public bool DoAction(ISpecialActionHolder owner, HexTileCoord coord) => _doAction(owner, coord);
+        public bool DoAction(ISpecialActionHolder owner, HexTileCoord coord)
+            => _doAction.TryInvoke("DoAction", Name, out var result, owner, coord) && result;
     }
 }
