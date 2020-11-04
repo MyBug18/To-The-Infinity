@@ -35,7 +35,13 @@ namespace Core.GameData
         {
             if (!(luaHolder is ResourcePrototype rp)) return;
 
-            if (_data.ContainsKey(rp.IdentifierName) || _factors.Contains(rp.IdentifierName)) return;
+            if (_data.ContainsKey(rp.IdentifierName) || _factors.Contains(rp.IdentifierName))
+            {
+                Logger.Log(LogType.Warning, rp.FilePath,
+                    $"There is already data with the same name ({rp.IdentifierName}), so it will be ignored!");
+
+                return;
+            }
 
             if (rp.IdentifierName == "Default")
             {

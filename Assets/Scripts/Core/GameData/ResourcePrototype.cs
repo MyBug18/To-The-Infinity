@@ -28,16 +28,37 @@ namespace Core.GameData
 
         public bool Load(Script luaScript)
         {
-            IdentifierName = luaScript.Globals.Get("Name").String;
+            var t = luaScript.Globals;
 
-            if (!StringTypeMap.TryGetValue(luaScript.Globals.Get("ResourceType").String, out var value))
+            if (!t.TryGetString("Name", out var identifierName,
+                MoonSharpUtil.LoadingError("Name", FilePath)))
                 return false;
+
+            IdentifierName = identifierName;
+
+            if (!t.TryGetString("ResourceType", out var resourceType,
+                MoonSharpUtil.LoadingError("ResourceType", FilePath)))
+                return false;
+
+            if (!StringTypeMap.TryGetValue(resourceType, out var value))
+            {
+                Logger.Log(LogType.Error, FilePath, "ResourceType must be one of \"Planetary\", \"Global\", \"Research\"!");
+                return false;
+            }
 
             ResourceType = value;
 
-            IsBasic = luaScript.Globals.Get("IsBasic").Boolean;
+            if (!t.TryGetBool("IsBasic", out var isBasic,
+                MoonSharpUtil.LoadingError("IsBasic", FilePath)))
+                return false;
 
-            MaxAmount = (int)luaScript.Globals.Get("MaxAmount").Number;
+            IsBasic = isBasic;
+
+            if (!t.TryGetInt("MaxAmount", out var maxAmount,
+                MoonSharpUtil.LoadingError("MaxAmount", FilePath)))
+                return false;
+
+            MaxAmount = maxAmount;
 
             return true;
         }
