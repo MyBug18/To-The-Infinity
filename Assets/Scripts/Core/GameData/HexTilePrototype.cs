@@ -16,11 +16,30 @@ namespace Core.GameData
 
         public bool Load(Script luaScript)
         {
-            IdentifierName = luaScript.Globals.Get("Name").String;
+            var t = luaScript.Globals;
 
-            var resChanceMap =
-                luaScript.Globals.Get("ResChanceMap").Table.Pairs
-                    .Select(kv => ((int)kv.Key.Number, kv.Value.String)).ToList();
+            if (!t.TryGetString("Name", out var name,
+                MoonSharpUtil.LoadingError("Name", FilePath)))
+                return false;
+
+            IdentifierName = name;
+
+            if (!t.TryGetTable("ResChanceMap", out var table,
+                MoonSharpUtil.LoadingError("ResChanceMap", FilePath)))
+                return false;
+
+            var resChanceMap = new List<(int value, string resName)>();
+
+            foreach (var kv in table.Pairs)
+            {
+                if (!kv.Key.TryGetInt(out var k, MoonSharpUtil.LoadingError("ResChanceMap.Key", FilePath)))
+                    return false;
+
+                if (!kv.Value.TryGetString(out var v, MoonSharpUtil.LoadingError("ResChanceMap.Value", FilePath)))
+                    return false;
+
+                resChanceMap.Add((k, v));
+            }
 
             resChanceMap.Sort((x, y) => y.Item1.CompareTo(x.Item1));
 

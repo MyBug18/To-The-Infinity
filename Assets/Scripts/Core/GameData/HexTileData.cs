@@ -14,7 +14,13 @@ namespace Core.GameData
         {
             if (!(luaHolder is HexTilePrototype htp)) return;
 
-            if (_data.ContainsKey(htp.IdentifierName)) return;
+            if (_data.ContainsKey(htp.IdentifierName))
+            {
+                Logger.Log(LogType.Warning, htp.FilePath,
+                    $"There is already data with the same name ({htp.IdentifierName}), so it will be ignored!");
+
+                return;
+            }
 
             if (htp.IdentifierName == "Default")
             {
