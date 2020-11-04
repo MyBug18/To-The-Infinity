@@ -18,7 +18,13 @@ namespace Core.GameData
         {
             if (!(luaHolder is PopSlotPrototype psp)) return;
 
-            if (_data.ContainsKey(psp.IdentifierName)) return;
+            if (_data.ContainsKey(psp.IdentifierName))
+            {
+                Logger.Log(LogType.Warning, psp.FilePath,
+                    $"There is already data with the same name ({psp.IdentifierName}), so it will be ignored!");
+
+                return;
+            }
 
             if (psp.IdentifierName == "Default")
             {

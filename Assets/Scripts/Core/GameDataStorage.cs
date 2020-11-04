@@ -53,25 +53,27 @@ namespace Core
             {
                 var path = pathList[i];
 
-                luaHolderList[i] = null;
-
                 var script = new Script();
 
                 script.Globals["Logger"] = Logger.Instance;
 
                 script.DoString(File.ReadAllText(path));
 
-                var type = script.Globals.Get("Type");
-
-                // TODO: Throw exception or log warning
-                if (type.IsNil()) return;
-                var typeName = type.String;
+                if (!script.Globals.TryGetString("Type", out var typeName,
+                    MoonSharpUtil.LoadingError("Type", path)))
+                    return;
 
                 if (!LuaHolderMaker.TryGetValue(typeName, out var maker)) return;
 
                 var luaHolder = maker(path);
 
-                if (!luaHolder.Load(script)) return;
+                if (!luaHolder.Load(script))
+                {
+                    Logger.Log(LogType.Error, path, "There was error on loading, so it will not be loaded!", true);
+
+                    luaHolderList[i] = null;
+                    return;
+                }
 
                 luaHolderList[i] = luaHolder;
             });
@@ -87,9 +89,7 @@ namespace Core
             foreach (var kv in _allData)
             {
                 if (!kv.Value.HasDefaultValue)
-                {
-                    // TODO: Should log warning
-                }
+                    Logger.Log(LogType.Warning, "", $"{kv.Key} has no default value. It may result a serious problem!");
             }
         }
 
@@ -102,11 +102,34 @@ namespace Core
 
             // HardWireType.Initialize();
 
+            SetCustomConverters();
+        }
+
+        private static void SetCustomConverters()
+        {
             var customConverters = Script.GlobalOptions.CustomConverters;
 
             customConverters.SetScriptToClrCustomConversion(
                 DataType.Table, typeof(HexTileCoord), v =>
-                    new HexTileCoord((int)v.Table.Get("Q").Number, (int)v.Table.Get("R").Number));
+                    new HexTileCoord((int)(double)v.Table[1], (int)(double)v.Table[2]));
+
+            customConverters.SetScriptToClrCustomConversion(
+                DataType.Tuple, typeof(List<ModifierEffect>), v =>
+                {
+                    var result = new List<ModifierEffect>();
+
+                    foreach (var kv in v.Table.Pairs)
+                    {
+                        var additionalInfo = new List<string>();
+                        var tokens = kv.Key.String.Split('_');
+                        for (var i = 1; i < tokens.Length; i++)
+                            additionalInfo.Add(tokens[i]);
+
+                        result.Add(new ModifierEffect(tokens[0], additionalInfo, (int)kv.Value.Number));
+                    }
+
+                    return result;
+                });
         }
 
         public T GetGameData<T>() where T : IGameData => (T)GetGameData(typeof(T).Name);

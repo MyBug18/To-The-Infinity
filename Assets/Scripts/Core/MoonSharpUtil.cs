@@ -103,6 +103,30 @@ namespace Core
             return false;
         }
 
+        public static bool TryGetFloat(this DynValue dynValue, out float result, LogInfo info = default)
+        {
+            if (dynValue.Type != DataType.Number)
+            {
+                if (info.Context != null)
+                    Logger.Log(info.LogType, info.Context, "Value is defined, but it's not a float!");
+
+                result = 0;
+                return false;
+            }
+
+            result = (float)dynValue.Number;
+            return true;
+        }
+
+        public static bool TryGetFloat(this Table table, string key, out float result, LogInfo info = default)
+        {
+            if (table.TryGetDynValue(key, out var dynValue, info))
+                return dynValue.TryGetFloat(out result, info);
+
+            result = 0;
+            return false;
+        }
+
         public static bool TryGetBool(this DynValue dynValue, out bool result, LogInfo info = default)
         {
             if (dynValue.Type != DataType.Boolean)

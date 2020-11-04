@@ -22,17 +22,86 @@ namespace Core.GameData
 
         public bool Load(Script luaScript)
         {
-            IdentifierName = luaScript.Globals.Get("Name").String;
-            Group = luaScript.Globals.Get("Group").String;
+            var t = luaScript.Globals;
+
+            if (!t.TryGetString("Name", out var identifierName,
+                MoonSharpUtil.LoadingError("Name", FilePath)))
+                return false;
+
+            IdentifierName = identifierName;
+
+            if (!t.TryGetString("Group", out var group,
+                MoonSharpUtil.LoadingError("Group", FilePath)))
+                return false;
+
+            Group = group;
 
             var yield = new Dictionary<string, float>();
-            foreach (var kv in luaScript.Globals.Get("Yield").Table.Pairs)
-                yield[kv.Key.String] = (float)kv.Value.Number;
+
+            if (t.TryGetTable("Yield", out var yieldTable, MoonSharpUtil.AllowNotDefined("Yield", FilePath)))
+            {
+                foreach (var kv in yieldTable.Pairs)
+                {
+                    if (!kv.Key.TryGetString(out var resName, MoonSharpUtil.LoadingError("Yield.Key", FilePath)))
+                        return false;
+
+                    if (!kv.Value.TryGetFloat(out var resAmount, MoonSharpUtil.LoadingError("Yield.Value", FilePath)))
+                        return false;
+
+                    if (resAmount < 0)
+                    {
+                        Logger.Log(LogType.Warning, "Field Yield.Value of " + FilePath,
+                            "Yield should not be smaller than 0, so it will be ignored.");
+                        continue;
+                    }
+
+                    if (yield.ContainsKey(resName))
+                    {
+                        Logger.Log(LogType.Warning, $"Field Yield.Key ({resName}) of " + FilePath,
+                            "Same yield name detected, so it will be automatically merged");
+
+                        yield[resName] += resAmount;
+                        continue;
+                    }
+
+                    yield[resName] = resAmount;
+                }
+            }
+
             BaseYield = yield;
 
             var upkeep = new Dictionary<string, float>();
-            foreach (var kv in luaScript.Globals.Get("Upkeep").Table.Pairs)
-                upkeep[kv.Key.String] = (float)kv.Value.Number;
+
+            if (t.TryGetTable("Upkeep", out var upKeepTable, MoonSharpUtil.AllowNotDefined("Upkeep", FilePath)))
+            {
+                foreach (var kv in upKeepTable.Pairs)
+                {
+                    if (!kv.Key.TryGetString(out var resName, MoonSharpUtil.LoadingError("Upkeep.Key", FilePath)))
+                        return false;
+
+                    if (!kv.Value.TryGetFloat(out var resAmount, MoonSharpUtil.LoadingError("Upkeep.Value", FilePath)))
+                        return false;
+
+                    if (resAmount < 0)
+                    {
+                        Logger.Log(LogType.Warning, "Field Upkeep.Value of " + FilePath,
+                            "Upkeep should not be smaller than 0, so it will be ignored.");
+                        continue;
+                    }
+
+                    if (upkeep.ContainsKey(resName))
+                    {
+                        Logger.Log(LogType.Warning, $"Field Upkeep.Key ({resName}) of " + FilePath,
+                            "Same upkeep name detected, so it will be automatically merged");
+
+                        upkeep[resName] += resAmount;
+                        continue;
+                    }
+
+                    upkeep[resName] = resAmount;
+                }
+            }
+
             BaseUpkeep = upkeep;
 
             return true;

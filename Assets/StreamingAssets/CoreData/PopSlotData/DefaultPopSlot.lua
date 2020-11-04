@@ -8,5 +8,5 @@ Yield.Mineral = 4
 Yield.Energy = 4
 
 Upkeep = {}
-Upkeep.Money = 2;
-Upkeep.Food = 4;
+Upkeep.Money = 2
+Upkeep.Food = 4
