@@ -208,7 +208,7 @@ namespace Core
         public void SetAdder(string adderGuid)
         {
             foreach (var s in Scope.Values)
-                s.SetInfo(adderGuid);
+                s.SetInfo(Name, adderGuid);
         }
     }
 
@@ -216,17 +216,18 @@ namespace Core
     {
         private static readonly Action<IModifierHolder> DummyFunction = _ => { };
 
-        private readonly Func<IModifierHolder, string, bool> _conditionChecker;
+        private readonly ScriptFunctionDelegate<bool> _conditionChecker;
 
-        private readonly Func<IModifierHolder, string, List<ModifierEffect>> _getEffect;
+        private readonly ScriptFunctionDelegate<List<ModifierEffect>> _getEffect;
 
         public readonly Action<IModifierHolder> OnAdded, OnRemoved;
 
+        private string _modifierName;
         private string _adderGuid;
 
         public ModifierScope(string targetTypeName,
-            Func<IModifierHolder, string, List<ModifierEffect>> getEffect,
-            Func<IModifierHolder, string, bool> conditionChecker,
+            ScriptFunctionDelegate<List<ModifierEffect>> getEffect,
+            ScriptFunctionDelegate<bool> conditionChecker,
             IReadOnlyDictionary<string, ScriptFunctionDelegate> triggerEvent)
         {
             TargetTypeName = targetTypeName;
@@ -247,14 +248,27 @@ namespace Core
 
         public IReadOnlyDictionary<string, ScriptFunctionDelegate> TriggerEvent { get; }
 
-        public void SetInfo(string adderGuid)
+        public void SetInfo(string modifierName, string adderGuid)
         {
+            _modifierName = modifierName;
             _adderGuid = adderGuid;
         }
 
-        public bool CheckCondition(IModifierHolder holder) => _conditionChecker(holder, _adderGuid);
+        public bool CheckCondition(IModifierHolder holder)
+        {
+            if (_conditionChecker == null) return true;
 
-        public IReadOnlyList<ModifierEffect> GetEffects(IModifierHolder holder) => _getEffect(holder, _adderGuid);
+            return _conditionChecker.TryInvoke($"Scope.{TargetTypeName}.ConditionChecker", _modifierName,
+                out var result, holder, _adderGuid) && result;
+        }
+
+        public IReadOnlyList<ModifierEffect> GetEffects(IModifierHolder holder)
+        {
+            return _getEffect == null || !_getEffect.TryInvoke($"Scope.{TargetTypeName}.GetEffect", _modifierName,
+                out var result, holder, _adderGuid)
+                ? new List<ModifierEffect>()
+                : result;
+        }
     }
 
     public readonly struct ModifierEffect

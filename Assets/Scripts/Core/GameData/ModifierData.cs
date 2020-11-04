@@ -14,7 +14,13 @@ namespace Core.GameData
         {
             if (!(luaHolder is ModifierPrototype mp)) return;
 
-            if (_data.ContainsKey(mp.IdentifierName)) return;
+            if (_data.ContainsKey(mp.IdentifierName))
+            {
+                Logger.Log(LogType.Warning, mp.FilePath,
+                    $"There is already data with the same name ({mp.IdentifierName}), so it will be ignored!");
+
+                return;
+            }
 
             if (mp.IdentifierName == "Default")
             {

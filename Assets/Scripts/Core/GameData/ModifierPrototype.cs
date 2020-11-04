@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using MoonSharp.Interpreter;
 
 namespace Core.GameData
@@ -20,52 +19,85 @@ namespace Core.GameData
         {
             var t = luaScript.Globals;
 
-            IdentifierName = t.Get("Name").String;
+            if (!t.TryGetString("Name", out var identifierName,
+                MoonSharpUtil.LoadingError("Name", FilePath)))
+                return false;
 
-            var isTileLimited = t.Get("IsTileLimited").Boolean;
+            IdentifierName = identifierName;
 
-            var additionalDesc = t.Get("AdditionalDesc").String;
+            if (!t.TryGetString("TargetType", out var targetType,
+                MoonSharpUtil.LoadingError("TargetType", FilePath)))
+                return false;
 
-            var holderType = t.Get("TargetType").String;
+            // Set false if not defined
+            if (!t.TryGetBool("IsTileLimited", out var isTileLimited,
+                MoonSharpUtil.AllowNotDefined("IsTileLimited", FilePath)))
+                isTileLimited = false;
+
+            // Set empty if not defined
+            if (!t.TryGetString("AdditionalDesc", out var additionalDesc,
+                MoonSharpUtil.AllowNotDefined("AdditionalDesc", FilePath)))
+                additionalDesc = string.Empty;
 
             var scopeDict = new Dictionary<string, ModifierScope>();
 
-            foreach (var nameTable in t.Get("Scope").Table.Pairs)
+            if (!t.TryGetTable("Scope", out var scopes,
+                MoonSharpUtil.LoadingError("Scope", FilePath)))
+                return false;
+
+            foreach (var nameTable in scopes.Pairs)
             {
-                var name = nameTable.Key.String;
-                var scopeTable = nameTable.Value.Table;
-                var getEffect = scopeTable.Get("GetEffect").Function.GetDelegate<Dictionary<string, object>>();
-                var checkCondition = scopeTable.Get("CheckCondition").Function.GetDelegate<bool>();
-                var triggerEvent = scopeTable.Get("TriggerEvent").Table.Pairs
-                    .ToDictionary(kv => kv.Key.String,
-                        kv => kv.Value.Function.GetDelegate());
+                if (!nameTable.Key.TryGetString(out var typeName,
+                    MoonSharpUtil.LoadingError("Scope.Key", FilePath)))
+                    return false;
 
-                var scope = new ModifierScope(name, ProcessEffect,
-                    (target, adderGuid) => checkCondition.Invoke(target, adderGuid),
-                    triggerEvent);
+                if (!nameTable.Value.TryGetTable(out var scopeTable,
+                    MoonSharpUtil.LoadingError("Scope.Value", FilePath)))
+                    return false;
 
-                scopeDict.Add(name, scope);
+                // Returns empty effect list when not defined
+                if (!scopeTable.TryGetLuaFunc<List<ModifierEffect>>("GetEffect", out var getEffect,
+                    MoonSharpUtil.AllowNotDefined($"Scope.{typeName}.GetEffect", FilePath)))
+                    getEffect = null;
 
-                List<ModifierEffect> ProcessEffect(IModifierHolder target, string adderGuid)
+                // Returns true when not defined
+                if (!scopeTable.TryGetLuaFunc<bool>("CheckCondition", out var checkCondition,
+                    MoonSharpUtil.AllowNotDefined($"Scope.{typeName}.CheckCondition", FilePath)))
+                    checkCondition = null;
+
+                // Set empty dictionary when not defined
+                var triggerEvent = new Dictionary<string, ScriptFunctionDelegate>();
+
+                if (scopeTable.TryGetTable("TriggerEvent", out var rawTriggerEvent,
+                    MoonSharpUtil.AllowNotDefined($"Scope.{typeName}.TriggerEvent", FilePath)))
                 {
-                    var result = new List<ModifierEffect>();
-
-                    var dict = getEffect.Invoke(target, adderGuid);
-                    foreach (var kv in dict)
+                    foreach (var kv in rawTriggerEvent.Pairs)
                     {
-                        var additionalInfo = new List<string>();
-                        var tokens = kv.Key.Split('_');
-                        for (var i = 1; i < tokens.Length; i++)
-                            additionalInfo.Add(tokens[i]);
+                        if (!kv.Key.TryGetString(out var eventName,
+                            MoonSharpUtil.LoadingError($"Scope.{typeName}.TriggerEvent.Key", FilePath)))
+                            continue;
 
-                        result.Add(new ModifierEffect(tokens[0], additionalInfo, (int)kv.Value));
+                        if (!kv.Value.TryGetLuaAction(out var eventFunc,
+                            MoonSharpUtil.LoadingError($"Scope.{typeName}.TriggerEvent.Key", FilePath)))
+                            continue;
+
+                        if (triggerEvent.ContainsKey(eventName))
+                        {
+                            Logger.Log(LogType.Warning, $"Field Scope.{typeName}.TriggerEvent of" + FilePath,
+                                $"Event type \"{eventName}\" has already defined, so it will be ignored.", true);
+                            continue;
+                        }
+
+                        triggerEvent[eventName] = eventFunc;
                     }
-
-                    return result;
                 }
+
+                var scope = new ModifierScope(typeName, getEffect, checkCondition, triggerEvent);
+
+                scopeDict.Add(typeName, scope);
             }
 
-            _cache = new ModifierCore(IdentifierName, holderType, isTileLimited, additionalDesc, scopeDict);
+            _cache = new ModifierCore(IdentifierName, targetType, isTileLimited, additionalDesc, scopeDict);
 
             return true;
         }
