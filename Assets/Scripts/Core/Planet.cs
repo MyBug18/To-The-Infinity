@@ -47,6 +47,44 @@ namespace Core
         public IEnumerable<TiledModifier> AffectedTiledModifiers =>
             CurrentTile.TileMap.Holder.TiledModifiers.Where(m => m.IsInRange(CurrentTile.Coord));
 
+        public string TypeName => nameof(Planet);
+
+        public string Guid { get; }
+
+        public LuaDictWrapper Storage { get; } = new LuaDictWrapper(new Dictionary<string, object>());
+
+        public TileMap TileMap { get; }
+
+        [MoonSharpHidden]
+        public IEnumerable<Modifier> Modifiers
+        {
+            get
+            {
+                foreach (var m in CurrentTile.TileMap.Holder.Modifiers)
+                    yield return m;
+
+                foreach (var m in _modifiers.Values)
+                    yield return m;
+            }
+        }
+
+        [MoonSharpHidden]
+        public IEnumerable<TiledModifier> TiledModifiers => _tiledModifiers.Values;
+
+        #region Pop
+
+        private readonly List<Pop> _pops = new List<Pop>();
+
+        public IReadOnlyList<Pop> Pops => _pops;
+
+        private readonly List<Pop> _unemployedPops = new List<Pop>();
+
+        public IReadOnlyList<Pop> UnemployedPops => _unemployedPops;
+
+        public const float BasePopGrowth = 5.0f;
+
+        #endregion Pop
+
         public void StartNewTurn(int month)
         {
             ReduceModifiersLeftMonth(month);
@@ -111,44 +149,6 @@ namespace Core
         {
             throw new NotImplementedException();
         }
-
-        public string TypeName => nameof(Planet);
-
-        public string Guid { get; }
-
-        public LuaDictWrapper Storage { get; } = new LuaDictWrapper(new Dictionary<string, object>());
-
-        public TileMap TileMap { get; }
-
-        [MoonSharpHidden]
-        public IEnumerable<Modifier> Modifiers
-        {
-            get
-            {
-                foreach (var m in CurrentTile.TileMap.Holder.Modifiers)
-                    yield return m;
-
-                foreach (var m in _modifiers.Values)
-                    yield return m;
-            }
-        }
-
-        [MoonSharpHidden]
-        public IEnumerable<TiledModifier> TiledModifiers => _tiledModifiers.Values;
-
-        #region Pop
-
-        private readonly List<Pop> _pops = new List<Pop>();
-
-        public IReadOnlyList<Pop> Pops => _pops;
-
-        private readonly List<Pop> _unemployedPops = new List<Pop>();
-
-        public IReadOnlyList<Pop> UnemployedPops => _unemployedPops;
-
-        public const float BasePopGrowth = 5.0f;
-
-        #endregion Pop
 
         #region Modifier
 
