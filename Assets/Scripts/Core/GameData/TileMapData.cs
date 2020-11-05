@@ -14,7 +14,13 @@ namespace Core.GameData
         {
             if (!(luaHolder is TileMapPrototype tmp)) return;
 
-            if (_data.ContainsKey(tmp.IdentifierName)) return;
+            if (_data.ContainsKey(tmp.IdentifierName))
+            {
+                Logger.Log(LogType.Warning, tmp.FilePath,
+                    $"There is already data with the same name ({tmp.IdentifierName}), so it will be ignored!");
+
+                return;
+            }
 
             if (tmp.IdentifierName == "Default")
             {
@@ -29,9 +35,14 @@ namespace Core.GameData
         {
         }
 
-        public TileMap CreateDirectly(string name, ITileMapHolder holder, int radius, int? seed) =>
-            _data.TryGetValue(name, out var result)
-                ? result.Create(holder, radius, seed)
-                : _default.Create(holder, radius, seed);
+        public TileMap CreateDirectly(string name, ITileMapHolder holder, int radius, int? seed)
+        {
+            if (_data.TryGetValue(name, out var result)) return result.Create(holder, radius, seed);
+
+            if (HasDefaultValue) return _default.Create(holder, radius, seed);
+
+            GameUtil.CrashGame($"No default value in {nameof(TileMapData)}");
+            return null;
+        }
     }
 }

@@ -16,7 +16,13 @@ namespace Core.GameData
         {
             if (!(luaHolder is TileSpecialResourceTypePrototype tsrth)) return;
 
-            if (_data.ContainsKey(tsrth.IdentifierName)) return;
+            if (_data.ContainsKey(tsrth.IdentifierName))
+            {
+                Logger.Log(LogType.Warning, tsrth.FilePath,
+                    $"There is already data with the same name ({tsrth.IdentifierName}), so it will be ignored!");
+
+                return;
+            }
 
             if (tsrth.IdentifierName == "Default")
             {
@@ -34,10 +40,12 @@ namespace Core.GameData
 
         public TileSpecialResourceType GetDirectly(string name)
         {
-            if (!_data.TryGetValue(name, out var result))
-                return HasDefaultValue ? _default.Create() : null;
+            if (_data.TryGetValue(name, out var result)) return result.Create();
 
-            return result.Create();
+            if (HasDefaultValue) return _default.Create();
+
+            GameUtil.CrashGame($"No default value in {nameof(TileSpecialResourceTypeData)}");
+            return null;
         }
     }
 }

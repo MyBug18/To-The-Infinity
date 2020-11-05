@@ -7,7 +7,7 @@ namespace Core.GameData
 {
     public sealed class TileMapPrototype : ILuaHolder
     {
-        private ScriptFunctionDelegate<Dictionary<string, object>> _tileInfoMaker;
+        private ScriptFunctionDelegate<Dictionary<string, object>> _makeTile;
 
         public TileMapPrototype(string filePath) => FilePath = filePath;
 
@@ -19,8 +19,20 @@ namespace Core.GameData
 
         public bool Load(Script luaScript)
         {
-            IdentifierName = luaScript.Globals.Get("Name").String;
-            _tileInfoMaker = luaScript.Globals.Get("MakeTile").Function.GetDelegate<Dictionary<string, object>>();
+            var t = luaScript.Globals;
+
+            if (!t.TryGetString("Name", out var identifierName,
+                MoonSharpUtil.LoadingError("Name", FilePath)))
+                return false;
+
+            IdentifierName = identifierName;
+
+            if (!t.TryGetLuaFunc<Dictionary<string, object>>("MakeTile", out var makeTile,
+                MoonSharpUtil.LoadingError("MakeTile", FilePath)))
+                return false;
+
+
+            _makeTile = makeTile;
 
             return true;
         }
@@ -93,12 +105,20 @@ namespace Core.GameData
 
         private HexTile GenerateTile(TileMap tileMap, HexTileCoord coord, float noise, LuaDictWrapper sharedStorage)
         {
-            var dict = _tileInfoMaker.Invoke(coord, noise, sharedStorage);
+            var tileData = GameDataStorage.Instance.GetGameData<HexTileData>();
+
+            if (!_makeTile.TryInvoke("MakeTile", FilePath, out var dict, coord, noise, sharedStorage))
+            {
+                Logger.Log(LogType.Error, IdentifierName + ".MakeFile",
+                    "Error while making tile, so trying to use default value!");
+
+                return tileData.GetPrototype("Default").Create(tileMap, coord, 0);
+            }
 
             var name = (string)dict["Name"];
             var res = (int)(double)dict["ResDecider"];
 
-            var tileProto = GameDataStorage.Instance.GetGameData<HexTileData>().GetPrototype(name);
+            var tileProto = tileData.GetPrototype(name);
             var tile = tileProto.Create(tileMap, coord, res);
 
             return tile;

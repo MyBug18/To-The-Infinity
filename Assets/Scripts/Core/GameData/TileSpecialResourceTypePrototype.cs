@@ -16,7 +16,13 @@ namespace Core.GameData
 
         public bool Load(Script luaScript)
         {
-            IdentifierName = luaScript.Globals.Get("Name").String;
+            var t = luaScript.Globals;
+
+            if (!t.TryGetString("Name", out var identifierName,
+                MoonSharpUtil.LoadingError("Name", FilePath)))
+                return false;
+
+            IdentifierName = identifierName;
 
             _cache = new TileSpecialResourceType(IdentifierName);
 

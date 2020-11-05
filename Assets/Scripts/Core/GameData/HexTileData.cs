@@ -35,7 +35,14 @@ namespace Core.GameData
         {
         }
 
-        public HexTilePrototype GetPrototype(string name) =>
-            !_data.TryGetValue(name, out var result) ? _default : result;
+        public HexTilePrototype GetPrototype(string name)
+        {
+            if (_data.TryGetValue(name, out var result)) return result;
+
+            if (HasDefaultValue) return _default;
+
+            GameUtil.CrashGame($"No default value in {nameof(HexTileData)}");
+            return null;
+        }
     }
 }

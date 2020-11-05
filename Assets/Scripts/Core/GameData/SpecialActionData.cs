@@ -36,7 +36,14 @@ namespace Core.GameData
         {
         }
 
-        public SpecialAction GetSpecialActionDirectly(ISpecialActionHolder owner, string name) =>
-            _data.TryGetValue(name, out var result2) ? result2.Create(owner) : _default.Create(owner);
+        public SpecialAction GetSpecialActionDirectly(ISpecialActionHolder owner, string name)
+        {
+            if (_data.TryGetValue(name, out var result)) return result.Create(owner);
+
+            if (HasDefaultValue) return _default.Create(owner);
+
+            GameUtil.CrashGame($"No default value in {nameof(SpecialAction)}");
+            return null;
+        }
     }
 }
