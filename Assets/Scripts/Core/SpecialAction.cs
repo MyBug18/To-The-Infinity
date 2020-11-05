@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using MoonSharp.Interpreter;
 
@@ -42,15 +41,15 @@ namespace Core
 
     public sealed class SpecialActionCore
     {
-        private readonly ScriptFunctionDelegate<bool> _isAvailable;
+        private readonly ScriptFunctionDelegate<bool> _doAction;
 
         private readonly ScriptFunctionDelegate<HashSet<HexTileCoord>> _getAvailableTiles;
 
-        private readonly ScriptFunctionDelegate<HashSet<HexTileCoord>> _previewEffectRange;
-
         private readonly ScriptFunctionDelegate<Dictionary<string, int>> _getCost;
 
-        private readonly ScriptFunctionDelegate<bool> _doAction;
+        private readonly ScriptFunctionDelegate<bool> _isAvailable;
+
+        private readonly ScriptFunctionDelegate<HashSet<HexTileCoord>> _previewEffectRange;
 
         public SpecialActionCore(string name, string targetType, bool needCoordinate,
             ScriptFunctionDelegate<bool> isAvailable,

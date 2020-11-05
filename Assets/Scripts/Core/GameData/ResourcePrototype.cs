@@ -42,7 +42,8 @@ namespace Core.GameData
 
             if (!StringTypeMap.TryGetValue(resourceType, out var value))
             {
-                Logger.Log(LogType.Error, FilePath, "ResourceType must be one of \"Planetary\", \"Global\", \"Research\"!");
+                Logger.Log(LogType.Error, FilePath,
+                    "ResourceType must be one of \"Planetary\", \"Global\", \"Research\"!");
                 return false;
             }
 

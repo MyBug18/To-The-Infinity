@@ -36,54 +36,11 @@ namespace Core
 
         public string Owner { get; }
 
-        public IReadOnlyList<SpecialAction> SpecialActions { get; }
-
         public string IdentifierName { get; }
 
         public string CustomName { get; private set; }
 
         public HexTile CurrentTile { get; }
-
-        public IEnumerable<TiledModifier> AffectedTiledModifiers =>
-            CurrentTile.TileMap.Holder.TiledModifiers.Where(m => m.IsInRange(CurrentTile.Coord));
-
-        public string TypeName => nameof(Planet);
-
-        public string Guid { get; }
-
-        public LuaDictWrapper Storage { get; } = new LuaDictWrapper(new Dictionary<string, object>());
-
-        public TileMap TileMap { get; }
-
-        [MoonSharpHidden]
-        public IEnumerable<Modifier> Modifiers
-        {
-            get
-            {
-                foreach (var m in CurrentTile.TileMap.Holder.Modifiers)
-                    yield return m;
-
-                foreach (var m in _modifiers.Values)
-                    yield return m;
-            }
-        }
-
-        [MoonSharpHidden]
-        public IEnumerable<TiledModifier> TiledModifiers => _tiledModifiers.Values;
-
-        #region Pop
-
-        private readonly List<Pop> _pops = new List<Pop>();
-
-        public IReadOnlyList<Pop> Pops => _pops;
-
-        private readonly List<Pop> _unemployedPops = new List<Pop>();
-
-        public IReadOnlyList<Pop> UnemployedPops => _unemployedPops;
-
-        public const float BasePopGrowth = 5.0f;
-
-        #endregion Pop
 
         public void StartNewTurn(int month)
         {
@@ -142,6 +99,32 @@ namespace Core
                 ApplyModifierChangeToDownward(mc, false);
         }
 
+        public string TypeName => nameof(Planet);
+
+        public string Guid { get; }
+
+        public LuaDictWrapper Storage { get; } = new LuaDictWrapper(new Dictionary<string, object>());
+
+        public TileMap TileMap { get; }
+
+        #region Pop
+
+        private readonly List<Pop> _pops = new List<Pop>();
+
+        public IReadOnlyList<Pop> Pops => _pops;
+
+        private readonly List<Pop> _unemployedPops = new List<Pop>();
+
+        public IReadOnlyList<Pop> UnemployedPops => _unemployedPops;
+
+        public const float BasePopGrowth = 5.0f;
+
+        #endregion Pop
+
+        #region SpecialAction
+
+        public IReadOnlyList<SpecialAction> SpecialActions { get; }
+
         public bool CheckSpecialActionCost(IReadOnlyDictionary<string, int> cost) =>
             throw new NotImplementedException();
 
@@ -150,7 +133,195 @@ namespace Core
             throw new NotImplementedException();
         }
 
+        #endregion
+
         #region Modifier
+
+        public IEnumerable<TiledModifier> AffectedTiledModifiers =>
+            CurrentTile.TileMap.Holder.TiledModifiers.Where(m => m.IsInRange(CurrentTile.Coord));
+
+        [MoonSharpHidden]
+        public IEnumerable<Modifier> Modifiers
+        {
+            get
+            {
+                foreach (var m in CurrentTile.TileMap.Holder.Modifiers)
+                    yield return m;
+
+                foreach (var m in _modifiers.Values)
+                    yield return m;
+            }
+        }
+
+        [MoonSharpHidden]
+        public IEnumerable<TiledModifier> TiledModifiers => _tiledModifiers.Values;
+
+        public void AddModifier(string modifierName, string adderGuid, int leftMonth)
+        {
+            if (_modifiers.ContainsKey(modifierName))
+            {
+                Logger.Log(LogType.Warning, $"{nameof(Planet)}.{nameof(AddModifier)}",
+                    $"Trying to add modifier \"{modifierName}\" which already exists, so it will be ignored.");
+                return;
+            }
+
+            var core = GameDataStorage.Instance.GetGameData<ModifierData>().GetModifierDirectly(modifierName);
+
+            if (core.TargetType != TypeName)
+            {
+                Logger.Log(LogType.Warning, $"{nameof(Planet)}.{nameof(AddModifier)}",
+                    $"Modifier \"{modifierName}\" is not for {TypeName}, but for {core.TargetType}, so it will be ignored.");
+                return;
+            }
+
+            if (core.IsTileLimited)
+            {
+                Logger.Log(LogType.Warning, $"{nameof(Planet)}.{nameof(AddModifier)}",
+                    $"Modifier \"{modifierName}\" is a tile limited modifier!, but tried to use as a tile unlimited modifier, so it will be ignored.");
+                return;
+            }
+
+            var m = new Modifier(core, adderGuid, leftMonth);
+
+            _modifiers.Add(modifierName, m);
+            ApplyModifierChangeToDownward(m.Core, false);
+        }
+
+        public void RemoveModifier(string modifierName)
+        {
+            if (!_modifiers.ContainsKey(modifierName))
+            {
+                Logger.Log(LogType.Warning, $"{nameof(Planet)}.{nameof(RemoveModifier)}",
+                    $"Trying to remove modifier \"{modifierName}\" which doesn't exist, so it will be ignored.");
+                return;
+            }
+
+            var m = _modifiers[modifierName];
+            _modifiers.Remove(modifierName);
+            ApplyModifierChangeToDownward(m.Core, true);
+        }
+
+        [MoonSharpHidden]
+        public void ApplyModifierChangeToDownward(ModifierCore m, bool isRemoving)
+        {
+            if (m.Scope.ContainsKey(TypeName))
+            {
+                var scope = m.Scope[TypeName];
+
+                if (isRemoving)
+                {
+                    scope.OnRemoved(this);
+
+                    RegisterModifierEvent(m.Name, scope.TriggerEvent, true);
+                }
+                else
+                {
+                    scope.OnAdded(this);
+
+                    RegisterModifierEvent(m.Name, scope.TriggerEvent, false);
+                }
+            }
+
+            TileMap.ApplyModifierChangeToTileObjects(m, isRemoving);
+        }
+
+        public bool HasModifier(string modifierName) => _modifiers.ContainsKey(modifierName);
+
+        public void AddTiledModifierRange(string modifierName, string adderGuid, string rangeKeyName,
+            List<HexTileCoord> tiles, int leftMonth)
+        {
+            if (!_tiledModifiers.TryGetValue(modifierName, out var m))
+            {
+                var core = GameDataStorage.Instance.GetGameData<ModifierData>().GetModifierDirectly(modifierName);
+
+                if (core.TargetType != TypeName)
+                {
+                    Logger.Log(LogType.Warning, $"{nameof(Planet)}.{nameof(AddTiledModifierRange)}",
+                        $"Modifier \"{modifierName}\" is not for \"{TypeName}\", but for \"{core.TargetType}\", so it will be ignored.");
+                    return;
+                }
+
+                if (!core.IsTileLimited)
+                {
+                    Logger.Log(LogType.Warning, $"{nameof(Planet)}.{nameof(AddTiledModifierRange)}",
+                        $"Modifier \"{modifierName}\" is not a tile limited modifier, but tried to use as a tile limited modifier, so it will be ignored.");
+                    return;
+                }
+
+                var tileSet = new HashSet<HexTileCoord>(tiles);
+
+                m = new TiledModifier(core, adderGuid, rangeKeyName, tileSet, leftMonth);
+
+                _tiledModifiers[modifierName] = m;
+                TileMap.ApplyModifierChangeToTileObjects(m.Core, false, tileSet);
+            }
+            else
+            {
+                if (m.AdderGuid != adderGuid)
+                {
+                    Logger.Log(LogType.Warning, $"{nameof(Planet)}.{nameof(AddTiledModifierRange)}",
+                        $"Modifier \"{modifierName}\" has already added by different object : \"{m.AdderGuid}\", so it will be ignored.");
+                    return;
+                }
+
+                if (m.Infos.ContainsKey(rangeKeyName))
+                {
+                    Logger.Log(LogType.Warning, $"{nameof(Planet)}.{nameof(AddTiledModifierRange)}",
+                        $"Range key name \"{rangeKeyName}\" already exists in modifier \"{m.Name}\", so it will be ignored.");
+                    return;
+                }
+
+                var pureAdd = m.AddTileInfo(rangeKeyName, new HashSet<HexTileCoord>(tiles), leftMonth);
+
+                TileMap.ApplyModifierChangeToTileObjects(m.Core, false, pureAdd);
+            }
+        }
+
+        public void MoveTiledModifierRange(string modifierName, string rangeKeyName, List<HexTileCoord> tiles)
+        {
+            if (!_tiledModifiers.TryGetValue(modifierName, out var m))
+            {
+                Logger.Log(LogType.Warning, $"{nameof(Planet)}.{nameof(MoveTiledModifierRange)}",
+                    $"Trying to access modifier \"{modifierName}\" which doesn't exist, so it will be ignored.");
+                return;
+            }
+
+            if (!m.Infos.ContainsKey(rangeKeyName))
+            {
+                Logger.Log(LogType.Warning, $"{nameof(Planet)}.{nameof(MoveTiledModifierRange)}",
+                    $"There is no range key \"{rangeKeyName}\" in modifier \"{modifierName}\", so it will be ignored.");
+                return;
+            }
+
+            var (pureAdd, pureRemove) = m.MoveTileInfo(rangeKeyName, new HashSet<HexTileCoord>(tiles));
+
+            TileMap.ApplyModifierChangeToTileObjects(m.Core, false, pureAdd);
+            TileMap.ApplyModifierChangeToTileObjects(m.Core, true, pureRemove);
+        }
+
+        public void RemoveTiledModifierRange(string modifierName, string rangeKeyName)
+        {
+            if (!_tiledModifiers.TryGetValue(modifierName, out var m))
+            {
+                Logger.Log(LogType.Warning, $"{nameof(Planet)}.{nameof(RemoveTiledModifierRange)}",
+                    $"Trying to remove modifier \"{modifierName}\" which doesn't exist, so it will be ignored.");
+                return;
+            }
+
+            if (!m.Infos.ContainsKey(rangeKeyName))
+            {
+                Logger.Log(LogType.Warning, $"{nameof(Planet)}.{nameof(RemoveTiledModifierRange)}",
+                    $"There is no range key \"{rangeKeyName}\" in modifier \"{modifierName}\", so it will be ignored.");
+                return;
+            }
+
+            var pureRemove = m.RemoveTileInfo(rangeKeyName);
+
+            TileMap.ApplyModifierChangeToTileObjects(m.Core, true, pureRemove);
+
+            if (m.Infos.Count == 0)
+                _tiledModifiers.Remove(modifierName);
+        }
 
         private void ReduceModifiersLeftMonth(int month)
         {
@@ -204,175 +375,13 @@ namespace Core
                         else
                             _onPopBirth.Add(modifierName, () => kv.Value.Invoke(this));
                         break;
+
+                    default:
+                        Logger.Log(LogType.Warning, $"{nameof(Planet)}.{nameof(RegisterModifierEvent)}",
+                            $"{kv.Key} is not a valid event name for the {nameof(Planet)}, so it will be ignored.");
+                        break;
                 }
             }
-        }
-
-        public void AddModifier(string modifierName, string adderGuid, int leftMonth)
-        {
-            if (_modifiers.ContainsKey(modifierName))
-            {
-                Logger.Log(LogType.Warning, nameof(AddModifier),
-                    $"Trying to add modifier \"{modifierName}\" which already exists!");
-                return;
-            }
-
-            var core = GameDataStorage.Instance.GetGameData<ModifierData>().GetModifierDirectly(modifierName);
-
-            if (core.TargetType != TypeName)
-            {
-                Logger.Log(LogType.Warning, nameof(AddModifier),
-                    $"Modifier \"{modifierName}\" is not for {TypeName}, but for {core.TargetType}!");
-                return;
-            }
-
-            if (core.IsTileLimited)
-            {
-                Logger.Log(LogType.Warning, nameof(AddModifier),
-                    $"Modifier \"{modifierName}\" is a tile limited modifier!, but tried to use as a tile unlimited modifier!");
-                return;
-            }
-
-            var m = new Modifier(core, adderGuid, leftMonth);
-
-            _modifiers.Add(modifierName, m);
-            ApplyModifierChangeToDownward(m.Core, false);
-        }
-
-        public void RemoveModifier(string modifierName)
-        {
-            if (!_modifiers.ContainsKey(modifierName))
-            {
-                Logger.Log(LogType.Warning, nameof(RemoveModifier),
-                    $"Trying to remove modifier \"{modifierName}\" which doesn't exist!");
-                return;
-            }
-
-            var m = _modifiers[modifierName];
-            _modifiers.Remove(modifierName);
-            ApplyModifierChangeToDownward(m.Core, true);
-        }
-
-        [MoonSharpHidden]
-        public void ApplyModifierChangeToDownward(ModifierCore m, bool isRemoving)
-        {
-            if (m.Scope.ContainsKey(TypeName))
-            {
-                var scope = m.Scope[TypeName];
-
-                if (isRemoving)
-                {
-                    scope.OnRemoved(this);
-
-                    RegisterModifierEvent(m.Name, scope.TriggerEvent, true);
-                }
-                else
-                {
-                    scope.OnAdded(this);
-
-                    RegisterModifierEvent(m.Name, scope.TriggerEvent, false);
-                }
-            }
-
-            TileMap.ApplyModifierChangeToTileObjects(m, isRemoving);
-        }
-
-        public bool HasModifier(string modifierName) => _modifiers.ContainsKey(modifierName);
-
-        public void AddTiledModifierRange(string modifierName, string adderGuid, string rangeKeyName,
-            List<HexTileCoord> tiles, int leftMonth)
-        {
-            if (!_tiledModifiers.TryGetValue(modifierName, out var m))
-            {
-                var core = GameDataStorage.Instance.GetGameData<ModifierData>().GetModifierDirectly(modifierName);
-
-                if (core.TargetType != TypeName)
-                {
-                    Logger.Log(LogType.Warning, nameof(AddTiledModifierRange),
-                        $"Modifier \"{modifierName}\" is not for \"{TypeName}\", but for \"{core.TargetType}\"!");
-                    return;
-                }
-
-                if (!core.IsTileLimited)
-                {
-                    Logger.Log(LogType.Warning, nameof(AddTiledModifierRange),
-                        $"Modifier \"{modifierName}\" is not a tile limited modifier, but tried to use as a tile limited modifier!");
-                    return;
-                }
-
-                var tileSet = new HashSet<HexTileCoord>(tiles);
-
-                m = new TiledModifier(core, adderGuid, rangeKeyName, tileSet, leftMonth);
-
-                _tiledModifiers[modifierName] = m;
-                TileMap.ApplyModifierChangeToTileObjects(m.Core, false, tileSet);
-            }
-            else
-            {
-                if (m.AdderGuid != adderGuid)
-                {
-                    Logger.Log(LogType.Warning, nameof(AddTiledModifierRange),
-                        $"Modifier \"{modifierName}\" has already added by different object : \"{m.AdderGuid}\"!");
-                    return;
-                }
-
-                if (m.Infos.ContainsKey(rangeKeyName))
-                {
-                    Logger.Log(LogType.Warning, nameof(AddTiledModifierRange),
-                        $"Range key name \"{rangeKeyName}\" already exists in modifier \"{m.Name}\"!");
-                    return;
-                }
-
-                var pureAdd = m.AddTileInfo(rangeKeyName, new HashSet<HexTileCoord>(tiles), leftMonth);
-
-                TileMap.ApplyModifierChangeToTileObjects(m.Core, false, pureAdd);
-            }
-        }
-
-        public void MoveTiledModifierRange(string modifierName, string rangeKeyName, List<HexTileCoord> tiles)
-        {
-            if (!_tiledModifiers.TryGetValue(modifierName, out var m))
-            {
-                Logger.Log(LogType.Warning, nameof(MoveTiledModifierRange),
-                    $"Trying to access modifier \"{modifierName}\" which doesn't exist!");
-                return;
-            }
-
-            if (!m.Infos.ContainsKey(rangeKeyName))
-            {
-                Logger.Log(LogType.Warning, nameof(MoveTiledModifierRange),
-                    $"There is no range key \"{rangeKeyName}\" in modifier \"{modifierName}\"!");
-                return;
-            }
-
-            var (pureAdd, pureRemove) = m.MoveTileInfo(rangeKeyName, new HashSet<HexTileCoord>(tiles));
-
-            TileMap.ApplyModifierChangeToTileObjects(m.Core, false, pureAdd);
-            TileMap.ApplyModifierChangeToTileObjects(m.Core, true, pureRemove);
-        }
-
-        public void RemoveTiledModifierRange(string modifierName, string rangeKeyName)
-        {
-            if (!_tiledModifiers.TryGetValue(modifierName, out var m))
-            {
-                Logger.Log(LogType.Warning, nameof(RemoveTiledModifierRange),
-                    $"Trying to remove modifier \"{modifierName}\" which doesn't exist!");
-                return;
-            }
-
-            if (!m.Infos.ContainsKey(rangeKeyName))
-            {
-                Logger.Log(LogType.Warning, nameof(RemoveTiledModifierRange),
-                    $"There is no range key \"{rangeKeyName}\" in modifier \"{modifierName}\"!");
-                return;
-            }
-
-            var pureRemove = m.RemoveTileInfo(rangeKeyName);
-
-            TileMap.ApplyModifierChangeToTileObjects(m.Core, true, pureRemove);
-
-            if (m.Infos.Count == 0)
-                _tiledModifiers.Remove(modifierName);
         }
 
         #endregion Modifier

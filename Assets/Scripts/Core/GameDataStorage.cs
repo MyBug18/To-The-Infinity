@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Core.GameData;
 using MoonSharp.Interpreter;
 using UnityEngine;
+using Random = System.Random;
 
 namespace Core
 {
@@ -96,7 +97,7 @@ namespace Core
         private static void InitializeMoonSharp()
         {
 #if UNITY_EDITOR
-            UserData.RegisterType<System.Random>();
+            UserData.RegisterType<Random>();
             UserData.RegisterAssembly();
 #endif
 

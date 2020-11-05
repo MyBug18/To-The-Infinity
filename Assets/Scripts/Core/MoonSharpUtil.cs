@@ -30,6 +30,40 @@ namespace Core
         public static LogInfo AllowNotDefined(string fieldName, string filePath)
             => new LogInfo($"Field {fieldName} of " + filePath, LogType.Error, true, true);
 
+        public static bool TryInvoke(this ScriptFunctionDelegate f, string funcName, string context,
+            params object[] args)
+        {
+            try
+            {
+                f.Invoke(args);
+                return true;
+            }
+            catch (Exception)
+            {
+                Logger.Log(LogType.Error, $"Function {funcName} of" + context,
+                    "Function call failed! It may cause a serious problem, resulting game crash!");
+                return false;
+            }
+        }
+
+        public static bool TryInvoke<T>(this ScriptFunctionDelegate<T> f, string funcName, string context,
+            out T result, params object[] args)
+        {
+            try
+            {
+                result = f.Invoke(args);
+                return true;
+            }
+            catch (Exception)
+            {
+                Logger.Log(LogType.Error, $"Function {funcName} of" + context,
+                    "Function call failed! It may cause a serious problem, resulting a game crash!");
+
+                result = default;
+                return false;
+            }
+        }
+
         #region TryGet
 
         private static bool TryGetDynValue(this Table table, string key, out DynValue result, LogInfo info = default)
@@ -228,40 +262,7 @@ namespace Core
             result = null;
             return false;
         }
+
         #endregion
-
-        public static bool TryInvoke(this ScriptFunctionDelegate f, string funcName, string context,
-            params object[] args)
-        {
-            try
-            {
-                f.Invoke(args);
-                return true;
-            }
-            catch (Exception)
-            {
-                Logger.Log(LogType.Error, $"Function {funcName} of" + context,
-                    "Function call failed! It may cause a serious problem, resulting game crash!");
-                return false;
-            }
-        }
-
-        public static bool TryInvoke<T>(this ScriptFunctionDelegate<T> f, string funcName, string context,
-            out T result, params object[] args)
-        {
-            try
-            {
-                result = f.Invoke(args);
-                return true;
-            }
-            catch (Exception)
-            {
-                Logger.Log(LogType.Error, $"Function {funcName} of" + context,
-                    "Function call failed! It may cause a serious problem, resulting a game crash!");
-
-                result = default;
-                return false;
-            }
-        }
     }
 }

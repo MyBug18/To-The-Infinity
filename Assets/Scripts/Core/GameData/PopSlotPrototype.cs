@@ -39,7 +39,6 @@ namespace Core.GameData
             var yield = new Dictionary<string, float>();
 
             if (t.TryGetTable("Yield", out var yieldTable, MoonSharpUtil.AllowNotDefined("Yield", FilePath)))
-            {
                 foreach (var kv in yieldTable.Pairs)
                 {
                     if (!kv.Key.TryGetString(out var resName, MoonSharpUtil.LoadingError("Yield.Key", FilePath)))
@@ -66,14 +65,12 @@ namespace Core.GameData
 
                     yield[resName] = resAmount;
                 }
-            }
 
             BaseYield = yield;
 
             var upkeep = new Dictionary<string, float>();
 
             if (t.TryGetTable("Upkeep", out var upKeepTable, MoonSharpUtil.AllowNotDefined("Upkeep", FilePath)))
-            {
                 foreach (var kv in upKeepTable.Pairs)
                 {
                     if (!kv.Key.TryGetString(out var resName, MoonSharpUtil.LoadingError("Upkeep.Key", FilePath)))
@@ -100,7 +97,6 @@ namespace Core.GameData
 
                     upkeep[resName] = resAmount;
                 }
-            }
 
             BaseUpkeep = upkeep;
 

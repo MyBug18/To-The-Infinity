@@ -18,6 +18,8 @@ namespace Core
     {
         private static Logger _instance;
 
+        private static readonly object Mutex = new object();
+
         private FileStream _fs;
 
         private StreamWriter _sw;
@@ -46,8 +48,6 @@ namespace Core
                 FileMode.Create);
             _sw = new StreamWriter(_fs, Encoding.UTF8);
         }
-
-        private static readonly object Mutex = new object();
 
         public static void Log(LogType logType, string context, string l, bool forceSync = false)
         {

@@ -221,9 +221,9 @@ namespace Core
         private readonly ScriptFunctionDelegate<List<ModifierEffect>> _getEffect;
 
         public readonly Action<IModifierHolder> OnAdded, OnRemoved;
+        private string _adderGuid;
 
         private string _modifierName;
-        private string _adderGuid;
 
         public ModifierScope(string targetTypeName,
             ScriptFunctionDelegate<List<ModifierEffect>> getEffect,

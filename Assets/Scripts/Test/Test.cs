@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Threading;
-using Core;
+﻿using Core;
 using Core.GameData;
 using UnityEngine;
 using View;

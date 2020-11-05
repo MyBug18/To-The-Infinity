@@ -70,7 +70,6 @@ namespace Core.GameData
 
                 if (scopeTable.TryGetTable("TriggerEvent", out var rawTriggerEvent,
                     MoonSharpUtil.AllowNotDefined($"Scope.{typeName}.TriggerEvent", FilePath)))
-                {
                     foreach (var kv in rawTriggerEvent.Pairs)
                     {
                         if (!kv.Key.TryGetString(out var eventName,
@@ -90,7 +89,6 @@ namespace Core.GameData
 
                         triggerEvent[eventName] = eventFunc;
                     }
-                }
 
                 var scope = new ModifierScope(typeName, getEffect, checkCondition, triggerEvent);
 
