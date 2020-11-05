@@ -2,6 +2,14 @@
 
 namespace Core
 {
+    public enum DamageType
+    {
+        Error, // Should be only used to indicate an error.
+        Mass,
+        Beam,
+        Magic,
+    }
+
     public interface IUnit : IOnHexTileObject
     {
         int MeleeAttackPower { get; }
@@ -13,6 +21,6 @@ namespace Core
 
         IReadOnlyCollection<string> Properties { get; }
 
-        void OnMeleeAttacked(IUnit unit, int damage);
+        void OnDamaged(IInfinityObject obj, int damage, DamageType damageType, bool isMelee);
     }
 }
