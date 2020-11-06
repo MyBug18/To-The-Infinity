@@ -40,7 +40,7 @@ namespace Core
 
         public string CustomName { get; private set; }
 
-        public HexTile CurrentTile { get; }
+        public HexTile CurrentTile { get; private set; }
 
         public void StartNewTurn(int month)
         {
@@ -75,6 +75,8 @@ namespace Core
             foreach (var mc in toRemove)
                 ApplyModifierChangeToDownward(mc, true);
             CurrentTile.RemoveTileObject(TypeName);
+
+            CurrentTile = tile;
 
             // Add modifier effect after attaching
             tile.AddTileObject(this);
