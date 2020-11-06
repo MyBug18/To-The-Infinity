@@ -38,7 +38,7 @@ namespace Core
             _value = value;
         }
 
-        public object Get() => _value;
+        public double Get() => _value;
 
         public void Set(double value)
         {

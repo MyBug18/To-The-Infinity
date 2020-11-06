@@ -38,10 +38,11 @@ namespace Core
                 f.Invoke(args);
                 return true;
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                Logger.Log(LogType.Error, $"Function {funcName} of" + context,
-                    "Function call failed! It may cause a serious problem, resulting game crash!");
+                Logger.Log(LogType.Error, $"Function {funcName} of " + context,
+                    "Function call failed! It may cause a serious problem, resulting game crash!\n" +
+                    "Error Message: " + e.Message);
                 return false;
             }
         }
@@ -54,10 +55,12 @@ namespace Core
                 result = f.Invoke(args);
                 return true;
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                Logger.Log(LogType.Error, $"Function {funcName} of" + context,
-                    "Function call failed! It may cause a serious problem, resulting a game crash!");
+                Logger.Log(LogType.Error, $"Function {funcName} of " + context,
+                    "Function call failed! It may cause a serious problem, resulting game crash!\n" +
+                    "Error Message: " + e.Message);
+
 
                 result = default;
                 return false;
