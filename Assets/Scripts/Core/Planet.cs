@@ -52,9 +52,9 @@ namespace Core
         {
             var destHolder = tile.TileMap.Holder;
 
-            if (destHolder.TypeName != nameof(StarSystem))
+            if (destHolder.TypeName != nameof(StarSystem) || CurrentTile.TileMap.Holder.TypeName != destHolder.TypeName)
             {
-                Logger.Log(LogType.Warning, nameof(TeleportToTile), "Planet can exist only on StarSystem!");
+                Logger.Log(LogType.Warning, $"{nameof(Planet)}.{nameof(TeleportToTile)}", "Planet can exist only on StarSystem!");
                 return;
             }
 
@@ -71,29 +71,12 @@ namespace Core
                     toRemove.Add(core);
             }
 
-            // Should consider not tiled modifier when the tilemap changes
-            if (CurrentTile.TileMap.Holder != destHolder)
-            {
-                foreach (var m in destHolder.Modifiers)
-                    toAdd.Add(m.Core);
-
-                foreach (var m in Modifiers)
-                {
-                    var core = m.Core;
-
-                    if (toAdd.Contains(core))
-                        toAdd.Remove(core);
-                    else
-                        toRemove.Add(core);
-                }
-            }
-
-            // Remove modifier before detaching
+            // Remove modifier effect before detaching
             foreach (var mc in toRemove)
                 ApplyModifierChangeToDownward(mc, true);
             CurrentTile.RemoveTileObject(TypeName);
 
-            // Add modifier after attaching
+            // Add modifier effect after attaching
             tile.AddTileObject(this);
             foreach (var mc in toAdd)
                 ApplyModifierChangeToDownward(mc, false);
