@@ -14,7 +14,7 @@ namespace Core
     }
 
     [MoonSharpUserData]
-    public class Logger : IDisposable
+    public sealed class Logger : IDisposable
     {
         private static Logger _instance;
 

@@ -7,11 +7,11 @@ namespace Core
 {
     public sealed class Modifier
     {
-        public Modifier(ModifierCore core, string adderGuid, int leftMonth = -1)
+        public Modifier(ModifierCore core, string playerName, string adderGuid, int leftMonth = -1)
         {
             Core = core;
-            AdderGuid = adderGuid;
-            Core.SetAdder(AdderGuid);
+            AdderInfo = new ModifierAdderInfo(playerName, adderGuid);
+            Core.SetInfo(AdderInfo);
             LeftMonth = leftMonth;
         }
 
@@ -23,7 +23,7 @@ namespace Core
 
         public bool IsPermanent => LeftMonth != -1;
 
-        public string AdderGuid { get; }
+        public ModifierAdderInfo AdderInfo { get; }
 
         public bool IsRelated(string typeName) => Core.Scope.ContainsKey(typeName);
 
@@ -43,11 +43,12 @@ namespace Core
     {
         private readonly Dictionary<string, TiledModifierInfo> _infos = new Dictionary<string, TiledModifierInfo>();
 
-        public TiledModifier(ModifierCore core, string adderGuid, string rangeKey,
+        public TiledModifier(ModifierCore core, string playerName, string adderGuid, string rangeKey,
             HashSet<HexTileCoord> tiles, int leftMonth)
         {
             Core = core;
-            AdderGuid = adderGuid;
+            AdderInfo = new ModifierAdderInfo(playerName, adderGuid);
+            core.SetInfo(AdderInfo);
             _infos[rangeKey] = new TiledModifierInfo(tiles, leftMonth);
         }
 
@@ -55,7 +56,7 @@ namespace Core
 
         public string Name => Core.Name;
 
-        public string AdderGuid { get; }
+        public ModifierAdderInfo AdderInfo { get; }
 
         public IReadOnlyDictionary<string, TiledModifierInfo> Infos => _infos;
 
@@ -205,10 +206,10 @@ namespace Core
 
         public override int GetHashCode() => Name.GetHashCode();
 
-        public void SetAdder(string adderGuid)
+        public void SetInfo(ModifierAdderInfo adderInfo)
         {
             foreach (var s in Scope.Values)
-                s.SetInfo(Name, adderGuid);
+                s.SetInfo(Name, adderInfo);
         }
     }
 
@@ -221,7 +222,7 @@ namespace Core
         private readonly ScriptFunctionDelegate<List<ModifierEffect>> _getEffect;
 
         public readonly Action<IModifierHolder> OnAdded, OnRemoved;
-        private string _adderGuid;
+        private ModifierAdderInfo _info;
 
         private string _modifierName;
 
@@ -236,11 +237,11 @@ namespace Core
             TriggerEvent = triggerEvent;
 
             OnAdded = TriggerEvent.TryGetValue("OnAdded", out var onAdded)
-                ? target => onAdded.Invoke(target, _adderGuid)
+                ? target => onAdded.Invoke(target, _info)
                 : DummyFunction;
 
             OnRemoved = TriggerEvent.TryGetValue("OnRemoved", out var onRemoved)
-                ? target => onRemoved.Invoke(target, _adderGuid)
+                ? target => onRemoved.Invoke(target, _info)
                 : DummyFunction;
         }
 
@@ -248,10 +249,10 @@ namespace Core
 
         public IReadOnlyDictionary<string, ScriptFunctionDelegate> TriggerEvent { get; }
 
-        public void SetInfo(string modifierName, string adderGuid)
+        public void SetInfo(string modifierName, ModifierAdderInfo info)
         {
             _modifierName = modifierName;
-            _adderGuid = adderGuid;
+            _info = info;
         }
 
         public bool CheckCondition(IModifierHolder holder)
@@ -259,13 +260,13 @@ namespace Core
             if (_conditionChecker == null) return true;
 
             return _conditionChecker.TryInvoke($"Scope.{TargetTypeName}.ConditionChecker", _modifierName,
-                out var result, holder, _adderGuid) && result;
+                out var result, holder, _info) && result;
         }
 
         public IReadOnlyList<ModifierEffect> GetEffects(IModifierHolder holder)
         {
             return _getEffect == null || !_getEffect.TryInvoke($"Scope.{TargetTypeName}.GetEffect", _modifierName,
-                out var result, holder, _adderGuid)
+                out var result, holder, _info)
                 ? new List<ModifierEffect>()
                 : result;
         }
@@ -284,6 +285,20 @@ namespace Core
             EffectInfo = effectInfo;
             AdditionalInfos = additionalInfos;
             Amount = amount;
+        }
+    }
+
+    [MoonSharpUserData]
+    public readonly struct ModifierAdderInfo
+    {
+        public string PlayerName { get; }
+
+        public string ObjectGuid { get; }
+
+        public ModifierAdderInfo(string playerName, string objectGuid)
+        {
+            PlayerName = playerName;
+            ObjectGuid = objectGuid;
         }
     }
 }

@@ -4,9 +4,9 @@ namespace Core
 {
     public sealed class Game : IInfinityObject
     {
-        private readonly HashSet<string> _enemyOwners = new HashSet<string>();
-
         private readonly Dictionary<string, IInfinityObject> _guidObjectMap = new Dictionary<string, IInfinityObject>();
+
+        private readonly Dictionary<string, Player> _playerMap = new Dictionary<string, Player>();
 
         public Game(int gameSpeed)
         {
@@ -21,6 +21,19 @@ namespace Core
         }
 
         public static Game Instance { get; private set; }
+
+        public Player OwnPlayer { get; }
+
+        /// <summary>
+        ///     The controller player of the turn.
+        ///     Should not be null when the Game instance is alive.
+        /// </summary>
+        public Player PlayerCurrentInControl { get; private set; }
+
+        /// <summary>
+        ///     Player of this Game instance
+        /// </summary>
+        public Player Me { get; }
 
         public int GameSpeed { get; }
 
@@ -37,29 +50,23 @@ namespace Core
             foreach (var s in StarSystems) s.StartNewTurn(GameSpeed);
         }
 
-        public bool IsEnemy(string owner1, string owner2)
-        {
-            if (owner1 == owner2) return false;
-
-            // MainEnemy can not be friendly with any other owner
-            if (owner1 == "MainEnemy" || owner2 == "MainEnemy") return true;
-
-            if (owner1 == "Me")
-                return _enemyOwners.Contains(owner2);
-
-            if (owner2 == "Me")
-                return _enemyOwners.Contains(owner1);
-
-            return false;
-        }
-
         public bool IsObjectExists(string guid) => _guidObjectMap.ContainsKey(guid);
 
         public IInfinityObject GetObject(string guid)
         {
             if (_guidObjectMap.TryGetValue(guid, out var result)) return result;
 
-            // TODO: Log warning
+            Logger.Log(LogType.Warning, $"{nameof(Game)}.{nameof(GetObject)}",
+                "Trying to get object which does not exist, so it will return nil!");
+            return null;
+        }
+
+        public Player GetPlayer(string playerName)
+        {
+            if (_playerMap.TryGetValue(playerName, out var result)) return result;
+
+            Logger.Log(LogType.Warning, $"{nameof(Game)}.{nameof(GetPlayer)}",
+                "Trying to get player who does not exist, so it will return nil!");
             return null;
         }
     }

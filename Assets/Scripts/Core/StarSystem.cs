@@ -12,6 +12,8 @@ namespace Core
         private readonly Dictionary<string, TiledModifier> _tiledModifiers = new Dictionary<string, TiledModifier>();
         public string TypeName => nameof(StarSystem);
 
+        public Player OwnPlayer { get; }
+
         public string Guid { get; }
 
         public LuaDictWrapper Storage { get; } = new LuaDictWrapper(new Dictionary<string, object>());
@@ -95,7 +97,7 @@ namespace Core
             }
         }
 
-        public void AddModifier(string modifierName, string adderGuid, int leftMonth)
+        public void AddModifier(string modifierName, string adderPlayerName, string adderObjectGuid, int leftMonth)
         {
             if (_modifiers.ContainsKey(modifierName))
             {
@@ -120,7 +122,7 @@ namespace Core
                 return;
             }
 
-            var m = new Modifier(core, adderGuid, leftMonth);
+            var m = new Modifier(core, adderPlayerName, adderObjectGuid, leftMonth);
 
             _modifiers.Add(modifierName, m);
             ApplyModifierChangeToDownward(m.Core, false);
@@ -166,8 +168,8 @@ namespace Core
 
         public bool HasModifier(string modifierName) => _modifiers.ContainsKey(modifierName);
 
-        public void AddTiledModifierRange(string modifierName, string adderGuid, string rangeKeyName,
-            List<HexTileCoord> tiles, int leftMonth)
+        public void AddTiledModifierRange(string modifierName, string adderPlayerName, string adderObjectGuid,
+            string rangeKeyName, List<HexTileCoord> tiles, int leftMonth)
         {
             if (!_tiledModifiers.TryGetValue(modifierName, out var m))
             {
@@ -189,17 +191,17 @@ namespace Core
 
                 var tileSet = new HashSet<HexTileCoord>(tiles);
 
-                m = new TiledModifier(core, adderGuid, rangeKeyName, tileSet, leftMonth);
+                m = new TiledModifier(core, adderPlayerName, adderObjectGuid, rangeKeyName, tileSet, leftMonth);
 
                 _tiledModifiers[modifierName] = m;
                 TileMap.ApplyModifierChangeToTileObjects(m.Core, false, tileSet);
             }
             else
             {
-                if (m.AdderGuid != adderGuid)
+                if (m.AdderInfo.ObjectGuid != adderObjectGuid)
                 {
                     Logger.Log(LogType.Warning, nameof(AddTiledModifierRange),
-                        $"Modifier \"{modifierName}\" has already added by different object : \"{m.AdderGuid}\"!");
+                        $"Modifier \"{modifierName}\" has already added by different object : \"{m.AdderInfo.ObjectGuid}\"!");
                     return;
                 }
 

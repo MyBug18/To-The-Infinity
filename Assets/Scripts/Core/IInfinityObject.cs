@@ -5,6 +5,8 @@
     /// </summary>
     public interface IInfinityObject
     {
+        Player OwnPlayer { get; }
+
         /// <summary>
         ///     The type name of this object
         /// </summary>

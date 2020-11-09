@@ -6,7 +6,7 @@ using MoonSharp.Interpreter;
 
 namespace Core
 {
-    public class StarShip : IUnit
+    public sealed class StarShip : IUnit
     {
         private readonly Dictionary<string, Modifier> _modifiers = new Dictionary<string, Modifier>();
         public string TypeName => nameof(StarShip);
@@ -15,7 +15,7 @@ namespace Core
 
         public LuaDictWrapper Storage { get; } = new LuaDictWrapper(new Dictionary<string, object>());
 
-        public string Owner { get; }
+        public Player OwnPlayer { get; }
 
         public string IdentifierName { get; }
 
@@ -69,7 +69,7 @@ namespace Core
         public IEnumerable<TiledModifier> AffectedTiledModifiers =>
             CurrentTile.TileMap.Holder.TiledModifiers.Where(m => m.IsInRange(CurrentTile.Coord));
 
-        public void AddModifier(string modifierName, string adderGuid, int leftMonth)
+        public void AddModifier(string modifierName, string adderPlayerName, string adderObjectGuid, int leftMonth)
         {
             if (_modifiers.ContainsKey(modifierName))
             {
@@ -94,7 +94,7 @@ namespace Core
                 return;
             }
 
-            var m = new Modifier(core, adderGuid, leftMonth);
+            var m = new Modifier(core, adderPlayerName, adderObjectGuid, leftMonth);
 
             _modifiers.Add(modifierName, m);
             ApplyModifierChangeToDownward(m.Core, false);

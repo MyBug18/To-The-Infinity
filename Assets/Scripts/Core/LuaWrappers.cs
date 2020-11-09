@@ -8,7 +8,7 @@ namespace Core
     ///     Simple dictionary wrapper for lua
     /// </summary>
     [MoonSharpUserData]
-    public class LuaDictWrapper
+    public sealed class LuaDictWrapper
     {
         private readonly Dictionary<string, object> _v;
 
@@ -29,7 +29,7 @@ namespace Core
     ///     Simple double value wrapper for lua
     /// </summary>
     [MoonSharpUserData]
-    public class LuaDoubleValueWrapper
+    public sealed class LuaDoubleValueWrapper
     {
         private double _value;
 

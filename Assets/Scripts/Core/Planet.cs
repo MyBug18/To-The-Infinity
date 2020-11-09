@@ -34,7 +34,7 @@ namespace Core
 
         public IReadOnlyDictionary<string, float> PlanetaryResourceKeep => _planetaryResourceKeep;
 
-        public string Owner { get; }
+        public Player OwnPlayer { get; }
 
         public string IdentifierName { get; }
 
@@ -141,7 +141,7 @@ namespace Core
         [MoonSharpHidden]
         public IEnumerable<TiledModifier> TiledModifiers => _tiledModifiers.Values;
 
-        public void AddModifier(string modifierName, string adderGuid, int leftMonth)
+        public void AddModifier(string modifierName, string adderPlayerName, string adderObjectGuid, int leftMonth)
         {
             if (_modifiers.ContainsKey(modifierName))
             {
@@ -166,7 +166,7 @@ namespace Core
                 return;
             }
 
-            var m = new Modifier(core, adderGuid, leftMonth);
+            var m = new Modifier(core, adderPlayerName, adderObjectGuid, leftMonth);
 
             _modifiers.Add(modifierName, m);
             ApplyModifierChangeToDownward(m.Core, false);
@@ -212,8 +212,8 @@ namespace Core
 
         public bool HasModifier(string modifierName) => _modifiers.ContainsKey(modifierName);
 
-        public void AddTiledModifierRange(string modifierName, string adderGuid, string rangeKeyName,
-            List<HexTileCoord> tiles, int leftMonth)
+        public void AddTiledModifierRange(string modifierName, string adderPlayerName, string adderObjectGuid,
+            string rangeKeyName, List<HexTileCoord> tiles, int leftMonth)
         {
             if (!_tiledModifiers.TryGetValue(modifierName, out var m))
             {
@@ -235,17 +235,17 @@ namespace Core
 
                 var tileSet = new HashSet<HexTileCoord>(tiles);
 
-                m = new TiledModifier(core, adderGuid, rangeKeyName, tileSet, leftMonth);
+                m = new TiledModifier(core, adderPlayerName, adderObjectGuid, rangeKeyName, tileSet, leftMonth);
 
                 _tiledModifiers[modifierName] = m;
                 TileMap.ApplyModifierChangeToTileObjects(m.Core, false, tileSet);
             }
             else
             {
-                if (m.AdderGuid != adderGuid)
+                if (m.AdderInfo.ObjectGuid != adderObjectGuid)
                 {
                     Logger.Log(LogType.Warning, $"{nameof(Planet)}.{nameof(AddTiledModifierRange)}",
-                        $"Modifier \"{modifierName}\" has already added by different object : \"{m.AdderGuid}\", so it will be ignored.");
+                        $"Modifier \"{modifierName}\" has already added by different object : \"{m.AdderInfo.ObjectGuid}\", so it will be ignored.");
                     return;
                 }
 
