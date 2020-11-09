@@ -11,9 +11,20 @@ namespace Core
     }
 
     [MoonSharpUserData]
-    public sealed class Player
+    public sealed class Player : ISpecialActionHolder
     {
+        public Game Game { get; }
+
         public string PlayerName { get; }
+
+        public Player OwnPlayer => this;
+
+        public string TypeName => nameof(Player);
+
+        public string Guid => PlayerName;
+
+        public LuaDictWrapper Storage { get; }
+
 
         #region Relation
 
@@ -67,6 +78,19 @@ namespace Core
         }
 
         public string GetRelation(string target) => GetRelationInner(target).ToString();
+
+        #endregion
+
+        #region SpecialAction
+
+        public IReadOnlyList<SpecialAction> SpecialActions { get; }
+
+        public bool CheckSpecialActionCost(IReadOnlyDictionary<string, int> cost) => throw new System.NotImplementedException();
+
+        public void ConsumeSpecialActionCost(IReadOnlyDictionary<string, int> cost)
+        {
+            throw new System.NotImplementedException();
+        }
 
         #endregion
     }
