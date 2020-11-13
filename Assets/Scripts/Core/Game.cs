@@ -6,7 +6,7 @@ namespace Core
     {
         private readonly Dictionary<string, IInfinityObject> _guidObjectMap = new Dictionary<string, IInfinityObject>();
 
-        private readonly Dictionary<string, Player> _playerMap = new Dictionary<string, Player>();
+        private readonly Dictionary<string, IPlayer> _playerMap = new Dictionary<string, IPlayer>();
 
         public Game(int gameSpeed)
         {
@@ -22,18 +22,20 @@ namespace Core
 
         public static Game Instance { get; private set; }
 
-        public Player OwnPlayer { get; }
+        // No one can own Game
+        public IPlayer OwnPlayer => NoPlayer.Instance;
 
         /// <summary>
         ///     The controller player of the turn.
         ///     Should not be null when the Game instance is alive.
         /// </summary>
-        public Player PlayerCurrentInControl { get; private set; }
+        public IPlayer PlayerCurrentInControl { get; private set; }
 
         /// <summary>
         ///     Player of this Game instance
+        ///     Would be different on different computer
         /// </summary>
-        public Player Me { get; }
+        public IPlayer Me { get; }
 
         public int GameSpeed { get; }
 
@@ -61,7 +63,7 @@ namespace Core
             return null;
         }
 
-        public Player GetPlayer(string playerName)
+        public IPlayer GetPlayer(string playerName)
         {
             if (_playerMap.TryGetValue(playerName, out var result)) return result;
 

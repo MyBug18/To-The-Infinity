@@ -34,7 +34,7 @@ namespace Core
 
         public IReadOnlyDictionary<string, float> PlanetaryResourceKeep => _planetaryResourceKeep;
 
-        public Player OwnPlayer { get; }
+        public IPlayer OwnPlayer { get; }
 
         public string IdentifierName { get; }
 

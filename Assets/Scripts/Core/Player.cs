@@ -10,14 +10,25 @@ namespace Core
         Hostile,
     }
 
-    [MoonSharpUserData]
-    public sealed class Player : ISpecialActionHolder
+    public interface IPlayer : ISpecialActionHolder
     {
         public Game Game { get; }
 
         public string PlayerName { get; }
 
-        public Player OwnPlayer => this;
+        public void SetRelation(string target, RelationType type);
+
+        public RelationType GetRelationInner(string target);
+    }
+
+    [MoonSharpUserData]
+    public sealed class Player : IPlayer
+    {
+        public Game Game { get; }
+
+        public string PlayerName { get; }
+
+        public IPlayer OwnPlayer => this;
 
         public string TypeName => nameof(Player);
 
@@ -93,5 +104,43 @@ namespace Core
         }
 
         #endregion
+    }
+
+    [MoonSharpUserData]
+    public sealed class NoPlayer : IPlayer
+    {
+        private static NoPlayer _instance;
+
+        public static NoPlayer Instance => _instance ??= new NoPlayer();
+
+        public Game Game { get; }
+
+        public string PlayerName => nameof(NoPlayer);
+
+        [MoonSharpHidden]
+        public void SetRelation(string target, RelationType type)
+        {
+            // NoPlayer has no relation
+        }
+
+        [MoonSharpHidden]
+        public RelationType GetRelationInner(string target) => RelationType.Neutral;
+
+        public IPlayer OwnPlayer => this;
+
+        public string TypeName => nameof(NoPlayer);
+
+        public string Guid => PlayerName;
+
+        public LuaDictWrapper Storage => null;
+
+        public IReadOnlyList<SpecialAction> SpecialActions => new List<SpecialAction>();
+
+        public bool CheckSpecialActionCost(IReadOnlyDictionary<string, int> cost) => false;
+
+        public void ConsumeSpecialActionCost(IReadOnlyDictionary<string, int> cost)
+        {
+            // NoPlayer can't cast special action
+        }
     }
 }

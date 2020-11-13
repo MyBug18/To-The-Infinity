@@ -15,7 +15,7 @@ namespace Core
 
         public LuaDictWrapper Storage { get; } = new LuaDictWrapper(new Dictionary<string, object>());
 
-        public Player OwnPlayer { get; }
+        public IPlayer OwnPlayer { get; }
 
         public string IdentifierName { get; }
 

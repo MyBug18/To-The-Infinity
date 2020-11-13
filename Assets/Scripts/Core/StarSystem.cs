@@ -12,7 +12,8 @@ namespace Core
         private readonly Dictionary<string, TiledModifier> _tiledModifiers = new Dictionary<string, TiledModifier>();
         public string TypeName => nameof(StarSystem);
 
-        public Player OwnPlayer { get; }
+        // No one can own StarSystem
+        public IPlayer OwnPlayer => NoPlayer.Instance;
 
         public string Guid { get; }
 
