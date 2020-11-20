@@ -41,7 +41,7 @@ namespace Core.GameData
 
             if (HasDefaultValue) return _default.Create(holder, radius, seed);
 
-            GameUtil.CrashGame($"No default value in {nameof(TileMapData)}");
+            Util.CrashGame($"No default value in {nameof(TileMapData)}");
             return null;
         }
     }

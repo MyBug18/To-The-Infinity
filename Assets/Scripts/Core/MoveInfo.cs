@@ -2,14 +2,14 @@
 {
     public readonly struct MoveInfo
     {
-        public int CurrentCost { get; }
-
         public HexTileCoord FromCoord { get; }
 
-        public MoveInfo(int currentCost, HexTileCoord fromCoord)
+        public int CostUntilHere { get; }
+
+        public MoveInfo(HexTileCoord fromCoord, int costUntilHere)
         {
-            CurrentCost = currentCost;
             FromCoord = fromCoord;
+            CostUntilHere = costUntilHere;
         }
     }
 }

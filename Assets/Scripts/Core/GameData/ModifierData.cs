@@ -41,7 +41,7 @@ namespace Core.GameData
 
             if (HasDefaultValue) return _default.Create();
 
-            GameUtil.CrashGame($"No default value in {nameof(ModifierData)}");
+            Util.CrashGame($"No default value in {nameof(ModifierData)}");
             return null;
         }
     }

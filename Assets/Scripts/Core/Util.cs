@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Core
 {
-    public static class GameUtil
+    public static class Util
     {
         public static void CrashGame(string context)
         {

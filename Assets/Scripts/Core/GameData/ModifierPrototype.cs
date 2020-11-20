@@ -34,6 +34,11 @@ namespace Core.GameData
                 MoonSharpUtil.AllowNotDefined("IsTileLimited", FilePath)))
                 isTileLimited = false;
 
+            // Set false if not defined
+            if (!t.TryGetBool("IsPlayerExclusive", out var isPlayerExclusive,
+                MoonSharpUtil.AllowNotDefined("IsPlayerExclusive", FilePath)))
+                isPlayerExclusive = false;
+
             // Set empty if not defined
             if (!t.TryGetString("AdditionalDesc", out var additionalDesc,
                 MoonSharpUtil.AllowNotDefined("AdditionalDesc", FilePath)))
@@ -90,12 +95,13 @@ namespace Core.GameData
                         triggerEvent[eventName] = eventFunc;
                     }
 
-                var scope = new ModifierScope(typeName, getEffect, checkCondition, triggerEvent);
+                var scope = new ModifierScope(IdentifierName, typeName, getEffect, checkCondition, triggerEvent);
 
                 scopeDict.Add(typeName, scope);
             }
 
-            _cache = new ModifierCore(IdentifierName, targetType, isTileLimited, additionalDesc, scopeDict);
+            _cache = new ModifierCore(IdentifierName, targetType, isTileLimited, isPlayerExclusive, additionalDesc,
+                scopeDict);
 
             return true;
         }

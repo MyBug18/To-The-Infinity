@@ -58,7 +58,17 @@ namespace Core
 
                 script.Globals["Logger"] = Logger.Instance;
 
-                script.DoString(File.ReadAllText(path));
+                try
+                {
+                    script.DoString(File.ReadAllText(path));
+                }
+                catch (Exception e)
+                {
+                    Logger.Log(LogType.Error, $"While loading {path}",
+                        "Critical Lua error happened while loading, so it will be ignored! Error message: " + e.Message, true);
+                    luaHolderList[i] = null;
+                    return;
+                }
 
                 if (!script.Globals.TryGetString("Type", out var typeName,
                     MoonSharpUtil.LoadingError("Type", path)))

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using MoonSharp.Interpreter;
 
 namespace Core
@@ -33,10 +32,7 @@ namespace Core
     {
         private double _value;
 
-        public LuaDoubleValueWrapper(double value)
-        {
-            _value = value;
-        }
+        public LuaDoubleValueWrapper(double value) => _value = value;
 
         public double Get() => _value;
 

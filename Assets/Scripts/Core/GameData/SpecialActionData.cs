@@ -42,7 +42,7 @@ namespace Core.GameData
 
             if (HasDefaultValue) return _default.Create(owner);
 
-            GameUtil.CrashGame($"No default value in {nameof(SpecialAction)}");
+            Util.CrashGame($"No default value in {nameof(SpecialAction)}");
             return null;
         }
     }

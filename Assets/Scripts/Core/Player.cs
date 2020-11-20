@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using MoonSharp.Interpreter;
 
 namespace Core
@@ -41,9 +42,10 @@ namespace Core
 
         private readonly Dictionary<string, RelationType> _relations = new Dictionary<string, RelationType>();
 
-        public Player(string playerName)
+        public Player(string playerName) => PlayerName = playerName;
+
+        public void StartNewTurn(int month)
         {
-            PlayerName = playerName;
         }
 
         [MoonSharpHidden]
@@ -96,11 +98,12 @@ namespace Core
 
         public IReadOnlyList<SpecialAction> SpecialActions { get; }
 
-        public bool CheckSpecialActionCost(IReadOnlyDictionary<string, int> cost) => throw new System.NotImplementedException();
+        public bool CheckSpecialActionCost(IReadOnlyDictionary<string, int> cost) =>
+            throw new NotImplementedException();
 
         public void ConsumeSpecialActionCost(IReadOnlyDictionary<string, int> cost)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         #endregion
@@ -125,6 +128,10 @@ namespace Core
 
         [MoonSharpHidden]
         public RelationType GetRelationInner(string target) => RelationType.Neutral;
+
+        public void StartNewTurn(int month)
+        {
+        }
 
         public IPlayer OwnPlayer => this;
 

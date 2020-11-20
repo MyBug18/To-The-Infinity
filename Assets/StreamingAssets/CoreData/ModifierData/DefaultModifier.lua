@@ -3,6 +3,7 @@
 Name = "Default"
 TargetType = "Game"
 IsTileLimited = false
+IsPlayerExclusive = false
 
 AdditionalDesc = "DefaultDesc"
 

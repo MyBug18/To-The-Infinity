@@ -41,7 +41,7 @@ namespace Core.GameData
 
             if (HasDefaultValue) return _default;
 
-            GameUtil.CrashGame($"No default value in {nameof(HexTileData)}");
+            Util.CrashGame($"No default value in {nameof(HexTileData)}");
             return null;
         }
     }

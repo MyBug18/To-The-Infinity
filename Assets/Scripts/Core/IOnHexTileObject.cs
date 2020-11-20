@@ -2,7 +2,7 @@
 
 namespace Core
 {
-    public interface IOnHexTileObject : IModifierHolder, ISpecialActionHolder
+    public interface IOnHexTileObject : IModifierEffectHolder, ISpecialActionHolder
     {
         string IdentifierName { get; }
 
@@ -11,8 +11,6 @@ namespace Core
         HexTile CurrentTile { get; }
 
         IEnumerable<TiledModifier> AffectedTiledModifiers { get; }
-
-        void StartNewTurn(int month);
 
         void TeleportToTile(HexTile tile);
     }

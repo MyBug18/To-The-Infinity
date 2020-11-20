@@ -44,7 +44,7 @@ namespace Core.GameData
 
             if (HasDefaultValue) return _default.Create();
 
-            GameUtil.CrashGame($"No default value in {nameof(TileSpecialResourceTypeData)}");
+            Util.CrashGame($"No default value in {nameof(TileSpecialResourceTypeData)}");
             return null;
         }
     }

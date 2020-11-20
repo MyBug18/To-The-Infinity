@@ -22,9 +22,6 @@ namespace Core
 
         public static Game Instance { get; private set; }
 
-        // No one can own Game
-        public IPlayer OwnPlayer => NoPlayer.Instance;
-
         /// <summary>
         ///     The controller player of the turn.
         ///     Should not be null when the Game instance is alive.
@@ -41,15 +38,19 @@ namespace Core
 
         public IReadOnlyList<StarSystem> StarSystems { get; }
 
+        // No one can own Game
+        public IPlayer OwnPlayer => NoPlayer.Instance;
+
         public string TypeName => nameof(Game);
 
         public string Guid { get; }
 
         public LuaDictWrapper Storage { get; } = new LuaDictWrapper(new Dictionary<string, object>());
 
-        public void StartNewTurn()
+        public void StartNewTurn(int month)
         {
-            foreach (var s in StarSystems) s.StartNewTurn(GameSpeed);
+            foreach (var s in StarSystems)
+                s.StartNewTurn(month);
         }
 
         public bool IsObjectExists(string guid) => _guidObjectMap.ContainsKey(guid);

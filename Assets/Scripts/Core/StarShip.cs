@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Core.GameData;
 using MoonSharp.Interpreter;
 
 namespace Core
 {
-    public sealed class StarShip : IUnit
+    public sealed class StarShip : IUnit, ISinglePlayerModifierHolder
     {
         private readonly Dictionary<string, Modifier> _modifiers = new Dictionary<string, Modifier>();
         public string TypeName => nameof(StarShip);
@@ -23,18 +22,18 @@ namespace Core
 
         public HexTile CurrentTile { get; private set; }
 
+        public int MeleeAttackPower { get; }
+
+        public IReadOnlyDictionary<string, int> MeleeAttackPowerBonus { get; }
+
+        public IReadOnlyCollection<string> Properties { get; }
+
         public void StartNewTurn(int month)
         {
             ReduceModifiersLeftMonth(month);
         }
 
         public void TeleportToTile(HexTile tile) => TeleportToTile(tile, false);
-
-        public int MeleeAttackPower { get; }
-
-        public IReadOnlyDictionary<string, int> MeleeAttackPowerBonus { get; }
-
-        public IReadOnlyCollection<string> Properties { get; }
 
         public void OnDamaged(IInfinityObject obj, int damage, DamageType damageType, bool isMelee)
             => throw new NotImplementedException();
@@ -54,22 +53,19 @@ namespace Core
         #region Modifier
 
         [MoonSharpHidden]
-        public IEnumerable<Modifier> Modifiers
+        public IEnumerable<Modifier> GetModifiers()
         {
-            get
-            {
-                foreach (var m in CurrentTile.TileMap.Holder.Modifiers)
-                    yield return m;
+            foreach (var m in CurrentTile.TileMap.Holder.GetModifiers(OwnPlayer.PlayerName))
+                yield return m;
 
-                foreach (var m in _modifiers.Values)
-                    yield return m;
-            }
+            foreach (var m in _modifiers.Values)
+                yield return m;
         }
 
         public IEnumerable<TiledModifier> AffectedTiledModifiers =>
-            CurrentTile.TileMap.Holder.TiledModifiers.Where(m => m.IsInRange(CurrentTile.Coord));
+            CurrentTile.TileMap.Holder.GetTiledModifiers(this);
 
-        public void AddModifier(string modifierName, string adderPlayerName, string adderObjectGuid, int leftMonth)
+        public void AddModifier(string modifierName, string adderObjectGuid, int leftMonth)
         {
             if (_modifiers.ContainsKey(modifierName))
             {
@@ -94,10 +90,10 @@ namespace Core
                 return;
             }
 
-            var m = new Modifier(core, adderPlayerName, adderObjectGuid, leftMonth);
+            var m = new Modifier(core, adderObjectGuid, leftMonth);
 
             _modifiers.Add(modifierName, m);
-            ApplyModifierChangeToDownward(m.Core, false);
+            ApplyModifierChangeToDownward(OwnPlayer.PlayerName, m, false);
         }
 
         public void RemoveModifier(string modifierName)
@@ -111,29 +107,28 @@ namespace Core
 
             var m = _modifiers[modifierName];
             _modifiers.Remove(modifierName);
-            ApplyModifierChangeToDownward(m.Core, true);
+            ApplyModifierChangeToDownward(OwnPlayer.PlayerName, m, true);
         }
 
         public bool HasModifier(string modifierName) => _modifiers.ContainsKey(modifierName);
 
         [MoonSharpHidden]
-        public void ApplyModifierChangeToDownward(ModifierCore m, bool isRemoving)
+        public void ApplyModifierChangeToDownward(string targetPlayerName, IModifier m, bool isRemoving)
         {
-            if (!m.Scope.ContainsKey(TypeName)) return;
-
-            var scope = m.Scope[TypeName];
+            if (targetPlayerName.ToLower() != "global" && targetPlayerName != OwnPlayer.PlayerName)
+                return;
 
             if (isRemoving)
             {
-                scope.OnRemoved(this);
+                m.OnRemoved(this);
 
-                RegisterModifierEvent(m.Name, scope.TriggerEvent, true);
+                RemoveTriggerEvent(m.Name);
             }
             else
             {
-                scope.OnAdded(this);
+                m.OnAdded(this);
 
-                RegisterModifierEvent(m.Name, scope.TriggerEvent, false);
+                RegisterTriggerEvent(m.Name, m.GetTriggerEvent(this));
             }
         }
 
@@ -159,19 +154,22 @@ namespace Core
                 RemoveModifier(name);
         }
 
-        private void RegisterModifierEvent(string modifierName,
-            IReadOnlyDictionary<string, ScriptFunctionDelegate> events, bool isRemoving)
+        private void RegisterTriggerEvent(string modifierName, IReadOnlyDictionary<string, TriggerEvent> events)
         {
             foreach (var kv in events)
             {
                 switch (kv.Key)
                 {
                     default:
-                        Logger.Log(LogType.Warning, $"{nameof(StarShip)}.{nameof(RegisterModifierEvent)}",
-                            $"{kv.Key} is not a valid event name for the {nameof(StarShip)}, so it will be ignored.");
+                        Logger.Log(LogType.Warning, $"{nameof(Planet)}.{nameof(RegisterTriggerEvent)}",
+                            $"{kv.Key} is not a valid event name for the {nameof(Planet)}, so it will be ignored.");
                         break;
                 }
             }
+        }
+
+        private void RemoveTriggerEvent(string modifierName)
+        {
         }
 
         #endregion
@@ -182,66 +180,77 @@ namespace Core
 
         public IReadOnlyDictionary<HexTileCoord, MoveInfo> GetMovableTileInfo()
         {
-            var result = new Dictionary<HexTileCoord, MoveInfo> {{CurrentTile.Coord, default}};
+            var currentCoord = CurrentTile.Coord;
+            var tileMap = CurrentTile.TileMap;
+
+            var result = new Dictionary<HexTileCoord, MoveInfo> {{currentCoord, default}};
 
             var plan = new Queue<HexTileCoord>();
-            plan.Enqueue(CurrentTile.Coord);
-
-            var tileMap = CurrentTile.TileMap;
+            plan.Enqueue(currentCoord);
 
             while (plan.Count > 0)
             {
                 var cur = plan.Dequeue();
 
-                var around = CurrentTile.TileMap.GetRing(1, cur);
+                var costUntilHere = result[cur].CostUntilHere;
+                var around = tileMap.GetRing(1, cur);
 
                 foreach (var c in around)
                 {
-                    var tile = CurrentTile.TileMap.GetHexTile(c);
+                    if (result.ContainsKey(c))
+                        continue;
+
+                    var tile = tileMap.GetHexTile(c);
+
+                    var newCost = costUntilHere + tile.StarShipMovePoint;
+
+                    // Can't go any further due to the lack of the move point
+                    if (newCost > RemainMovePoint)
+                        continue;
+
+                    plan.Enqueue(c);
+                    result[tile.Coord] = new MoveInfo(c, newCost);
                 }
             }
 
-
+            result.Remove(currentCoord);
             return result;
         }
 
         private void TeleportToTile(HexTile tile, bool withoutTileMapAction)
         {
             var destHolder = tile.TileMap.Holder;
+            var curHolder = CurrentTile.TileMap.Holder;
 
-            var toRemove = new HashSet<ModifierCore>();
-            var toAdd = new HashSet<ModifierCore>(destHolder.TiledModifiers.Select(x => x.Core));
+            var toRemove = new HashSet<IModifier>();
+            var toAdd = new HashSet<IModifier>(destHolder.GetTiledModifiers(OwnPlayer.PlayerName));
 
             foreach (var m in AffectedTiledModifiers)
             {
-                var core = m.Core;
-
-                if (toAdd.Contains(core))
-                    toAdd.Remove(core);
+                if (toAdd.Contains(m))
+                    toAdd.Remove(m);
                 else
-                    toRemove.Add(core);
+                    toRemove.Add(m);
             }
 
-            // Should consider not tiled modifier when the tilemap changes
-            if (CurrentTile.TileMap.Holder != destHolder)
+            // Should consider non-tiled modifiers when the tilemap holder changes
+            if (curHolder.Guid != destHolder.Guid)
             {
-                foreach (var m in destHolder.Modifiers)
-                    toAdd.Add(m.Core);
+                foreach (var m in destHolder.GetModifiers(OwnPlayer.PlayerName))
+                    toAdd.Add(m);
 
-                foreach (var m in Modifiers)
+                foreach (var m in curHolder.GetModifiers(OwnPlayer.PlayerName))
                 {
-                    var core = m.Core;
-
-                    if (toAdd.Contains(core))
-                        toAdd.Remove(core);
+                    if (toAdd.Contains(m))
+                        toAdd.Remove(m);
                     else
-                        toRemove.Add(core);
+                        toRemove.Add(m);
                 }
             }
 
             // Remove modifier before detaching
-            foreach (var mc in toRemove)
-                ApplyModifierChangeToDownward(mc, true);
+            foreach (var m in toRemove)
+                ApplyModifierChangeToDownward(OwnPlayer.PlayerName, m, true);
 
             if (!withoutTileMapAction)
                 CurrentTile.RemoveTileObject(TypeName);
@@ -252,8 +261,8 @@ namespace Core
             if (!withoutTileMapAction)
                 tile.AddTileObject(this);
 
-            foreach (var mc in toAdd)
-                ApplyModifierChangeToDownward(mc, false);
+            foreach (var m in toAdd)
+                ApplyModifierChangeToDownward(OwnPlayer.PlayerName, m, false);
         }
 
         #endregion
