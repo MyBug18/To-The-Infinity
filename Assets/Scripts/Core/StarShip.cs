@@ -35,7 +35,7 @@ namespace Core
 
         public void TeleportToTile(HexTile tile) => TeleportToTile(tile, false);
 
-        public void OnDamaged(IInfinityObject obj, int damage, DamageType damageType, bool isMelee)
+        public void OnDamaged(IInfinityObject inflicter, int damage, DamageType damageType, bool isMelee)
             => throw new NotImplementedException();
 
         #region SpecialAction
@@ -130,6 +130,8 @@ namespace Core
 
                 RegisterTriggerEvent(m.Name, m.GetTriggerEvent(this));
             }
+
+            SetUpdateAll();
         }
 
         private void ReduceModifiersLeftMonth(int month)
@@ -176,14 +178,72 @@ namespace Core
 
         #region MoveAction
 
-        public int RemainMovePoint { get; private set; }
+        private Dictionary<HexTileCoord, MoveInfo> _movableTileInfoCache;
 
-        public IReadOnlyDictionary<HexTileCoord, MoveInfo> GetMovableTileInfo()
+        private int _remainMovePoint;
+
+        public int RemainMovePoint
+        {
+            get => _remainMovePoint;
+            private set => _remainMovePoint = Math.Max(0, value);
+        }
+
+        public IReadOnlyDictionary<HexTileCoord, MoveInfo> MovableTileInfo
+        {
+            get
+            {
+                if (CheckUpdate(UpdateStatusType.MoveInfo))
+                    CacheMovableTileInfo();
+
+                return _movableTileInfoCache;
+            }
+        }
+
+        public void Move(HexTileCoord coord)
+        {
+            var route = new Stack<HexTileCoord>();
+
+            var current = coord;
+
+            var map = MovableTileInfo;
+
+            while (true)
+            {
+                if (!map.TryGetValue(current, out var info))
+                    break;
+
+                route.Push(current);
+                current = info.FromCoord;
+            }
+
+            CurrentTile.RemoveTileObject(TypeName);
+
+            while (route.Count > 0)
+            {
+                var nextMove = route.Pop();
+
+                var nextTile = CurrentTile.TileMap.GetHexTile(nextMove);
+
+                if (nextTile.StarShipMovePoint > RemainMovePoint)
+                {
+                    // No sufficient move point to move to next tile (possibly due to modifier effects), so end move here.
+                    CurrentTile.AddTileObject(this);
+                    return;
+                }
+
+                RemainMovePoint -= nextTile.StarShipMovePoint;
+                TeleportToTile(nextTile, true);
+            }
+
+            CurrentTile.AddTileObject(this);
+        }
+
+        private void CacheMovableTileInfo()
         {
             var currentCoord = CurrentTile.Coord;
             var tileMap = CurrentTile.TileMap;
 
-            var result = new Dictionary<HexTileCoord, MoveInfo> {{currentCoord, default}};
+            _movableTileInfoCache = new Dictionary<HexTileCoord, MoveInfo> {{currentCoord, default}};
 
             var plan = new Queue<HexTileCoord>();
             plan.Enqueue(currentCoord);
@@ -192,12 +252,12 @@ namespace Core
             {
                 var cur = plan.Dequeue();
 
-                var costUntilHere = result[cur].CostUntilHere;
+                var costUntilHere = _movableTileInfoCache[cur].CostUntilHere;
                 var around = tileMap.GetRing(1, cur);
 
                 foreach (var c in around)
                 {
-                    if (result.ContainsKey(c))
+                    if (_movableTileInfoCache.ContainsKey(c))
                         continue;
 
                     var tile = tileMap.GetHexTile(c);
@@ -209,12 +269,11 @@ namespace Core
                         continue;
 
                     plan.Enqueue(c);
-                    result[tile.Coord] = new MoveInfo(c, newCost);
+                    _movableTileInfoCache[tile.Coord] = new MoveInfo(c, newCost);
                 }
             }
 
-            result.Remove(currentCoord);
-            return result;
+            _movableTileInfoCache.Remove(currentCoord);
         }
 
         private void TeleportToTile(HexTile tile, bool withoutTileMapAction)
@@ -263,6 +322,30 @@ namespace Core
 
             foreach (var m in toAdd)
                 ApplyModifierChangeToDownward(OwnPlayer.PlayerName, m, false);
+        }
+
+        #endregion
+
+        #region UpdateStatus
+
+        [Flags]
+        private enum UpdateStatusType
+        {
+            MoveInfo = 1 << 0,
+
+            All = int.MaxValue,
+        }
+
+        private UpdateStatusType _updateStatus = UpdateStatusType.All;
+
+        private void SetUpdateAll() => _updateStatus = UpdateStatusType.All;
+
+        private bool CheckUpdate(UpdateStatusType type)
+        {
+            if (!_updateStatus.HasFlag(type)) return false;
+
+            _updateStatus ^= type;
+            return true;
         }
 
         #endregion

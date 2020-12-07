@@ -21,6 +21,8 @@ namespace Core
 
         IReadOnlyCollection<string> Properties { get; }
 
-        void OnDamaged(IInfinityObject obj, int damage, DamageType damageType, bool isMelee);
+        void OnDamaged(IInfinityObject inflicter, int damage, DamageType damageType, bool isMelee);
+
+        void Move(HexTileCoord coord);
     }
 }
