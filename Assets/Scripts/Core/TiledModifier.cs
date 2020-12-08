@@ -44,6 +44,11 @@ namespace Core
 
         public void OnRemoved(IModifierEffectHolder target) => _core.OnRemoved(target, AdderObjectGuid);
 
+        public bool CheckCondition(IModifierEffectHolder target) => _core.CheckCondition(target, AdderObjectGuid);
+
+        public IReadOnlyList<ModifierEffect> GetEffects(IModifierEffectHolder target) =>
+            _core.GetEffects(target, AdderObjectGuid);
+
         public HashSet<HexTileCoord> ReduceLeftMonth(int month)
         {
             var removedRange = new HashSet<HexTileCoord>();
