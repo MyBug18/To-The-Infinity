@@ -98,7 +98,7 @@ namespace Core
             Debug.Log(context + ": " + l);
 #endif
 
-            _sw.WriteLine(DateTime.Now.ToString("T") + $" [LOG] {context}" + l);
+            _sw.WriteLine(DateTime.Now.ToString("T") + $" [LOG] {context}: " + l);
         }
 
         public void LogWarning(string context, string l)

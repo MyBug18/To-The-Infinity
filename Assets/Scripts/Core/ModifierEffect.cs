@@ -2,17 +2,25 @@
 
 namespace Core
 {
+    public enum ModifierEffectType
+    {
+        // Target: StarShip
+        AttackDamage,
+        ReduceDamage,
+        MaxMovePoint,
+    }
+
     public readonly struct ModifierEffect
     {
-        public string EffectInfo { get; }
+        public ModifierEffectType EffectType { get; }
 
         public IReadOnlyList<string> AdditionalInfos { get; }
 
         public int Amount { get; }
 
-        public ModifierEffect(string effectInfo, IReadOnlyList<string> additionalInfos, int amount)
+        public ModifierEffect(ModifierEffectType effectType, IReadOnlyList<string> additionalInfos, int amount)
         {
-            EffectInfo = effectInfo;
+            EffectType = effectType;
             AdditionalInfos = additionalInfos;
             Amount = amount;
         }

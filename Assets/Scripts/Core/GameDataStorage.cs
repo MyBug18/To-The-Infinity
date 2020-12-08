@@ -147,10 +147,17 @@ namespace Core
                     {
                         var additionalInfo = new List<string>();
                         var tokens = kv.Key.String.Split('_');
+                        if (!Enum.TryParse(tokens[0], out ModifierEffectType type))
+                        {
+                            Logger.Log(LogType.Warning, "",
+                                $"{tokens[0]} is not a valid {nameof(ModifierEffectType)}, so it will be ignored!");
+                            continue;
+                        }
+
                         for (var i = 1; i < tokens.Length; i++)
                             additionalInfo.Add(tokens[i]);
 
-                        result.Add(new ModifierEffect(tokens[0], additionalInfo, (int)kv.Value.Number));
+                        result.Add(new ModifierEffect(type, additionalInfo, (int)kv.Value.Number));
                     }
 
                     return result;
