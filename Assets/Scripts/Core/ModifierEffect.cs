@@ -4,8 +4,10 @@ namespace Core
 {
     public enum ModifierEffectType
     {
+        Default,
+
         // Target: StarShip
-        AttackDamage,
+        AttackPower,
         ReduceDamage,
         MaxMovePoint,
     }

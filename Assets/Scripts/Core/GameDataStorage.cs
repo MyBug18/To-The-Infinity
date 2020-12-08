@@ -151,7 +151,8 @@ namespace Core
                         {
                             Logger.Log(LogType.Warning, "",
                                 $"{tokens[0]} is not a valid {nameof(ModifierEffectType)}, so it will be ignored!");
-                            continue;
+
+                            type = ModifierEffectType.Default;
                         }
 
                         for (var i = 1; i < tokens.Length; i++)
