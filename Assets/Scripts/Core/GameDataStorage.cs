@@ -16,6 +16,7 @@ namespace Core
         private static readonly IReadOnlyDictionary<string, Func<string, ILuaHolder>> LuaHolderMaker =
             new Dictionary<string, Func<string, ILuaHolder>>
             {
+                {"DamageType", path => new DamageTypePrototype(path)},
                 {"HexTile", path => new HexTilePrototype(path)},
                 {"Modifier", path => new ModifierPrototype(path)},
                 {"PopSlot", path => new PopSlotPrototype(path)},
@@ -28,6 +29,7 @@ namespace Core
         private readonly IReadOnlyDictionary<string, IGameData> _allData =
             new Dictionary<string, IGameData>
             {
+                {"DamageType", new DamageTypeData()},
                 {"HexTile", new HexTileData()},
                 {"Modifier", new ModifierData()},
                 {"PopSlot", new PopSlotData()},
@@ -163,19 +165,6 @@ namespace Core
 
                     return result;
                 });
-
-            var damageTypeMap = new Dictionary<string, DamageType>
-            {
-                {"mass", DamageType.Mass},
-                {"beam", DamageType.Beam},
-                {"magic", DamageType.Magic},
-            };
-
-            customConverters.SetScriptToClrCustomConversion(
-                DataType.String, typeof(DamageType), v =>
-                    damageTypeMap.TryGetValue(v.String.ToLower(), out var result)
-                        ? result
-                        : DamageType.Error);
         }
 
         public T GetGameData<T>() where T : IGameData => (T)GetGameData(typeof(T).Name);
