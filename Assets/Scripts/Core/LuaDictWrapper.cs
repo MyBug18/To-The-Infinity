@@ -23,22 +23,4 @@ namespace Core
             _v[key] = value;
         }
     }
-
-    /// <summary>
-    ///     Simple double value wrapper for lua
-    /// </summary>
-    [MoonSharpUserData]
-    public sealed class LuaDoubleValueWrapper
-    {
-        private double _value;
-
-        public LuaDoubleValueWrapper(double value) => _value = value;
-
-        public double Get() => _value;
-
-        public void Set(double value)
-        {
-            _value = value;
-        }
-    }
 }

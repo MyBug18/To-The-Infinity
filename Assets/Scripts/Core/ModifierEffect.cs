@@ -7,9 +7,7 @@ namespace Core
         Default,
 
         // Target: StarShip
-        AttackPower,
-        ReduceDamage,
-        MaxMovePoint,
+        MaxMovePoint, // MaxMovePoint
     }
 
     public readonly struct ModifierEffect

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Core.GameData;
 using MoonSharp.Interpreter;
 
@@ -20,13 +22,9 @@ namespace Core
 
         public string CustomName { get; }
 
-        public HexTile CurrentTile { get; private set; }
-
-        public int MeleeAttackPower { get; }
-
-        public IReadOnlyDictionary<string, int> MeleeAttackPowerBonus { get; }
-
         public IReadOnlyCollection<string> Properties { get; }
+
+        public HexTile CurrentTile { get; private set; }
 
         public void StartNewTurn(int month)
         {
@@ -35,8 +33,16 @@ namespace Core
 
         public void TeleportToTile(HexTile tile) => TeleportToTile(tile, false);
 
-        public void OnDamaged(IInfinityObject inflicter, int damage, DamageType damageType, bool isMelee)
-            => throw new NotImplementedException();
+        #region Damage
+
+        public int BaseAttackPower { get; }
+
+        public void OnDamaged(DamageInfo damageInfo)
+        {
+
+        }
+
+        #endregion
 
         #region SpecialAction
 
@@ -51,6 +57,13 @@ namespace Core
         #endregion
 
         #region Modifier
+
+        private bool _isCachingModifierEffect;
+
+        private readonly Dictionary<string, IReadOnlyList<ModifierEffect>> _modifierEffectsMap =
+            new Dictionary<string, IReadOnlyList<ModifierEffect>>();
+
+        public IReadOnlyDictionary<string, IReadOnlyList<ModifierEffect>> ModifierEffectsMap => _modifierEffectsMap;
 
         [MoonSharpHidden]
         public IEnumerable<Modifier> GetModifiers()
@@ -131,7 +144,13 @@ namespace Core
                 RegisterTriggerEvent(m.Name, m.GetTriggerEvent(this));
             }
 
-            SetUpdateAll();
+            StartCachingModifierEffect();
+        }
+
+        [MoonSharpHidden]
+        public void StartCachingModifierEffect()
+        {
+            Task.Run(CacheModifierEffect);
         }
 
         private void ReduceModifiersLeftMonth(int month)
@@ -174,6 +193,61 @@ namespace Core
         {
         }
 
+        private void CacheModifierEffect()
+        {
+            _modifierEffectsMap.Clear();
+            _isCachingModifierEffect = true;
+
+            foreach (var m in GetModifiers().Cast<IModifier>().Concat(AffectedTiledModifiers))
+            {
+                IReadOnlyList<ModifierEffect> effects = null;
+                try
+                {
+                    effects = m.GetEffects(this);
+                }
+                catch (Exception e)
+                {
+                    Logger.Log(LogType.Error, "", $"Error while calculating modifier effect! Error message: {e.Message}");
+                }
+
+                if (effects?.Count == 0) continue;
+                _modifierEffectsMap[m.Name] = effects;
+            }
+
+            _isCachingModifierEffect = false;
+        }
+        private bool ApplyModifierEffects(IEnumerable<ModifierEffect> effects)
+        {
+            var result = true;
+
+            foreach (var e in effects)
+            {
+            }
+
+            return result;
+        }
+
+
+        // Possible modifier effect form:
+        // MaxMovePoint
+        private bool ApplyModifierEffect(ModifierEffect effect)
+        {
+            switch (effect.EffectType)
+            {
+                // ReduceDamage_<Target Damage Type>
+                case ModifierEffectType.MaxMovePoint:
+                {
+                    var infos = effect.AdditionalInfos;
+                    if (infos.Count != 0) return false;
+
+                    var amount = effect.Amount;
+                    break;
+                }
+            }
+
+            return true;
+        }
+
         #endregion
 
         #region MoveAction
@@ -192,8 +266,10 @@ namespace Core
         {
             get
             {
-                if (CheckUpdate(UpdateStatusType.MoveInfo))
-                    CacheMovableTileInfo();
+                while (_isCachingModifierEffect)
+                {
+                    // Busy loop
+                }
 
                 return _movableTileInfoCache;
             }
@@ -326,28 +402,14 @@ namespace Core
 
         #endregion
 
-        #region UpdateStatus
-
-        [Flags]
-        private enum UpdateStatusType
+        private T WaitCache<T>(T input)
         {
-            MoveInfo = 1 << 0,
+            while (_isCachingModifierEffect)
+            {
+                // Busy wait
+            }
 
-            All = int.MaxValue,
+            return input;
         }
-
-        private UpdateStatusType _updateStatus = UpdateStatusType.All;
-
-        private void SetUpdateAll() => _updateStatus = UpdateStatusType.All;
-
-        private bool CheckUpdate(UpdateStatusType type)
-        {
-            if (!_updateStatus.HasFlag(type)) return false;
-
-            _updateStatus ^= type;
-            return true;
-        }
-
-        #endregion
     }
 }

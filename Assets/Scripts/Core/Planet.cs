@@ -139,6 +139,13 @@ namespace Core
 
         #region Modifier
 
+        private bool _isCachingModifierEffect;
+
+        private readonly Dictionary<string, IReadOnlyList<ModifierEffect>> _modifierEffectsMap =
+            new Dictionary<string, IReadOnlyList<ModifierEffect>>();
+
+        public IReadOnlyDictionary<string, IReadOnlyList<ModifierEffect>> ModifierEffectsMap => _modifierEffectsMap;
+
         public IEnumerable<TiledModifier> AffectedTiledModifiers =>
             CurrentTile.TileMap.Holder.GetTiledModifiers(this);
 
@@ -251,6 +258,11 @@ namespace Core
             }
 
             TileMap.ApplyModifierChangeToTileObjects(targetPlayerName, m, isRemoving);
+        }
+
+        public void StartCachingModifierEffect()
+        {
+            throw new NotImplementedException();
         }
 
         public bool HasModifier(string targetPlayerName, string modifierName) =>

@@ -31,6 +31,13 @@ namespace Core
 
         #region Modifier
 
+        private bool _isCachingModifierEffect;
+
+        private readonly Dictionary<string, IReadOnlyList<ModifierEffect>> _modifierEffectsMap =
+            new Dictionary<string, IReadOnlyList<ModifierEffect>>();
+
+        public IReadOnlyDictionary<string, IReadOnlyList<ModifierEffect>> ModifierEffectsMap => _modifierEffectsMap;
+
         [MoonSharpHidden]
         public IEnumerable<Modifier> GetModifiers(string targetPlayerName)
         {
@@ -139,6 +146,12 @@ namespace Core
             }
 
             TileMap.ApplyModifierChangeToTileObjects(targetPlayerName, m, isRemoving);
+        }
+
+        [MoonSharpHidden]
+        public void StartCachingModifierEffect()
+        {
+            throw new System.NotImplementedException();
         }
 
         public bool HasModifier(string targetPlayerName, string modifierName) =>
