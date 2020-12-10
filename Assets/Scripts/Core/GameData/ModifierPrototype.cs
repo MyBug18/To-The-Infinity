@@ -70,6 +70,8 @@ namespace Core.GameData
                     MoonSharpUtil.AllowNotDefined($"Scope.{typeName}.CheckCondition", FilePath)))
                     checkCondition = null;
 
+                var triggetEventPriority = new Dictionary<string, int>();
+
                 // Set empty dictionary when not defined
                 var triggerEvent = new Dictionary<string, ScriptFunctionDelegate>();
 
@@ -82,26 +84,52 @@ namespace Core.GameData
                             continue;
 
                         if (!kv.Value.TryGetLuaAction(out var eventFunc,
-                            MoonSharpUtil.LoadingError($"Scope.{typeName}.TriggerEvent.Key", FilePath)))
+                            MoonSharpUtil.LoadingError($"Scope.{typeName}.TriggerEvent.Value", FilePath)))
                             continue;
 
                         if (triggerEvent.ContainsKey(eventName))
                         {
                             Logger.Log(LogType.Warning, $"Field Scope.{typeName}.TriggerEvent of" + FilePath,
-                                $"Event type \"{eventName}\" has already defined, so it will be ignored.", true);
+                                $"Event type \"{eventName}\" has already defined, so it will be ignored.");
                             continue;
                         }
 
                         triggerEvent[eventName] = eventFunc;
                     }
 
-                var scope = new ModifierScope(IdentifierName, typeName, getEffect, checkCondition, triggerEvent);
+                if (scopeTable.TryGetTable("TriggerEventPriority", out var rawPriority,
+                    MoonSharpUtil.AllowNotDefined($"Scope.{typeName}.TriggerEventPriority", FilePath)))
+                {
+                    foreach (var kv in rawPriority.Pairs)
+                    {
+                        if (!kv.Key.TryGetString(out var eventName,
+                            MoonSharpUtil.LoadingError($"Scope.{typeName}.TriggerEventPriority.Key", FilePath)))
+                            continue;
+
+                        if (!triggerEvent.ContainsKey(eventName))
+                            Logger.Log(LogType.Warning, $"Scope.{typeName}.TriggerEventPriority.Key of " + FilePath,
+                                $"Event type \"{eventName}\" is not defined as a trigger event, so it will be ignored.");
+
+                        if (!triggerEvent.ContainsKey(eventName))
+                            Logger.Log(LogType.Warning, $"Scope.{typeName}.TriggerEventPriority.Key of " + FilePath,
+                                $"Event type \"{eventName}\" has already defined, so it will be ignored.");
+
+                        if (!kv.Value.TryGetInt(out var priority,
+                            MoonSharpUtil.LoadingError($"Scope.{typeName}.TriggerEventPriority.Value", FilePath)))
+                            continue;
+
+                        triggetEventPriority[eventName] = priority;
+                    }
+                }
+
+                var scope = new ModifierScope(IdentifierName, typeName, getEffect, checkCondition,
+                    triggerEvent, triggetEventPriority);
 
                 scopeDict.Add(typeName, scope);
             }
 
-            _cache = new ModifierCore(IdentifierName, targetType, isTileLimited, isPlayerExclusive, additionalDesc,
-                scopeDict);
+            _cache = new ModifierCore(
+                IdentifierName, targetType, isTileLimited, isPlayerExclusive, additionalDesc, scopeDict);
 
             return true;
         }

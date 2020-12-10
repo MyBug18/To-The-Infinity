@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Core
@@ -22,19 +23,26 @@ namespace Core
 
         public string Name => _core.Name;
 
-        public IReadOnlyDictionary<string, TriggerEvent> GetTriggerEvent(IModifierEffectHolder target)
+        public IReadOnlyDictionary<TriggerEventType, TriggerEvent> GetTriggerEvent(IModifierEffectHolder target)
         {
-            var result = new Dictionary<string, TriggerEvent>();
+            var result = new Dictionary<TriggerEventType, TriggerEvent>();
 
             if (!_core.Scope.TryGetValue(target.TypeName, out var scope)) return result;
 
             foreach (var kv in scope.TriggerEvent)
             {
-                var name = kv.Key;
+                if (!Enum.TryParse(kv.Key, out TriggerEventType type))
+                {
+                    Logger.Log(LogType.Warning, Name,
+                        $"{kv.Key} is not a valid TriggerEvent type, so it will be ignored.");
+                    continue;
+                }
 
-                if (name == "OnAdded" || name == "OnRemoved") continue;
+                if (type == TriggerEventType.OnAdded || type == TriggerEventType.OnRemoved) continue;
 
-                result[name] = new TriggerEvent(Name, name, kv.Value, target, AdderObjectGuid);
+                var priority = scope.TriggerEventPriority.TryGetValue(kv.Key, out var value) ? value : 0;
+
+                result[type] = new TriggerEvent(Name, type, kv.Value, target, AdderObjectGuid, priority);
             }
 
             return result;

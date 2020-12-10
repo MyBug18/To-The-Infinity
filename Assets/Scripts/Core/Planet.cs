@@ -9,11 +9,13 @@ namespace Core
     [MoonSharpUserData]
     public sealed class Planet : ITileMapHolder, IOnHexTileObject
     {
-        #region TriggerEvent
+        private readonly HashSet<TriggerEventType> _relativeTriggerEventTypes = new HashSet<TriggerEventType>
+        {
+            TriggerEventType.OnPopBirth,
+        };
 
-        private readonly Dictionary<string, Action> _onPopBirth = new Dictionary<string, Action>();
-
-        #endregion TriggerEvent
+        private readonly Dictionary<TriggerEventType, Dictionary<string, TriggerEvent>> _triggerEvents =
+            new Dictionary<TriggerEventType, Dictionary<string, TriggerEvent>>();
 
         private readonly Dictionary<string, float> _planetaryResourceKeep =
             new Dictionary<string, float>();
@@ -41,6 +43,10 @@ namespace Core
         public string CustomName { get; private set; }
 
         public HexTile CurrentTile { get; private set; }
+
+        public IPlayer OwnPlayer { get; }
+
+        public bool IsDestroyed { get; }
 
         public void TeleportToTile(HexTile tile)
         {
@@ -92,8 +98,10 @@ namespace Core
             foreach (var m in toAdd)
                 ApplyModifierChangeToDownward(OwnPlayer.PlayerName, m, false);
         }
-
-        public IPlayer OwnPlayer { get; }
+        public void DestroySelf()
+        {
+            throw new NotImplementedException();
+        }
 
         public void StartNewTurn(int month)
         {
@@ -420,27 +428,41 @@ namespace Core
                 _playerTiledModifierMap.Remove(n);
         }
 
-        private void RegisterTriggerEvent(string modifierName, IReadOnlyDictionary<string, TriggerEvent> events)
+        private void RegisterTriggerEvent(string modifierName, IReadOnlyDictionary<TriggerEventType, TriggerEvent> events)
         {
             foreach (var kv in events)
             {
-                switch (kv.Key)
-                {
-                    case "OnPopBirth":
-                        _onPopBirth.Add(modifierName, () => kv.Value.Invoke());
-                        break;
+                var type = kv.Key;
 
-                    default:
-                        Logger.Log(LogType.Warning, $"{nameof(Planet)}.{nameof(RegisterTriggerEvent)}",
-                            $"{kv.Key} is not a valid event name for the {nameof(Planet)}, so it will be ignored.");
-                        break;
+                if (!_relativeTriggerEventTypes.Contains(type))
+                {
+                    Logger.Log(LogType.Warning, $"{nameof(Planet)}.{nameof(RegisterTriggerEvent)}",
+                        $"{kv.Key} is not a valid event name for the {nameof(Planet)}, so it will be ignored.");
+                    continue;
                 }
+
+                if (!_triggerEvents.TryGetValue(type, out var value))
+                {
+                    value = new Dictionary<string, TriggerEvent>();
+                }
+
+                value[modifierName] = kv.Value;
             }
         }
 
         private void RemoveTriggerEvent(string modifierName)
         {
-            _onPopBirth.Remove(modifierName);
+            var empty = new List<TriggerEventType>();
+
+            foreach (var kv in _triggerEvents)
+            {
+                kv.Value.Remove(modifierName);
+                if (kv.Value.Count == 0)
+                    empty.Add(kv.Key);
+            }
+
+            foreach (var t in empty)
+                _triggerEvents.Remove(t);
         }
 
         private bool CommonCheckModifierCoreAddable(ModifierCore core, string targetPlayerName)

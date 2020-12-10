@@ -8,11 +8,12 @@ namespace Core
     [MoonSharpUserData]
     public sealed class StarSystem : ITileMapHolder
     {
-        private readonly Dictionary<string, Dictionary<string, Modifier>> _playerModifierMap =
-            new Dictionary<string, Dictionary<string, Modifier>>();
+        private readonly HashSet<TriggerEventType> _relativeTriggerEventTypes = new HashSet<TriggerEventType>
+        {
+        };
 
-        private readonly Dictionary<string, Dictionary<string, TiledModifier>> _playerTiledModifierMap =
-            new Dictionary<string, Dictionary<string, TiledModifier>>();
+        private readonly Dictionary<TriggerEventType, Dictionary<string, TriggerEvent>> _triggerEvents =
+            new Dictionary<TriggerEventType, Dictionary<string, TriggerEvent>>();
 
         public string TypeName => nameof(StarSystem);
 
@@ -30,6 +31,12 @@ namespace Core
         }
 
         #region Modifier
+
+        private readonly Dictionary<string, Dictionary<string, Modifier>> _playerModifierMap =
+            new Dictionary<string, Dictionary<string, Modifier>>();
+
+        private readonly Dictionary<string, Dictionary<string, TiledModifier>> _playerTiledModifierMap =
+            new Dictionary<string, Dictionary<string, TiledModifier>>();
 
         private bool _isCachingModifierEffect;
 
@@ -309,22 +316,41 @@ namespace Core
                 _playerTiledModifierMap.Remove(n);
         }
 
-        private void RegisterTriggerEvent(string modifierName, IReadOnlyDictionary<string, TriggerEvent> events)
+        private void RegisterTriggerEvent(string modifierName, IReadOnlyDictionary<TriggerEventType, TriggerEvent> events)
         {
             foreach (var kv in events)
             {
-                switch (kv.Key)
+                var type = kv.Key;
+
+                if (!_relativeTriggerEventTypes.Contains(type))
                 {
-                    default:
-                        Logger.Log(LogType.Warning, $"{nameof(StarSystem)}.{nameof(RegisterTriggerEvent)}",
-                            $"{kv.Key} is not a valid event name for the {nameof(StarSystem)}, so it will be ignored.");
-                        break;
+                    Logger.Log(LogType.Warning, $"{nameof(StarShip)}.{nameof(RegisterTriggerEvent)}",
+                        $"{kv.Key} is not a valid event name for the {nameof(StarShip)}, so it will be ignored.");
+                    continue;
                 }
+
+                if (!_triggerEvents.TryGetValue(type, out var value))
+                {
+                    value = new Dictionary<string, TriggerEvent>();
+                }
+
+                value[modifierName] = kv.Value;
             }
         }
 
         private void RemoveTriggerEvent(string modifierName)
         {
+            var empty = new List<TriggerEventType>();
+
+            foreach (var kv in _triggerEvents)
+            {
+                kv.Value.Remove(modifierName);
+                if (kv.Value.Count == 0)
+                    empty.Add(kv.Key);
+            }
+
+            foreach (var t in empty)
+                _triggerEvents.Remove(t);
         }
 
         private bool CommonCheckModifierCoreAddable(ModifierCore core, string targetPlayerName)

@@ -67,7 +67,7 @@ namespace Core
                 catch (Exception e)
                 {
                     Logger.Log(LogType.Error, $"While loading {path}",
-                        "Critical Lua error happened while loading, so it will be ignored! Error message: " + e.Message, true);
+                        "Critical Lua error happened while loading, so it will be ignored! Error message: " + e.Message);
                     luaHolderList[i] = null;
                     return;
                 }
@@ -82,7 +82,7 @@ namespace Core
 
                 if (!luaHolder.Load(script))
                 {
-                    Logger.Log(LogType.Error, path, "There was error on loading, so it will not be loaded!", true);
+                    Logger.Log(LogType.Error, path, "There was error on loading, so it will not be loaded!");
 
                     luaHolderList[i] = null;
                     return;

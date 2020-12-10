@@ -14,18 +14,22 @@ namespace Core
         public ModifierScope(string modifierName, string targetTypeName,
             ScriptFunctionDelegate<List<ModifierEffect>> getEffect,
             ScriptFunctionDelegate<bool> conditionChecker,
-            IReadOnlyDictionary<string, ScriptFunctionDelegate> triggerEvent)
+            IReadOnlyDictionary<string, ScriptFunctionDelegate> triggerEvent,
+            IReadOnlyDictionary<string, int> triggerEventPriority)
         {
             _modifierName = modifierName;
             TargetTypeName = targetTypeName;
             _getEffect = getEffect;
             _conditionChecker = conditionChecker;
             TriggerEvent = triggerEvent;
+            TriggerEventPriority = triggerEventPriority;
         }
 
         public string TargetTypeName { get; }
 
         public IReadOnlyDictionary<string, ScriptFunctionDelegate> TriggerEvent { get; }
+
+        public IReadOnlyDictionary<string, int> TriggerEventPriority { get; }
 
         public bool CheckCondition(IModifierEffectHolder target, string adderObjectGuid)
         {

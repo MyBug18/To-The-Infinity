@@ -49,46 +49,26 @@ namespace Core
             _sw = new StreamWriter(_fs, Encoding.UTF8);
         }
 
-        public static void Log(LogType logType, string context, string l, bool forceSync = false)
+        public static void Log(LogType logType, string context, string l)
         {
             if (Instance == null) return;
 
-            if (forceSync)
+            lock (Mutex)
             {
-                lock (Mutex)
+                switch (logType)
                 {
-                    switch (logType)
-                    {
-                        case LogType.Log:
-                            Instance.Log(context, l);
-                            break;
-                        case LogType.Warning:
-                            Instance.LogWarning(context, l);
-                            break;
-                        case LogType.Error:
-                            Instance.LogError(context, l);
-                            break;
-                        default:
-                            throw new NotImplementedException("Logger type not implemented! :" + logType);
-                    }
+                    case LogType.Log:
+                        Instance.Log(context, l);
+                        break;
+                    case LogType.Warning:
+                        Instance.LogWarning(context, l);
+                        break;
+                    case LogType.Error:
+                        Instance.LogError(context, l);
+                        break;
+                    default:
+                        throw new NotImplementedException("Logger type not implemented! :" + logType);
                 }
-
-                return;
-            }
-
-            switch (logType)
-            {
-                case LogType.Log:
-                    Instance.Log(context, l);
-                    break;
-                case LogType.Warning:
-                    Instance.LogWarning(context, l);
-                    break;
-                case LogType.Error:
-                    Instance.LogError(context, l);
-                    break;
-                default:
-                    throw new NotImplementedException("Logger type not implemented! :" + logType);
             }
         }
 

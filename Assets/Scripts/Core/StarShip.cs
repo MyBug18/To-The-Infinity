@@ -9,7 +9,21 @@ namespace Core
 {
     public sealed class StarShip : IUnit, ISinglePlayerModifierHolder
     {
-        private readonly Dictionary<string, Modifier> _modifiers = new Dictionary<string, Modifier>();
+        private readonly HashSet<TriggerEventType> _relativeTriggerEventTypes = new HashSet<TriggerEventType>
+        {
+            TriggerEventType.BeforeDamaged,
+            TriggerEventType.AfterDamaged,
+            TriggerEventType.BeforeAttack,
+            TriggerEventType.AfterAttack,
+        };
+
+        // BeforeDamaged(this, adderObjectGuid, damageInfo)
+        // AfterDamaged(this, adderObjectGuid, damageInfo)
+        // BeforeAttack(this, adderObjectGuid, damageInfo, attackTarget)
+        // BeforeDamaged(this, adderObjectGuid, damageInfo, attackTarget)
+        private readonly Dictionary<TriggerEventType, Dictionary<string, TriggerEvent>> _triggerEvents =
+            new Dictionary<TriggerEventType, Dictionary<string, TriggerEvent>>();
+
         public string TypeName => nameof(StarShip);
 
         public string Guid { get; }
@@ -26,21 +40,78 @@ namespace Core
 
         public HexTile CurrentTile { get; private set; }
 
+        public bool IsDestroyed { get; private set; }
+
         public void StartNewTurn(int month)
         {
+            _remainMovePoint = MaxMovePoint;
+
             ReduceModifiersLeftMonth(month);
         }
 
         public void TeleportToTile(HexTile tile) => TeleportToTile(tile, false);
 
-        #region Damage
+        public void DestroySelf()
+        {
+            throw new NotImplementedException();
+        }
+
+        #region Battle
+
+        private int _remainHp;
+
+        public string AttackDamageType { get; }
 
         public int BaseAttackPower { get; }
 
+        public int BaseMaxHp { get; }
+
+        public int RemainHp
+        {
+            get => _remainHp;
+
+            [MoonSharpHidden]
+            set
+            {
+                _remainHp += value;
+
+                if (_remainHp <= 0)
+                {
+                    _remainHp = 0;
+                    DestroySelf();
+                    return;
+                }
+
+                _remainHp = Math.Min(BaseMaxHp, _remainHp);
+            }
+        }
+
         public void OnDamaged(DamageInfo damageInfo)
         {
+            if (_triggerEvents.TryGetValue(TriggerEventType.BeforeDamaged, out var value))
+            {
+                // BeforeDamaged(this, adderObjectGuid, damageInfo)
+                var bd = value.Values.ToList();
+                bd.Sort((x, y) => y.Priority.CompareTo(x.Priority));
 
+                foreach (var e in bd)
+                    e.Invoke(damageInfo);
+            }
+
+            RemainHp -= damageInfo.Amount;
+
+            if (IsDestroyed) return;
+
+            if (!_triggerEvents.TryGetValue(TriggerEventType.AfterDamaged, out value)) return;
+
+            // AfterDamaged(this, adderObjectGuid, damageInfo)
+            var ad = value.Values.ToList();
+            ad.Sort((x, y) => y.Priority.CompareTo(x.Priority));
+
+            foreach (var e in ad)
+                e.Invoke(damageInfo);
         }
+
 
         #endregion
 
@@ -58,12 +129,7 @@ namespace Core
 
         #region Modifier
 
-        private bool _isCachingModifierEffect;
-
-        private readonly Dictionary<string, IReadOnlyList<ModifierEffect>> _modifierEffectsMap =
-            new Dictionary<string, IReadOnlyList<ModifierEffect>>();
-
-        public IReadOnlyDictionary<string, IReadOnlyList<ModifierEffect>> ModifierEffectsMap => _modifierEffectsMap;
+        private readonly Dictionary<string, Modifier> _modifiers = new Dictionary<string, Modifier>();
 
         [MoonSharpHidden]
         public IEnumerable<Modifier> GetModifiers()
@@ -147,12 +213,6 @@ namespace Core
             StartCachingModifierEffect();
         }
 
-        [MoonSharpHidden]
-        public void StartCachingModifierEffect()
-        {
-            Task.Run(CacheModifierEffect);
-        }
-
         private void ReduceModifiersLeftMonth(int month)
         {
             var toRemoveList = new List<string>();
@@ -175,22 +235,69 @@ namespace Core
                 RemoveModifier(name);
         }
 
-        private void RegisterTriggerEvent(string modifierName, IReadOnlyDictionary<string, TriggerEvent> events)
+        private void RegisterTriggerEvent(string modifierName, IReadOnlyDictionary<TriggerEventType, TriggerEvent> events)
         {
             foreach (var kv in events)
             {
-                switch (kv.Key)
+                var type = kv.Key;
+
+                if (!_relativeTriggerEventTypes.Contains(type))
                 {
-                    default:
-                        Logger.Log(LogType.Warning, $"{nameof(Planet)}.{nameof(RegisterTriggerEvent)}",
-                            $"{kv.Key} is not a valid event name for the {nameof(Planet)}, so it will be ignored.");
-                        break;
+                    Logger.Log(LogType.Warning, $"{nameof(StarShip)}.{nameof(RegisterTriggerEvent)}",
+                        $"{kv.Key} is not a valid event name for the {nameof(StarShip)}, so it will be ignored.");
+                    continue;
                 }
+
+                if (!_triggerEvents.TryGetValue(type, out var value))
+                {
+                    value = new Dictionary<string, TriggerEvent>();
+                }
+
+                value[modifierName] = kv.Value;
             }
         }
 
         private void RemoveTriggerEvent(string modifierName)
         {
+            var empty = new List<TriggerEventType>();
+
+            foreach (var kv in _triggerEvents)
+            {
+                kv.Value.Remove(modifierName);
+                if (kv.Value.Count == 0)
+                    empty.Add(kv.Key);
+            }
+
+            foreach (var t in empty)
+                _triggerEvents.Remove(t);
+        }
+
+        #endregion
+
+        #region ModifierEffect Caching
+
+        private Task _cacheTask;
+
+        private bool _isCachingModifierEffect;
+
+        private bool _cancelCaching;
+
+        private readonly Dictionary<string, IReadOnlyList<ModifierEffect>> _modifierEffectsMap =
+            new Dictionary<string, IReadOnlyList<ModifierEffect>>();
+
+        public IReadOnlyDictionary<string, IReadOnlyList<ModifierEffect>> ModifierEffectsMap => _modifierEffectsMap;
+
+        [MoonSharpHidden]
+        public void StartCachingModifierEffect()
+        {
+            // When cache request is accepted during cashing, abort ongoing caching immediately and restart.
+            if (_isCachingModifierEffect)
+            {
+                _cancelCaching = true;
+                _cacheTask.Wait();
+            }
+
+            _cacheTask = Task.Run(CacheModifierEffect);
         }
 
         private void CacheModifierEffect()
@@ -200,6 +307,12 @@ namespace Core
 
             foreach (var m in GetModifiers().Cast<IModifier>().Concat(AffectedTiledModifiers))
             {
+                if (_cancelCaching)
+                {
+                    _cancelCaching = false;
+                    return;
+                }
+
                 IReadOnlyList<ModifierEffect> effects = null;
                 try
                 {
@@ -211,41 +324,51 @@ namespace Core
                 }
 
                 if (effects?.Count == 0) continue;
-                _modifierEffectsMap[m.Name] = effects;
+
+                _modifierEffectsMap[m.Name] = ApplyModifierEffects(effects);
             }
 
             _isCachingModifierEffect = false;
         }
-        private bool ApplyModifierEffects(IEnumerable<ModifierEffect> effects)
+
+        // Possible modifier effect form:
+        // MaxMovePoint
+        private IReadOnlyList<ModifierEffect> ApplyModifierEffects(IEnumerable<ModifierEffect> effects)
         {
-            var result = true;
+            _maxMovePointFromModifier = 0;
+
+            var result = new List<ModifierEffect>();
 
             foreach (var e in effects)
             {
+                switch (e.EffectType)
+                {
+                    // MaxMovePoint
+                    case ModifierEffectType.MaxMovePoint:
+                    {
+                        var infos = e.AdditionalInfos;
+                        if (infos.Count != 0)
+                            continue;
+
+                        var amount = e.Amount;
+                        _maxMovePointFromModifier += amount;
+                        result.Add(e);
+                        break;
+                    }
+                }
             }
 
             return result;
         }
 
-
-        // Possible modifier effect form:
-        // MaxMovePoint
-        private bool ApplyModifierEffect(ModifierEffect effect)
+        private T WaitCache<T>(in T input)
         {
-            switch (effect.EffectType)
+            while (_isCachingModifierEffect)
             {
-                // ReduceDamage_<Target Damage Type>
-                case ModifierEffectType.MaxMovePoint:
-                {
-                    var infos = effect.AdditionalInfos;
-                    if (infos.Count != 0) return false;
-
-                    var amount = effect.Amount;
-                    break;
-                }
+                // Busy wait
             }
 
-            return true;
+            return input;
         }
 
         #endregion
@@ -256,24 +379,19 @@ namespace Core
 
         private int _remainMovePoint;
 
+        private int _maxMovePointFromModifier;
+
         public int RemainMovePoint
         {
             get => _remainMovePoint;
             private set => _remainMovePoint = Math.Max(0, value);
         }
 
-        public IReadOnlyDictionary<HexTileCoord, MoveInfo> MovableTileInfo
-        {
-            get
-            {
-                while (_isCachingModifierEffect)
-                {
-                    // Busy loop
-                }
+        public int BaseMaxMovePoint { get; }
 
-                return _movableTileInfoCache;
-            }
-        }
+        public int MaxMovePoint => WaitCache(_maxMovePointFromModifier) + BaseMaxMovePoint;
+
+        public IReadOnlyDictionary<HexTileCoord, MoveInfo> MovableTileInfo => WaitCache(_movableTileInfoCache);
 
         public void Move(HexTileCoord coord)
         {
@@ -401,15 +519,5 @@ namespace Core
         }
 
         #endregion
-
-        private T WaitCache<T>(T input)
-        {
-            while (_isCachingModifierEffect)
-            {
-                // Busy wait
-            }
-
-            return input;
-        }
     }
 }

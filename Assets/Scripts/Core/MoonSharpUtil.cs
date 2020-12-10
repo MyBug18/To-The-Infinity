@@ -9,15 +9,12 @@ namespace Core
 
         public LogType LogType { get; }
 
-        public bool LockMutex { get; }
-
         public bool AllowNotDefined { get; }
 
-        public LogInfo(string context, LogType logType, bool lockMutex, bool allowNotDefined)
+        public LogInfo(string context, LogType logType, bool allowNotDefined)
         {
             Context = context;
             LogType = logType;
-            LockMutex = lockMutex;
             AllowNotDefined = allowNotDefined;
         }
     }
@@ -25,10 +22,10 @@ namespace Core
     public static class MoonSharpUtil
     {
         public static LogInfo LoadingError(string fieldName, string filePath)
-            => new LogInfo($"Field {fieldName} of " + filePath, LogType.Error, true, false);
+            => new LogInfo($"Field {fieldName} of " + filePath, LogType.Error, false);
 
         public static LogInfo AllowNotDefined(string fieldName, string filePath)
-            => new LogInfo($"Field {fieldName} of " + filePath, LogType.Error, true, true);
+            => new LogInfo($"Field {fieldName} of " + filePath, LogType.Error, true);
 
         public static bool TryInvoke(this ScriptFunctionDelegate f, string funcName, string context,
             params object[] args)
@@ -76,7 +73,7 @@ namespace Core
             if (dynValue == null)
             {
                 if (info.Context != null && !info.AllowNotDefined)
-                    Logger.Log(info.LogType, info.Context, "The value is not defined!", info.LockMutex);
+                    Logger.Log(info.LogType, info.Context, "The value is not defined!");
 
                 return false;
             }
@@ -85,7 +82,7 @@ namespace Core
                 return true;
 
             if (info.Context != null)
-                Logger.Log(info.LogType, info.Context, "The value is nil!", info.LockMutex);
+                Logger.Log(info.LogType, info.Context, "The value is nil!");
 
             return false;
         }
@@ -95,7 +92,7 @@ namespace Core
             if (dynValue.Type != DataType.String)
             {
                 if (info.Context != null)
-                    Logger.Log(info.LogType, info.Context, "Value is defined, but it's not a string!", info.LockMutex);
+                    Logger.Log(info.LogType, info.Context, "Value is defined, but it's not a string!");
 
                 result = null;
                 return false;
@@ -191,7 +188,7 @@ namespace Core
             if (dynValue.Type != DataType.Table)
             {
                 if (info.Context != null)
-                    Logger.Log(info.LogType, info.Context, "Value is defined, but it's not a table!", info.LockMutex);
+                    Logger.Log(info.LogType, info.Context, "Value is defined, but it's not a table!");
 
                 result = null;
                 return false;
@@ -216,8 +213,7 @@ namespace Core
             if (dynValue.Type != DataType.Function)
             {
                 if (info.Context != null)
-                    Logger.Log(info.LogType, info.Context, "Value is defined, but it's not a function!",
-                        info.LockMutex);
+                    Logger.Log(info.LogType, info.Context, "Value is defined, but it's not a function!");
 
                 result = null;
                 return false;
@@ -243,8 +239,7 @@ namespace Core
             if (dynValue.Type != DataType.Function)
             {
                 if (info.Context != null)
-                    Logger.Log(info.LogType, info.Context, "Value is defined, but it's not a function!",
-                        info.LockMutex);
+                    Logger.Log(info.LogType, info.Context, "Value is defined, but it's not a function!");
 
                 result = null;
                 return false;

@@ -35,3 +35,6 @@ Scope.Game.TriggerEvent.OnTechFinished =
 function (target, adderGuid)
 
 end
+
+Scope.Game.TriggerEventPriority = {}
+Scope.Game.TriggerEventPriority.OnTechFinished = 10

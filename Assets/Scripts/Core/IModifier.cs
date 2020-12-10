@@ -6,7 +6,7 @@ namespace Core
     {
         string Name { get; }
 
-        IReadOnlyDictionary<string, TriggerEvent> GetTriggerEvent(IModifierEffectHolder target);
+        IReadOnlyDictionary<TriggerEventType, TriggerEvent> GetTriggerEvent(IModifierEffectHolder target);
 
         void OnAdded(IModifierEffectHolder target);
 
