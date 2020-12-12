@@ -10,7 +10,7 @@ namespace Core
     [MoonSharpUserData]
     public sealed class StarSystem : ITileMapHolder
     {
-        private readonly HashSet<TriggerEventType> _relativeTriggerEventTypes = new HashSet<TriggerEventType>();
+        private static readonly HashSet<TriggerEventType> RelativeTriggerEventTypes = new HashSet<TriggerEventType>();
 
         private readonly Dictionary<TriggerEventType, Dictionary<string, TriggerEvent>> _triggerEvents =
             new Dictionary<TriggerEventType, Dictionary<string, TriggerEvent>>();
@@ -312,7 +312,7 @@ namespace Core
             {
                 var type = kv.Key;
 
-                if (!_relativeTriggerEventTypes.Contains(type))
+                if (!RelativeTriggerEventTypes.Contains(type))
                 {
                     Logger.Log(LogType.Warning, $"{nameof(StarSystem)}.{nameof(RegisterTriggerEvent)}",
                         $"{kv.Key} is not a valid event name for the {nameof(StarSystem)}, so it will be ignored.");

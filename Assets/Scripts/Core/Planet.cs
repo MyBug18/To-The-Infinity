@@ -10,7 +10,7 @@ namespace Core
     [MoonSharpUserData]
     public sealed class Planet : ITileMapHolder, IOnHexTileObject
     {
-        private readonly HashSet<TriggerEventType> _relativeTriggerEventTypes = new HashSet<TriggerEventType>
+        private static readonly HashSet<TriggerEventType> RelativeTriggerEventTypes = new HashSet<TriggerEventType>
         {
             TriggerEventType.OnPopBirth,
         };
@@ -430,7 +430,7 @@ namespace Core
             {
                 var type = kv.Key;
 
-                if (!_relativeTriggerEventTypes.Contains(type))
+                if (!RelativeTriggerEventTypes.Contains(type))
                 {
                     Logger.Log(LogType.Warning, $"{nameof(Planet)}.{nameof(RegisterTriggerEvent)}",
                         $"{kv.Key} is not a valid event name for the {nameof(Planet)}, so it will be ignored.");

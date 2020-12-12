@@ -9,7 +9,7 @@ namespace Core
 {
     public sealed class BattleShip : IUnit, ISinglePlayerModifierHolder
     {
-        private readonly HashSet<TriggerEventType> _relativeTriggerEventTypes = new HashSet<TriggerEventType>
+        private static readonly HashSet<TriggerEventType> RelativeTriggerEventTypes = new HashSet<TriggerEventType>
         {
             // BeforeDestroyed(this, adderObjectGuid)
             TriggerEventType.BeforeDestroyed,
@@ -284,7 +284,7 @@ namespace Core
             {
                 var type = kv.Key;
 
-                if (!_relativeTriggerEventTypes.Contains(type))
+                if (!RelativeTriggerEventTypes.Contains(type))
                 {
                     Logger.Log(LogType.Warning, $"{nameof(BattleShip)}.{nameof(RegisterTriggerEvent)}",
                         $"{kv.Key} is not a valid event name for the {nameof(BattleShip)}, so it will be ignored.");
