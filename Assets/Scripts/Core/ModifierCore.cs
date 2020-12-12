@@ -52,9 +52,6 @@ namespace Core
             onRemoved.TryInvoke($"Scope.{target.TypeName}.OnRemoved", Name, target, adderObjectGuid);
         }
 
-        public bool CheckCondition(IModifierEffectHolder target, string adderObjectGuid) =>
-            Scope.TryGetValue(target.TypeName, out var scope) && scope.CheckCondition(target, adderObjectGuid);
-
         public IReadOnlyList<ModifierEffect> GetEffects(IModifierEffectHolder target, string adderObjectGuid) =>
             Scope.TryGetValue(target.TypeName, out var scope)
                 ? scope.GetEffects(target, adderObjectGuid)

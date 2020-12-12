@@ -15,11 +15,6 @@ function (target, adderGuid)
     return {}
 end
 
-Scope.Game.CheckCondition =
-function (target, adderGuid)
-    return false
-end
-
 Scope.Game.TriggerEvent = {}
 Scope.Game.TriggerEvent.OnAdded =
 function (target, adderGuid)

@@ -1,8 +1,5 @@
 ﻿namespace Core
 {
-    /// <summary>
-    ///     Every InfinityObject has it's own small dictionary which can store string key and primitive type value
-    /// </summary>
     public interface IInfinityObject
     {
         IPlayer OwnPlayer { get; }
@@ -17,7 +14,9 @@
         /// </summary>
         string Guid { get; }
 
-
+        /// <summary>
+        ///     Every InfinityObject has it's own small dictionary which can store string key and primitive type value
+        /// </summary>
         LuaDictWrapper Storage { get; }
 
         void StartNewTurn(int month);

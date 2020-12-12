@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Core.GameData;
 using MoonSharp.Interpreter;
 
@@ -17,15 +18,6 @@ namespace Core
         private readonly Dictionary<TriggerEventType, Dictionary<string, TriggerEvent>> _triggerEvents =
             new Dictionary<TriggerEventType, Dictionary<string, TriggerEvent>>();
 
-        private readonly Dictionary<string, float> _planetaryResourceKeep =
-            new Dictionary<string, float>();
-
-        private readonly Dictionary<string, Dictionary<string, Modifier>> _playerModifierMap =
-            new Dictionary<string, Dictionary<string, Modifier>>();
-
-        private readonly Dictionary<string, Dictionary<string, TiledModifier>> _playerTiledModifierMap =
-            new Dictionary<string, Dictionary<string, TiledModifier>>();
-
         /// <summary>
         ///     0 if totally uninhabitable,
         ///     1 if partially inhabitable with serious penalty,
@@ -36,7 +28,7 @@ namespace Core
 
         public bool IsColonizing { get; private set; }
 
-        public IReadOnlyDictionary<string, float> PlanetaryResourceKeep => _planetaryResourceKeep;
+        public string TypeName => nameof(Planet);
 
         public string IdentifierName { get; }
 
@@ -44,9 +36,15 @@ namespace Core
 
         public HexTile CurrentTile { get; private set; }
 
+        public bool IsDestroyed { get; private set; }
+
         public IPlayer OwnPlayer { get; }
 
-        public bool IsDestroyed { get; }
+        public string Guid { get; }
+
+        public LuaDictWrapper Storage { get; } = new LuaDictWrapper(new Dictionary<string, object>());
+
+        public TileMap TileMap { get; }
 
         public void TeleportToTile(HexTile tile)
         {
@@ -98,10 +96,6 @@ namespace Core
             foreach (var m in toAdd)
                 ApplyModifierChangeToDownward(OwnPlayer.PlayerName, m, false);
         }
-        public void DestroySelf()
-        {
-            throw new NotImplementedException();
-        }
 
         public void StartNewTurn(int month)
         {
@@ -109,13 +103,20 @@ namespace Core
             TileMap.StartNewTurn(month);
         }
 
-        public string TypeName => nameof(Planet);
+        public void DestroySelf()
+        {
+            IsDestroyed = true;
+            throw new NotImplementedException();
+        }
 
-        public string Guid { get; }
+        #region Resources
 
-        public LuaDictWrapper Storage { get; } = new LuaDictWrapper(new Dictionary<string, object>());
+        private readonly Dictionary<string, float> _planetaryResourceKeep =
+            new Dictionary<string, float>();
 
-        public TileMap TileMap { get; }
+        public IReadOnlyDictionary<string, float> PlanetaryResourceKeep => _planetaryResourceKeep;
+
+        #endregion
 
         #region Pop
 
@@ -147,12 +148,11 @@ namespace Core
 
         #region Modifier
 
-        private bool _isCachingModifierEffect;
+        private readonly Dictionary<string, Dictionary<string, Modifier>> _playerModifierMap =
+            new Dictionary<string, Dictionary<string, Modifier>>();
 
-        private readonly Dictionary<string, IReadOnlyList<ModifierEffect>> _modifierEffectsMap =
-            new Dictionary<string, IReadOnlyList<ModifierEffect>>();
-
-        public IReadOnlyDictionary<string, IReadOnlyList<ModifierEffect>> ModifierEffectsMap => _modifierEffectsMap;
+        private readonly Dictionary<string, Dictionary<string, TiledModifier>> _playerTiledModifierMap =
+            new Dictionary<string, Dictionary<string, TiledModifier>>();
 
         public IEnumerable<TiledModifier> AffectedTiledModifiers =>
             CurrentTile.TileMap.Holder.GetTiledModifiers(this);
@@ -266,11 +266,6 @@ namespace Core
             }
 
             TileMap.ApplyModifierChangeToTileObjects(targetPlayerName, m, isRemoving);
-        }
-
-        public void StartCachingModifierEffect()
-        {
-            throw new NotImplementedException();
         }
 
         public bool HasModifier(string targetPlayerName, string modifierName) =>
@@ -428,7 +423,8 @@ namespace Core
                 _playerTiledModifierMap.Remove(n);
         }
 
-        private void RegisterTriggerEvent(string modifierName, IReadOnlyDictionary<TriggerEventType, TriggerEvent> events)
+        private void RegisterTriggerEvent(string modifierName,
+            IReadOnlyDictionary<TriggerEventType, TriggerEvent> events)
         {
             foreach (var kv in events)
             {
@@ -441,10 +437,7 @@ namespace Core
                     continue;
                 }
 
-                if (!_triggerEvents.TryGetValue(type, out var value))
-                {
-                    value = new Dictionary<string, TriggerEvent>();
-                }
+                if (!_triggerEvents.TryGetValue(type, out var value)) value = new Dictionary<string, TriggerEvent>();
 
                 value[modifierName] = kv.Value;
             }
@@ -491,5 +484,96 @@ namespace Core
         }
 
         #endregion Modifier
+
+        #region ModifierEffectCaching
+
+        private Task _cacheTask;
+
+        private bool _cancelCaching;
+
+        private bool _isCachingModifierEffect;
+
+        private readonly Dictionary<string, IReadOnlyList<ModifierEffect>> _modifierEffectsMap =
+            new Dictionary<string, IReadOnlyList<ModifierEffect>>();
+
+        public IReadOnlyDictionary<string, IReadOnlyList<ModifierEffect>> ModifierEffectsMap => _modifierEffectsMap;
+
+        [MoonSharpHidden]
+        public void StartCachingModifierEffect()
+        {
+            // When cache request is accepted during cashing, abort ongoing caching immediately and restart.
+            if (_isCachingModifierEffect)
+            {
+                _cancelCaching = true;
+                _cacheTask.Wait();
+            }
+
+            _isCachingModifierEffect = true;
+            _cacheTask = Task.Run(CacheModifierEffect);
+
+            TileMap.StartCachingModifierEffects();
+        }
+
+        private void CacheModifierEffect()
+        {
+            _modifierEffectsMap.Clear();
+
+            foreach (var m in GetModifiers(OwnPlayer.PlayerName).Cast<IModifier>().Concat(AffectedTiledModifiers))
+            {
+                if (_cancelCaching)
+                {
+                    _cancelCaching = false;
+                    return;
+                }
+
+                IReadOnlyList<ModifierEffect> effects = null;
+
+                try
+                {
+                    effects = m.GetEffects(this);
+                }
+                catch (Exception e)
+                {
+                    Logger.Log(LogType.Error, $"{m.Name}.{nameof(m.GetEffects)}",
+                        $"Error while calculating modifier effect! Error message: {e.Message}");
+                }
+
+                if (effects?.Count == 0) continue;
+
+                _modifierEffectsMap[m.Name] = ApplyModifierEffects(effects);
+            }
+
+            _isCachingModifierEffect = false;
+        }
+
+        private IReadOnlyList<ModifierEffect> ApplyModifierEffects(IEnumerable<ModifierEffect> effects)
+        {
+            var result = new List<ModifierEffect>();
+
+            foreach (var e in effects)
+            {
+                var infos = e.AdditionalInfos;
+                var amount = e.Amount;
+                switch (e.EffectType)
+                {
+                }
+
+                result.Add(e);
+            }
+
+            return result;
+        }
+
+        private T WaitCache<T>(in T input)
+        {
+            while (_isCachingModifierEffect)
+            {
+                // Busy wait
+            }
+
+            return input;
+        }
+
+        #endregion
     }
 }

@@ -138,6 +138,12 @@ namespace Core
                 objs.ApplyModifierChangeToDownward(targetPlayerName, m, isRemoving);
         }
 
+        public void StartCachingModifierEffects()
+        {
+            foreach (var objs in _onTileMapObjects.Values.SelectMany(x => x.Values))
+                objs.StartCachingModifierEffect();
+        }
+
         public bool IsTileObjectExists(string typeName, HexTileCoord coord) =>
             _onTileMapObjects.TryGetValue(coord, out var objDict) && objDict.ContainsKey(typeName);
 

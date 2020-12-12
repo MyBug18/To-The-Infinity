@@ -5,12 +5,13 @@ namespace Core
     public enum TriggerEventType
     {
         OnAdded, // OnAdded(this, adderObjectGuid)
-        OnRemoved, // OnRemoved (this, adderObjectGuid)
+        OnRemoved, // OnRemoved(this, adderObjectGuid)
+        BeforeDestroyed, // BeforeDestroyed(this, adderObjectGuid)
 
         BeforeDamaged, // BeforeDamaged(this, adderObjectGuid, damageInfo)
         AfterDamaged, // AfterDamaged(this, adderObjectGuid, damageInfo)
-        BeforeAttack, // BeforeAttack(this, adderObjectGuid, damageInfo, attackTarget)
-        AfterAttack, // BeforeDamaged(this, adderObjectGuid, damageInfo, attackTarget)
+        BeforeMeleeAttack, // BeforeMeleeAttack(this, adderObjectGuid, attackTarget)
+        AfterMeleeAttack, // AfterMeleeAttack(this, adderObjectGuid, damageInfo, attackTarget)
 
         OnPopBirth, // OnPopBirth(this, adderObjectGuid)
     }
@@ -22,11 +23,9 @@ namespace Core
         private readonly ScriptFunctionDelegate _f;
         private readonly string _modifierName;
 
-        private readonly TriggerEventType _type;
-
         private readonly IInfinityObject _target;
 
-        public int Priority { get; }
+        private readonly TriggerEventType _type;
 
         public TriggerEvent(string modifierName, TriggerEventType type, ScriptFunctionDelegate f,
             IInfinityObject target, string adderObjectGuid, int priority)
@@ -38,6 +37,8 @@ namespace Core
             _adderObjectGuid = adderObjectGuid;
             Priority = priority;
         }
+
+        public int Priority { get; }
 
         public void Invoke(params object[] args)
         {

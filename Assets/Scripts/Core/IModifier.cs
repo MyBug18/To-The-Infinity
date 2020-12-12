@@ -12,8 +12,6 @@ namespace Core
 
         void OnRemoved(IModifierEffectHolder target);
 
-        bool CheckCondition(IModifierEffectHolder target);
-
         IReadOnlyList<ModifierEffect> GetEffects(IModifierEffectHolder target);
     }
 }

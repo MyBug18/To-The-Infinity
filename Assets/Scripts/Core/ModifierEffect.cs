@@ -8,6 +8,7 @@ namespace Core
 
         // Target: StarShip
         MaxMovePoint, // MaxMovePoint
+        AttackPower, // AttackPower_<A || R>
     }
 
     public readonly struct ModifierEffect

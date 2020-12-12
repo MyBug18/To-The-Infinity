@@ -12,9 +12,9 @@ namespace Core
 
         IEnumerable<TiledModifier> AffectedTiledModifiers { get; }
 
-        void TeleportToTile(HexTile tile);
-
         bool IsDestroyed { get; }
+
+        void TeleportToTile(HexTile tile);
 
         void DestroySelf();
     }

@@ -6,12 +6,12 @@ namespace Core.GameData
     {
         public DamageTypePrototype(string filePath) => FilePath = filePath;
 
+        public string Color { get; private set; }
+
         public string IdentifierName { get; private set; }
         public string TypeName => "DamageType";
 
         public string FilePath { get; }
-
-        public string Color { get; private set; }
 
         public bool Load(Script luaScript)
         {

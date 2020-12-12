@@ -11,40 +11,41 @@ namespace Core
     {
         private readonly HashSet<TriggerEventType> _relativeTriggerEventTypes = new HashSet<TriggerEventType>
         {
+            // BeforeDestroyed(this, adderObjectGuid)
+            TriggerEventType.BeforeDestroyed,
+
+            // BeforeDamaged(this, adderObjectGuid, damageInfo)
             TriggerEventType.BeforeDamaged,
+
+            // AfterDamaged(this, adderObjectGuid, damageInfo)
             TriggerEventType.AfterDamaged,
-            TriggerEventType.BeforeAttack,
-            TriggerEventType.AfterAttack,
+
+            // BeforeMeleeAttack(this, adderObjectGuid, attackTarget)
+            TriggerEventType.BeforeMeleeAttack,
+
+            // AfterMeleeAttack(this, adderObjectGuid, damageInfo, attackTarget)
+            TriggerEventType.AfterMeleeAttack,
         };
 
-        // BeforeDamaged(this, adderObjectGuid, damageInfo)
-        // AfterDamaged(this, adderObjectGuid, damageInfo)
-        // BeforeAttack(this, adderObjectGuid, damageInfo, attackTarget)
-        // BeforeDamaged(this, adderObjectGuid, damageInfo, attackTarget)
         private readonly Dictionary<TriggerEventType, Dictionary<string, TriggerEvent>> _triggerEvents =
             new Dictionary<TriggerEventType, Dictionary<string, TriggerEvent>>();
 
         public string TypeName => nameof(StarShip);
 
-        public string Guid { get; }
-
-        public LuaDictWrapper Storage { get; } = new LuaDictWrapper(new Dictionary<string, object>());
-
         public IPlayer OwnPlayer { get; }
 
-        public string IdentifierName { get; }
+        public string Guid { get; }
 
+        [MoonSharpHidden]
         public string CustomName { get; }
 
-        public IReadOnlyCollection<string> Properties { get; }
-
-        public HexTile CurrentTile { get; private set; }
+        public LuaDictWrapper Storage { get; } = new LuaDictWrapper(new Dictionary<string, object>());
 
         public bool IsDestroyed { get; private set; }
 
         public void StartNewTurn(int month)
         {
-            _remainMovePoint = MaxMovePoint;
+            RemainMovePoint = MaxMovePoint;
 
             ReduceModifiersLeftMonth(month);
         }
@@ -53,18 +54,39 @@ namespace Core
 
         public void DestroySelf()
         {
-            throw new NotImplementedException();
+            // BeforeDestroyed(this, adderObjectGuid)
+            foreach (var e in GetTriggerEvents(TriggerEventType.BeforeDestroyed))
+                e.Invoke();
+
+            IsDestroyed = true;
+            CurrentTile.RemoveTileObject(TypeName);
+            CurrentTile = null;
         }
 
-        #region Battle
+        #region ProtoTypeData
 
-        private int _remainHp;
+        public string IdentifierName { get; }
+
+        public IReadOnlyCollection<string> Properties { get; }
 
         public string AttackDamageType { get; }
 
         public int BaseAttackPower { get; }
 
         public int BaseMaxHp { get; }
+
+        public int BaseMaxMovePoint { get; }
+
+        #endregion
+
+        #region Battle
+
+        private int _remainHp;
+
+        private int _attackPowerFromModifierAbsolute, _attackPowerFromModifierRelative;
+
+        public int AttackPower => (BaseAttackPower + WaitCache(_attackPowerFromModifierAbsolute)) *
+            (100 + _attackPowerFromModifierRelative) / 100;
 
         public int RemainHp
         {
@@ -88,30 +110,50 @@ namespace Core
 
         public void OnDamaged(DamageInfo damageInfo)
         {
-            if (_triggerEvents.TryGetValue(TriggerEventType.BeforeDamaged, out var value))
-            {
-                // BeforeDamaged(this, adderObjectGuid, damageInfo)
-                var bd = value.Values.ToList();
-                bd.Sort((x, y) => y.Priority.CompareTo(x.Priority));
+            if (IsDestroyed) return;
 
-                foreach (var e in bd)
-                    e.Invoke(damageInfo);
+            // BeforeDamaged(this, adderObjectGuid, damageInfo)
+            foreach (var e in GetTriggerEvents(TriggerEventType.BeforeDamaged))
+                e.Invoke(damageInfo);
+
+            if (damageInfo.IsMelee && damageInfo.Inflicter is IUnit enemy)
+            {
+                var reAttack = new DamageInfo(this, AttackPower, AttackDamageType, false);
+
+                enemy.OnDamaged(reAttack);
             }
 
             RemainHp -= damageInfo.Amount;
 
             if (IsDestroyed) return;
 
-            if (!_triggerEvents.TryGetValue(TriggerEventType.AfterDamaged, out value)) return;
-
             // AfterDamaged(this, adderObjectGuid, damageInfo)
-            var ad = value.Values.ToList();
-            ad.Sort((x, y) => y.Priority.CompareTo(x.Priority));
-
-            foreach (var e in ad)
+            foreach (var e in GetTriggerEvents(TriggerEventType.AfterDamaged))
                 e.Invoke(damageInfo);
         }
 
+        public void MeleeAttack(IUnit target)
+        {
+            if (IsDestroyed) return;
+
+            using var _ = Game.Instance.GetCacheLock();
+
+            foreach (var e in GetTriggerEvents(TriggerEventType.BeforeMeleeAttack))
+                e.Invoke(target);
+
+            if (IsDestroyed)
+                return;
+
+            var damageInfo = new DamageInfo(this, AttackPower, AttackDamageType, true);
+
+            target.OnDamaged(damageInfo);
+
+            if (IsDestroyed)
+                return;
+
+            foreach (var e in GetTriggerEvents(TriggerEventType.AfterMeleeAttack))
+                e.Invoke();
+        }
 
         #endregion
 
@@ -197,6 +239,8 @@ namespace Core
             if (targetPlayerName.ToLower() != "global" && targetPlayerName != OwnPlayer.PlayerName)
                 return;
 
+            using var _ = Game.Instance.GetCacheLock();
+
             if (isRemoving)
             {
                 m.OnRemoved(this);
@@ -209,8 +253,6 @@ namespace Core
 
                 RegisterTriggerEvent(m.Name, m.GetTriggerEvent(this));
             }
-
-            StartCachingModifierEffect();
         }
 
         private void ReduceModifiersLeftMonth(int month)
@@ -235,7 +277,8 @@ namespace Core
                 RemoveModifier(name);
         }
 
-        private void RegisterTriggerEvent(string modifierName, IReadOnlyDictionary<TriggerEventType, TriggerEvent> events)
+        private void RegisterTriggerEvent(string modifierName,
+            IReadOnlyDictionary<TriggerEventType, TriggerEvent> events)
         {
             foreach (var kv in events)
             {
@@ -248,10 +291,7 @@ namespace Core
                     continue;
                 }
 
-                if (!_triggerEvents.TryGetValue(type, out var value))
-                {
-                    value = new Dictionary<string, TriggerEvent>();
-                }
+                if (!_triggerEvents.TryGetValue(type, out var value)) value = new Dictionary<string, TriggerEvent>();
 
                 value[modifierName] = kv.Value;
             }
@@ -272,15 +312,25 @@ namespace Core
                 _triggerEvents.Remove(t);
         }
 
+        private IEnumerable<TriggerEvent> GetTriggerEvents(TriggerEventType type)
+        {
+            if (!_triggerEvents.TryGetValue(type, out var value))
+                return new TriggerEvent[0];
+
+            var result = value.Values.ToList();
+            result.Sort((x, y) => y.Priority.CompareTo(x.Priority));
+            return result;
+        }
+
         #endregion
 
-        #region ModifierEffect Caching
+        #region ModifierEffectCaching
 
         private Task _cacheTask;
 
-        private bool _isCachingModifierEffect;
-
         private bool _cancelCaching;
+
+        private bool _isCachingModifierEffect;
 
         private readonly Dictionary<string, IReadOnlyList<ModifierEffect>> _modifierEffectsMap =
             new Dictionary<string, IReadOnlyList<ModifierEffect>>();
@@ -297,13 +347,13 @@ namespace Core
                 _cacheTask.Wait();
             }
 
+            _isCachingModifierEffect = true;
             _cacheTask = Task.Run(CacheModifierEffect);
         }
 
         private void CacheModifierEffect()
         {
             _modifierEffectsMap.Clear();
-            _isCachingModifierEffect = true;
 
             foreach (var m in GetModifiers().Cast<IModifier>().Concat(AffectedTiledModifiers))
             {
@@ -314,13 +364,15 @@ namespace Core
                 }
 
                 IReadOnlyList<ModifierEffect> effects = null;
+
                 try
                 {
                     effects = m.GetEffects(this);
                 }
                 catch (Exception e)
                 {
-                    Logger.Log(LogType.Error, "", $"Error while calculating modifier effect! Error message: {e.Message}");
+                    Logger.Log(LogType.Error, $"{m.Name}.{nameof(m.GetEffects)}",
+                        $"Error while calculating modifier effect! Error message: {e.Message}");
                 }
 
                 if (effects?.Count == 0) continue;
@@ -328,34 +380,56 @@ namespace Core
                 _modifierEffectsMap[m.Name] = ApplyModifierEffects(effects);
             }
 
+            CacheMovableTileInfo();
             _isCachingModifierEffect = false;
         }
 
-        // Possible modifier effect form:
-        // MaxMovePoint
         private IReadOnlyList<ModifierEffect> ApplyModifierEffects(IEnumerable<ModifierEffect> effects)
         {
             _maxMovePointFromModifier = 0;
+            _attackPowerFromModifierAbsolute = 0;
+            _attackPowerFromModifierRelative = 0;
 
             var result = new List<ModifierEffect>();
 
             foreach (var e in effects)
             {
+                var infos = e.AdditionalInfos;
+                var amount = e.Amount;
                 switch (e.EffectType)
                 {
                     // MaxMovePoint
                     case ModifierEffectType.MaxMovePoint:
                     {
-                        var infos = e.AdditionalInfos;
                         if (infos.Count != 0)
                             continue;
 
-                        var amount = e.Amount;
                         _maxMovePointFromModifier += amount;
-                        result.Add(e);
+                        break;
+                    }
+                    // AttackPower_<A || R>
+                    case ModifierEffectType.AttackPower:
+                    {
+                        if (infos.Count != 1)
+                            continue;
+
+                        switch (infos[1].ToLower())
+                        {
+                            case "a":
+                                _attackPowerFromModifierAbsolute += amount;
+                                break;
+                            case "r":
+                                _attackPowerFromModifierRelative += amount;
+                                break;
+                            default:
+                                continue;
+                        }
+
                         break;
                     }
                 }
+
+                result.Add(e);
             }
 
             return result;
@@ -377,21 +451,17 @@ namespace Core
 
         private Dictionary<HexTileCoord, MoveInfo> _movableTileInfoCache;
 
-        private int _remainMovePoint;
-
         private int _maxMovePointFromModifier;
 
-        public int RemainMovePoint
-        {
-            get => _remainMovePoint;
-            private set => _remainMovePoint = Math.Max(0, value);
-        }
+        public HexTile CurrentTile { get; private set; }
 
-        public int BaseMaxMovePoint { get; }
+        public int RemainMovePoint { get; private set; }
 
-        public int MaxMovePoint => WaitCache(_maxMovePointFromModifier) + BaseMaxMovePoint;
+        public int MaxMovePoint => Math.Max(0, WaitCache(_maxMovePointFromModifier) + BaseMaxMovePoint);
 
         public IReadOnlyDictionary<HexTileCoord, MoveInfo> MovableTileInfo => WaitCache(_movableTileInfoCache);
+
+        public void ChangeRemainMovePoint(int amount) => RemainMovePoint = Math.Max(0, amount);
 
         public void Move(HexTileCoord coord)
         {
@@ -414,6 +484,9 @@ namespace Core
 
             while (route.Count > 0)
             {
+                if (IsDestroyed)
+                    return;
+
                 var nextMove = route.Pop();
 
                 var nextTile = CurrentTile.TileMap.GetHexTile(nextMove);
@@ -472,6 +545,8 @@ namespace Core
 
         private void TeleportToTile(HexTile tile, bool withoutTileMapAction)
         {
+            using var _ = Game.Instance.GetCacheLock();
+
             var destHolder = tile.TileMap.Holder;
             var curHolder = CurrentTile.TileMap.Holder;
 

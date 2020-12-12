@@ -38,7 +38,8 @@ namespace Core
             catch (Exception e)
             {
                 Logger.Log(LogType.Error, $"Function {funcName} of " + context,
-                    "Function call failed! It may cause a serious problem, resulting game crash! Error Message: " + e.Message);
+                    "Function call failed! It may cause a serious problem, resulting game crash! Error Message: " +
+                    e.Message);
                 return false;
             }
         }
@@ -54,7 +55,8 @@ namespace Core
             catch (Exception e)
             {
                 Logger.Log(LogType.Error, $"Function {funcName} of " + context,
-                    "Function call failed! It may cause a serious problem, resulting game crash! Error Message: " + e.Message);
+                    "Function call failed! It may cause a serious problem, resulting game crash! Error Message: " +
+                    e.Message);
 
 
                 result = default;

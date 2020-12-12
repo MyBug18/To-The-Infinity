@@ -65,12 +65,7 @@ namespace Core.GameData
                     MoonSharpUtil.AllowNotDefined($"Scope.{typeName}.GetEffect", FilePath)))
                     getEffect = null;
 
-                // Returns true when not defined
-                if (!scopeTable.TryGetLuaFunc<bool>("CheckCondition", out var checkCondition,
-                    MoonSharpUtil.AllowNotDefined($"Scope.{typeName}.CheckCondition", FilePath)))
-                    checkCondition = null;
-
-                var triggetEventPriority = new Dictionary<string, int>();
+                var triggerEventPriority = new Dictionary<string, int>();
 
                 // Set empty dictionary when not defined
                 var triggerEvent = new Dictionary<string, ScriptFunctionDelegate>();
@@ -99,7 +94,6 @@ namespace Core.GameData
 
                 if (scopeTable.TryGetTable("TriggerEventPriority", out var rawPriority,
                     MoonSharpUtil.AllowNotDefined($"Scope.{typeName}.TriggerEventPriority", FilePath)))
-                {
                     foreach (var kv in rawPriority.Pairs)
                     {
                         if (!kv.Key.TryGetString(out var eventName,
@@ -118,12 +112,10 @@ namespace Core.GameData
                             MoonSharpUtil.LoadingError($"Scope.{typeName}.TriggerEventPriority.Value", FilePath)))
                             continue;
 
-                        triggetEventPriority[eventName] = priority;
+                        triggerEventPriority[eventName] = priority;
                     }
-                }
 
-                var scope = new ModifierScope(IdentifierName, typeName, getEffect, checkCondition,
-                    triggerEvent, triggetEventPriority);
+                var scope = new ModifierScope(IdentifierName, typeName, getEffect, triggerEvent, triggerEventPriority);
 
                 scopeDict.Add(typeName, scope);
             }

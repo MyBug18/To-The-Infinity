@@ -33,7 +33,6 @@ namespace Core.GameData
 
         public void OnGameInitialized(Game game)
         {
-
         }
 
         public bool ExistsDamageType(string typeName) => _data.ContainsKey(typeName);

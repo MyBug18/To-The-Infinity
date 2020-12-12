@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Core
 {
@@ -22,6 +24,9 @@ namespace Core
 
         public static Game Instance { get; private set; }
 
+        // No one can own Game
+        public IPlayer OwnPlayer => NoPlayer.Instance;
+
         /// <summary>
         ///     The controller player of the turn.
         ///     Should not be null when the Game instance is alive.
@@ -37,9 +42,6 @@ namespace Core
         public int GameSpeed { get; }
 
         public IReadOnlyList<StarSystem> StarSystems { get; }
-
-        // No one can own Game
-        public IPlayer OwnPlayer => NoPlayer.Instance;
 
         public string TypeName => nameof(Game);
 
@@ -72,5 +74,48 @@ namespace Core
                 "Trying to get player who does not exist, so it will return nil!");
             return null;
         }
+
+        #region ModifierEffectCaching
+
+        private class ModifierCacheLock : IDisposable
+        {
+            private readonly Action _freeLock;
+
+            public ModifierCacheLock(Action freeLock) => _freeLock = freeLock;
+
+            public void Dispose()
+            {
+                _freeLock();
+            }
+        }
+
+        private int _lockCount;
+
+        public IDisposable GetCacheLock()
+        {
+            Interlocked.Add(ref _lockCount, 1);
+            return new ModifierCacheLock(FreeLock);
+        }
+
+        private void StartCachingModifierEffects()
+        {
+            if (_lockCount > 0) return;
+
+            foreach (var s in StarSystems)
+                s.StartCachingModifierEffect();
+        }
+
+        private void FreeLock()
+        {
+            if (_lockCount == 0)
+                throw new InvalidOperationException("Trying to free lock which doesn't exist anymore!");
+
+            Interlocked.Add(ref _lockCount, -1);
+
+            if (_lockCount == 0)
+                StartCachingModifierEffects();
+        }
+
+        #endregion
     }
 }
