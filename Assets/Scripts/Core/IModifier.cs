@@ -13,5 +13,7 @@ namespace Core
         void OnRemoved(IModifierEffectHolder target);
 
         IReadOnlyList<ModifierEffect> GetEffects(IModifierEffectHolder target);
+
+        object ToSaveData();
     }
 }

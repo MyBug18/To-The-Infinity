@@ -25,10 +25,8 @@ namespace Core
 
         public bool HasTileObject(string typeName) => TileMap.IsTileObjectExists(typeName, Coord);
 
-        public IOnHexTileObject AddTileObjectWithName(string typeName, string name)
-        {
-            return TileMap.AddTileObjectWithName(typeName, name, Coord);
-        }
+        public IOnHexTileObject AddTileObjectWithName(string typeName, string name) =>
+            TileMap.AddTileObjectWithName(typeName, name, Coord);
 
         public void AddTileObject(IOnHexTileObject obj)
         {

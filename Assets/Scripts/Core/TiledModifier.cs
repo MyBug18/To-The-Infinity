@@ -7,6 +7,7 @@ namespace Core
     public sealed class TiledModifier : IModifier
     {
         private readonly ModifierCore _core;
+
         private readonly Dictionary<string, TiledModifierInfo> _infos = new Dictionary<string, TiledModifierInfo>();
 
         public TiledModifier(ModifierCore core, string adderObjectGuid, string rangeKey,
@@ -54,6 +55,25 @@ namespace Core
 
         public IReadOnlyList<ModifierEffect> GetEffects(IModifierEffectHolder target) =>
             _core.GetEffects(target, AdderObjectGuid);
+
+        public object ToSaveData()
+        {
+            var infos = _infos.Select(kv => new Dictionary<string, object>
+            {
+                ["RangeKey"] = kv.Key,
+                ["LeftMonth"] = kv.Value.LeftMonth,
+                ["Tiles"] = kv.Value.Tiles.ToList(),
+            }).ToList();
+
+            var result = new Dictionary<string, object>
+            {
+                ["Name"] = Name,
+                ["AdderObjectGuid"] = AdderObjectGuid,
+                ["Infos"] = infos,
+            };
+
+            return result;
+        }
 
         public HashSet<HexTileCoord> ReduceLeftMonth(int month)
         {

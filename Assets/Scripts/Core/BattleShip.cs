@@ -32,9 +32,9 @@ namespace Core
 
         public string TypeName => nameof(BattleShip);
 
-        public IPlayer OwnPlayer { get; }
-
         public string Guid { get; }
+
+        public IPlayer OwnPlayer { get; }
 
         [MoonSharpHidden]
         public string CustomName { get; }
@@ -48,6 +48,26 @@ namespace Core
             RemainMovePoint = MaxMovePoint;
 
             ReduceModifiersLeftMonth(month);
+        }
+
+        [MoonSharpHidden]
+        public InfinityObjectData Save()
+        {
+            if (IsDestroyed) return null;
+
+            var result = new Dictionary<string, object>
+            {
+                ["IdentifierName"] = IdentifierName,
+                ["CustomName"] = CustomName,
+                ["Storage"] = Storage.Data,
+                ["OwnPlayer"] = OwnPlayer.Guid,
+                ["Modifiers"] = _modifiers.Values.Select(x => x.ToSaveData()).ToList(),
+                ["SpecialActions"] = SpecialActions.Keys.ToArray(),
+                ["RemainHp"] = _remainHp,
+                ["RemainMovePoint"] = RemainMovePoint,
+            };
+
+            return new InfinityObjectData(Guid, TypeName, result);
         }
 
         public void TeleportToTile(HexTile tile) => TeleportToTile(tile, false);
@@ -159,7 +179,7 @@ namespace Core
 
         #region SpecialAction
 
-        public IReadOnlyList<SpecialAction> SpecialActions { get; }
+        public IReadOnlyDictionary<string, SpecialAction> SpecialActions { get; }
 
         public bool CheckSpecialActionCost(IReadOnlyDictionary<string, int> cost) =>
             throw new NotImplementedException();

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using MoonSharp.Interpreter;
 
 namespace Core
@@ -46,6 +47,21 @@ namespace Core
 
         public void StartNewTurn(int month)
         {
+        }
+
+        [MoonSharpHidden]
+        public InfinityObjectData Save()
+        {
+            var result = new Dictionary<string, object>
+            {
+                ["PlayerName"] = PlayerName,
+                ["Storage"] = Storage.Data,
+                ["Relation"] = _relations,
+                ["OwnPlayer"] = OwnPlayer.Guid,
+                ["SpecialActions"] = SpecialActions.Keys.ToArray(),
+            };
+
+            return new InfinityObjectData(Guid, TypeName, result);
         }
 
         [MoonSharpHidden]
@@ -96,7 +112,7 @@ namespace Core
 
         #region SpecialAction
 
-        public IReadOnlyList<SpecialAction> SpecialActions { get; }
+        public IReadOnlyDictionary<string, SpecialAction> SpecialActions { get; }
 
         public bool CheckSpecialActionCost(IReadOnlyDictionary<string, int> cost) =>
             throw new NotImplementedException();
@@ -133,6 +149,17 @@ namespace Core
         {
         }
 
+        [MoonSharpHidden]
+        public InfinityObjectData Save()
+        {
+            var result = new Dictionary<string, object>
+            {
+                ["PlayerName"] = PlayerName,
+            };
+
+            return new InfinityObjectData(Guid, TypeName, result);
+        }
+
         public IPlayer OwnPlayer => this;
 
         public string TypeName => nameof(NoPlayer);
@@ -141,7 +168,7 @@ namespace Core
 
         public LuaDictWrapper Storage => null;
 
-        public IReadOnlyList<SpecialAction> SpecialActions => new List<SpecialAction>();
+        public IReadOnlyDictionary<string, SpecialAction> SpecialActions => new Dictionary<string, SpecialAction>();
 
         public bool CheckSpecialActionCost(IReadOnlyDictionary<string, int> cost) => false;
 

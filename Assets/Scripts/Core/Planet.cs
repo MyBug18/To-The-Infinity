@@ -28,8 +28,6 @@ namespace Core
 
         public bool IsColonizing { get; private set; }
 
-        public string TypeName => nameof(Planet);
-
         public string IdentifierName { get; }
 
         public string CustomName { get; private set; }
@@ -37,14 +35,6 @@ namespace Core
         public HexTile CurrentTile { get; private set; }
 
         public bool IsDestroyed { get; private set; }
-
-        public IPlayer OwnPlayer { get; }
-
-        public string Guid { get; }
-
-        public LuaDictWrapper Storage { get; } = new LuaDictWrapper(new Dictionary<string, object>());
-
-        public TileMap TileMap { get; }
 
         public void TeleportToTile(HexTile tile)
         {
@@ -97,16 +87,49 @@ namespace Core
                 ApplyModifierChangeToDownward(OwnPlayer.PlayerName, m, false);
         }
 
+        public void DestroySelf()
+        {
+            IsDestroyed = true;
+            throw new NotImplementedException();
+        }
+
+        public string TypeName => nameof(Planet);
+
+        public IPlayer OwnPlayer { get; }
+
+        public string Guid { get; }
+
+        public LuaDictWrapper Storage { get; } = new LuaDictWrapper(new Dictionary<string, object>());
+
+        public TileMap TileMap { get; }
+
         public void StartNewTurn(int month)
         {
             ReduceModifiersLeftMonth(month);
             TileMap.StartNewTurn(month);
         }
 
-        public void DestroySelf()
+        [MoonSharpHidden]
+        public InfinityObjectData Save()
         {
-            IsDestroyed = true;
-            throw new NotImplementedException();
+            if (IsDestroyed) return null;
+
+            var result = new Dictionary<string, object>
+            {
+                ["IdentifierName"] = IdentifierName,
+                ["CustomName"] = CustomName,
+                ["Storage"] = Storage.Data,
+                ["OwnPlayer"] = OwnPlayer.Guid,
+                ["Modifiers"] = _playerModifierMap.ToDictionary(x => x.Key,
+                    x => x.Value.Values.Select(y => y.ToSaveData()).ToList()),
+                ["TiledModifiers"] = _playerTiledModifierMap.ToDictionary(x => x.Key,
+                    x => x.Value.Values.Select(y => y.ToSaveData()).ToList()),
+                ["SpecialActions"] = SpecialActions.Keys.ToArray(),
+
+                // TODO: Add tile map objects
+            };
+
+            return new InfinityObjectData(Guid, TypeName, result);
         }
 
         #region Resources
@@ -134,7 +157,7 @@ namespace Core
 
         #region SpecialAction
 
-        public IReadOnlyList<SpecialAction> SpecialActions { get; }
+        public IReadOnlyDictionary<string, SpecialAction> SpecialActions { get; }
 
         public bool CheckSpecialActionCost(IReadOnlyDictionary<string, int> cost) =>
             throw new NotImplementedException();

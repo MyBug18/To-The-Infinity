@@ -15,6 +15,8 @@ namespace Core
         private readonly Dictionary<TriggerEventType, Dictionary<string, TriggerEvent>> _triggerEvents =
             new Dictionary<TriggerEventType, Dictionary<string, TriggerEvent>>();
 
+        public string IdentifierName { get; }
+
         public string TypeName => nameof(StarSystem);
 
         // No one can own StarSystem
@@ -30,6 +32,24 @@ namespace Core
         {
             ReduceModifiersLeftMonth(month);
             TileMap.StartNewTurn(month);
+        }
+
+        [MoonSharpHidden]
+        public InfinityObjectData Save()
+        {
+            var result = new Dictionary<string, object>
+            {
+                ["IdentifierName"] = IdentifierName,
+                ["Storage"] = Storage.Data,
+                ["Modifiers"] = _playerModifierMap.ToDictionary(x => x.Key,
+                    x => x.Value.Values.Select(y => y.ToSaveData()).ToList()),
+                ["TiledModifiers"] = _playerTiledModifierMap.ToDictionary(x => x.Key,
+                    x => x.Value.Values.Select(y => y.ToSaveData()).ToList()),
+
+                // TODO: Add tile map objects
+            };
+
+            return new InfinityObjectData(Guid, TypeName, result);
         }
 
         #region Modifier

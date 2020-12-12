@@ -54,6 +54,18 @@ namespace Core
         public IReadOnlyList<ModifierEffect> GetEffects(IModifierEffectHolder target) =>
             _core.GetEffects(target, AdderObjectGuid);
 
+        public object ToSaveData()
+        {
+            var result = new Dictionary<string, object>
+            {
+                ["Name"] = Name,
+                ["AdderObjectGuid"] = AdderObjectGuid,
+                ["LeftMonth"] = LeftMonth,
+            };
+
+            return result;
+        }
+
         public void ReduceLeftMonth(int month)
         {
             if (LeftMonth == -1) return;

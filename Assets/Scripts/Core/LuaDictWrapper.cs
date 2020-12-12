@@ -9,18 +9,19 @@ namespace Core
     [MoonSharpUserData]
     public sealed class LuaDictWrapper
     {
-        private readonly Dictionary<string, object> _v;
+        public LuaDictWrapper(Dictionary<string, object> data) => Data = data;
 
-        public LuaDictWrapper(Dictionary<string, object> v) => _v = v;
+        [MoonSharpHidden]
+        public Dictionary<string, object> Data { get; }
 
         public object Get(string key, object defaultValue) =>
-            _v.TryGetValue(key, out var result) ? result : defaultValue;
+            Data.TryGetValue(key, out var result) ? result : defaultValue;
 
         public void Set(string key, object value)
         {
             if (!value.GetType().IsValueType || value.GetType() != typeof(string)) return;
 
-            _v[key] = value;
+            Data[key] = value;
         }
     }
 }

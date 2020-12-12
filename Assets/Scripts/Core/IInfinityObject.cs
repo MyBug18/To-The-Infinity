@@ -20,5 +20,7 @@
         LuaDictWrapper Storage { get; }
 
         void StartNewTurn(int month);
+
+        InfinityObjectData Save();
     }
 }

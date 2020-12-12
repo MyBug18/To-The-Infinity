@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
+using MoonSharp.Interpreter;
 
 namespace Core
 {
@@ -24,9 +26,6 @@ namespace Core
 
         public static Game Instance { get; private set; }
 
-        // No one can own Game
-        public IPlayer OwnPlayer => NoPlayer.Instance;
-
         /// <summary>
         ///     The controller player of the turn.
         ///     Should not be null when the Game instance is alive.
@@ -43,6 +42,9 @@ namespace Core
 
         public IReadOnlyList<StarSystem> StarSystems { get; }
 
+        // No one can own Game
+        public IPlayer OwnPlayer => NoPlayer.Instance;
+
         public string TypeName => nameof(Game);
 
         public string Guid { get; }
@@ -53,6 +55,18 @@ namespace Core
         {
             foreach (var s in StarSystems)
                 s.StartNewTurn(month);
+        }
+
+        [MoonSharpHidden]
+        public InfinityObjectData Save()
+        {
+            var result = new Dictionary<string, object>
+            {
+                ["Storage"] = Storage.Data,
+                ["StarSystems"] = StarSystems.Select(x => x.Guid).ToList(),
+            };
+
+            return new InfinityObjectData(Guid, TypeName, result);
         }
 
         public bool IsObjectExists(string guid) => _guidObjectMap.ContainsKey(guid);
