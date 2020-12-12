@@ -85,17 +85,17 @@ namespace Core
                 where obj.TypeName == nameof(T)
                 select (T)obj).ToList();
 
-        public void AddTileObjectWithName(string typeName, string name, HexTileCoord coord)
+        public IOnHexTileObject AddTileObjectWithName(string typeName, string name, HexTileCoord coord)
         {
             var gameData = GameDataStorage.Instance.GetGameData(typeName);
 
             if (gameData == null)
-                return;
+                return null;
 
             switch (gameData)
             {
                 default:
-                    return;
+                    return null;
             }
         }
 

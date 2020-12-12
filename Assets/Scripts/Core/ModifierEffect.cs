@@ -6,7 +6,6 @@ namespace Core
     {
         Default,
 
-        // Target: StarShip
         MaxMovePoint, // MaxMovePoint
         AttackPower, // AttackPower_<A || R>
     }

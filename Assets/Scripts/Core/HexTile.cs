@@ -21,13 +21,13 @@ namespace Core
 
         public TileSpecialResourceType SpecialResource { get; }
 
-        public int StarShipMovePoint => 1;
+        public int UnitMoveCost => 1;
 
         public bool HasTileObject(string typeName) => TileMap.IsTileObjectExists(typeName, Coord);
 
-        public void AddTileObjectWithName(string typeName, string name)
+        public IOnHexTileObject AddTileObjectWithName(string typeName, string name)
         {
-            TileMap.AddTileObjectWithName(typeName, name, Coord);
+            return TileMap.AddTileObjectWithName(typeName, name, Coord);
         }
 
         public void AddTileObject(IOnHexTileObject obj)

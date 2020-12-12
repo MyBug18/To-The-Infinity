@@ -7,7 +7,7 @@ using MoonSharp.Interpreter;
 
 namespace Core
 {
-    public sealed class StarShip : IUnit, ISinglePlayerModifierHolder
+    public sealed class BattleShip : IUnit, ISinglePlayerModifierHolder
     {
         private readonly HashSet<TriggerEventType> _relativeTriggerEventTypes = new HashSet<TriggerEventType>
         {
@@ -30,7 +30,7 @@ namespace Core
         private readonly Dictionary<TriggerEventType, Dictionary<string, TriggerEvent>> _triggerEvents =
             new Dictionary<TriggerEventType, Dictionary<string, TriggerEvent>>();
 
-        public string TypeName => nameof(StarShip);
+        public string TypeName => nameof(BattleShip);
 
         public IPlayer OwnPlayer { get; }
 
@@ -67,8 +67,6 @@ namespace Core
 
         public string IdentifierName { get; }
 
-        public IReadOnlyCollection<string> Properties { get; }
-
         public string AttackDamageType { get; }
 
         public int BaseAttackPower { get; }
@@ -76,6 +74,8 @@ namespace Core
         public int BaseMaxHp { get; }
 
         public int BaseMaxMovePoint { get; }
+
+        public IReadOnlyCollection<string> Properties { get; }
 
         #endregion
 
@@ -190,7 +190,7 @@ namespace Core
         {
             if (_modifiers.ContainsKey(modifierName))
             {
-                Logger.Log(LogType.Warning, $"{nameof(StarShip)}.{nameof(AddModifier)}",
+                Logger.Log(LogType.Warning, $"{nameof(BattleShip)}.{nameof(AddModifier)}",
                     $"Trying to add modifier \"{modifierName}\" which already exists, so it will be ignored.");
                 return;
             }
@@ -199,14 +199,14 @@ namespace Core
 
             if (core.TargetType != TypeName)
             {
-                Logger.Log(LogType.Warning, $"{nameof(StarShip)}.{nameof(AddModifier)}",
+                Logger.Log(LogType.Warning, $"{nameof(BattleShip)}.{nameof(AddModifier)}",
                     $"Modifier \"{modifierName}\" is not for {TypeName}, but for {core.TargetType}, so it will be ignored.");
                 return;
             }
 
             if (core.IsTileLimited)
             {
-                Logger.Log(LogType.Warning, $"{nameof(StarShip)}.{nameof(AddModifier)}",
+                Logger.Log(LogType.Warning, $"{nameof(BattleShip)}.{nameof(AddModifier)}",
                     $"Modifier \"{modifierName}\" is a tile limited modifier!, but tried to use as a tile unlimited modifier, so it will be ignored.");
                 return;
             }
@@ -221,7 +221,7 @@ namespace Core
         {
             if (!_modifiers.ContainsKey(modifierName))
             {
-                Logger.Log(LogType.Warning, $"{nameof(StarShip)}.{nameof(RemoveModifier)}",
+                Logger.Log(LogType.Warning, $"{nameof(BattleShip)}.{nameof(RemoveModifier)}",
                     $"Trying to remove modifier \"{modifierName}\" which doesn't exist, so it will be ignored.");
                 return;
             }
@@ -286,8 +286,8 @@ namespace Core
 
                 if (!_relativeTriggerEventTypes.Contains(type))
                 {
-                    Logger.Log(LogType.Warning, $"{nameof(StarShip)}.{nameof(RegisterTriggerEvent)}",
-                        $"{kv.Key} is not a valid event name for the {nameof(StarShip)}, so it will be ignored.");
+                    Logger.Log(LogType.Warning, $"{nameof(BattleShip)}.{nameof(RegisterTriggerEvent)}",
+                        $"{kv.Key} is not a valid event name for the {nameof(BattleShip)}, so it will be ignored.");
                     continue;
                 }
 
@@ -491,14 +491,14 @@ namespace Core
 
                 var nextTile = CurrentTile.TileMap.GetHexTile(nextMove);
 
-                if (nextTile.StarShipMovePoint > RemainMovePoint)
+                if (nextTile.UnitMoveCost > RemainMovePoint)
                 {
                     // No sufficient move point to move to next tile (possibly due to modifier effects), so end move here.
                     CurrentTile.AddTileObject(this);
                     return;
                 }
 
-                RemainMovePoint -= nextTile.StarShipMovePoint;
+                RemainMovePoint -= nextTile.UnitMoveCost;
                 TeleportToTile(nextTile, true);
             }
 
@@ -529,7 +529,7 @@ namespace Core
 
                     var tile = tileMap.GetHexTile(c);
 
-                    var newCost = costUntilHere + tile.StarShipMovePoint;
+                    var newCost = costUntilHere + tile.UnitMoveCost;
 
                     // Can't go any further due to the lack of the move point
                     if (newCost > RemainMovePoint)

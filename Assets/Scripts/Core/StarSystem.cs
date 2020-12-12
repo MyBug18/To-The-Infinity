@@ -314,8 +314,8 @@ namespace Core
 
                 if (!_relativeTriggerEventTypes.Contains(type))
                 {
-                    Logger.Log(LogType.Warning, $"{nameof(StarShip)}.{nameof(RegisterTriggerEvent)}",
-                        $"{kv.Key} is not a valid event name for the {nameof(StarShip)}, so it will be ignored.");
+                    Logger.Log(LogType.Warning, $"{nameof(StarSystem)}.{nameof(RegisterTriggerEvent)}",
+                        $"{kv.Key} is not a valid event name for the {nameof(StarSystem)}, so it will be ignored.");
                     continue;
                 }
 
