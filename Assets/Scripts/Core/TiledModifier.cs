@@ -49,8 +49,6 @@ namespace Core
             return result;
         }
 
-        public void OnAdded(IModifierEffectHolder target) => _core.OnAdded(target, AdderObjectId);
-
         public void OnRemoved(IModifierEffectHolder target) => _core.OnRemoved(target, AdderObjectId);
 
         public IReadOnlyList<ModifierEffect> GetEffects(IModifierEffectHolder target) =>
