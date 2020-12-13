@@ -34,7 +34,7 @@ namespace Core
 
         public string TypeName => nameof(Player);
 
-        public string Guid => PlayerName;
+        public int Id { get; set; }
 
         public LuaDictWrapper Storage { get; }
 
@@ -57,11 +57,11 @@ namespace Core
                 ["PlayerName"] = PlayerName,
                 ["Storage"] = Storage.Data,
                 ["Relation"] = _relations,
-                ["OwnPlayer"] = OwnPlayer.Guid,
+                ["OwnPlayer"] = OwnPlayer.Id,
                 ["SpecialActions"] = SpecialActions.Keys.ToArray(),
             };
 
-            return new InfinityObjectData(Guid, TypeName, result);
+            return new InfinityObjectData(Id, TypeName, result);
         }
 
         [MoonSharpHidden]
@@ -157,14 +157,14 @@ namespace Core
                 ["PlayerName"] = PlayerName,
             };
 
-            return new InfinityObjectData(Guid, TypeName, result);
+            return new InfinityObjectData(Id, TypeName, result);
         }
 
         public IPlayer OwnPlayer => this;
 
         public string TypeName => nameof(NoPlayer);
 
-        public string Guid => PlayerName;
+        public int Id { get; set; } = 0;
 
         public LuaDictWrapper Storage => null;
 

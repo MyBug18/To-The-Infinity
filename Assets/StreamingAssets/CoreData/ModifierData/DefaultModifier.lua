@@ -11,23 +11,23 @@ Scope = {}
 Scope.Game = {}
 
 Scope.Game.GetEffect =
-function (target, adderGuid)
+function (target, adderObject)
     return {}
 end
 
 Scope.Game.TriggerEvent = {}
 Scope.Game.TriggerEvent.OnAdded =
-function (target, adderGuid)
+function (target, adderObject)
 
 end
 
 Scope.Game.TriggerEvent.OnRemoved =
-function (target, adderGuid)
+function (target, adderObject)
 
 end
 
 Scope.Game.TriggerEvent.OnTechFinished =
-function (target, adderGuid)
+function (target, adderObject)
 
 end
 

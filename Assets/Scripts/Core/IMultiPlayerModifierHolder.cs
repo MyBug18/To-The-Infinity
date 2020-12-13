@@ -6,7 +6,7 @@ namespace Core
     {
         IEnumerable<Modifier> GetModifiers(string targetPlayerName);
 
-        void AddModifier(string targetPlayerName, string modifierName, string adderObjectGuid, int leftMonth);
+        void AddModifier(string targetPlayerName, string modifierName, IInfinityObject adder, int leftMonth);
 
         void RemoveModifier(string targetPlayerName, string modifierName);
 

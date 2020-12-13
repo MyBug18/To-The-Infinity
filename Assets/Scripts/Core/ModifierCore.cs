@@ -34,27 +34,27 @@ namespace Core
 
         public override int GetHashCode() => Name.GetHashCode();
 
-        public void OnAdded(IModifierEffectHolder target, string adderObjectGuid)
+        public void OnAdded(IModifierEffectHolder target, int adderObjectId)
         {
             if (!Scope.TryGetValue(target.TypeName, out var scope)) return;
 
             if (!scope.TriggerEvent.TryGetValue("OnAdded", out var onAdded)) return;
 
-            onAdded.TryInvoke($"Scope.{target.TypeName}.OnAdded", Name, target, adderObjectGuid);
+            onAdded.TryInvoke($"Scope.{target.TypeName}.OnAdded", Name, target, Game.Instance.GetObject(adderObjectId));
         }
 
-        public void OnRemoved(IModifierEffectHolder target, string adderObjectGuid)
+        public void OnRemoved(IModifierEffectHolder target, int adderObjectId)
         {
             if (!Scope.TryGetValue(target.TypeName, out var scope)) return;
 
             if (!scope.TriggerEvent.TryGetValue("OnRemoved", out var onRemoved)) return;
 
-            onRemoved.TryInvoke($"Scope.{target.TypeName}.OnRemoved", Name, target, adderObjectGuid);
+            onRemoved.TryInvoke($"Scope.{target.TypeName}.OnRemoved", Name, target, Game.Instance.GetObject(adderObjectId));
         }
 
-        public IReadOnlyList<ModifierEffect> GetEffects(IModifierEffectHolder target, string adderObjectGuid) =>
+        public IReadOnlyList<ModifierEffect> GetEffects(IModifierEffectHolder target, int adderObjectId) =>
             Scope.TryGetValue(target.TypeName, out var scope)
-                ? scope.GetEffects(target, adderObjectGuid)
+                ? scope.GetEffects(target, adderObjectId)
                 : new List<ModifierEffect>();
     }
 }

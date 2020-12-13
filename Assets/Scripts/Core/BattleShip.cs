@@ -11,19 +11,19 @@ namespace Core
     {
         private static readonly HashSet<TriggerEventType> RelativeTriggerEventTypes = new HashSet<TriggerEventType>
         {
-            // BeforeDestroyed(this, adderObjectGuid)
+            // BeforeDestroyed(this, adderObject)
             TriggerEventType.BeforeDestroyed,
 
-            // BeforeDamaged(this, adderObjectGuid, damageInfo)
+            // BeforeDamaged(this, adderObject, damageInfo)
             TriggerEventType.BeforeDamaged,
 
-            // AfterDamaged(this, adderObjectGuid, damageInfo)
+            // AfterDamaged(this, adderObject, damageInfo)
             TriggerEventType.AfterDamaged,
 
-            // BeforeMeleeAttack(this, adderObjectGuid, attackTarget)
+            // BeforeMeleeAttack(this, adderObject, attackTarget)
             TriggerEventType.BeforeMeleeAttack,
 
-            // AfterMeleeAttack(this, adderObjectGuid, damageInfo, attackTarget)
+            // AfterMeleeAttack(this, adderObject, damageInfo, attackTarget)
             TriggerEventType.AfterMeleeAttack,
         };
 
@@ -32,7 +32,7 @@ namespace Core
 
         public string TypeName => nameof(BattleShip);
 
-        public string Guid { get; }
+        public int Id { get; set; }
 
         public IPlayer OwnPlayer { get; }
 
@@ -60,21 +60,21 @@ namespace Core
                 ["IdentifierName"] = IdentifierName,
                 ["CustomName"] = CustomName,
                 ["Storage"] = Storage.Data,
-                ["OwnPlayer"] = OwnPlayer.Guid,
+                ["OwnPlayer"] = OwnPlayer.Id,
                 ["Modifiers"] = _modifiers.Values.Select(x => x.ToSaveData()).ToList(),
                 ["SpecialActions"] = SpecialActions.Keys.ToArray(),
                 ["RemainHp"] = _remainHp,
                 ["RemainMovePoint"] = RemainMovePoint,
             };
 
-            return new InfinityObjectData(Guid, TypeName, result);
+            return new InfinityObjectData(Id, TypeName, result);
         }
 
         public void TeleportToTile(HexTile tile) => TeleportToTile(tile, false);
 
         public void DestroySelf()
         {
-            // BeforeDestroyed(this, adderObjectGuid)
+            // BeforeDestroyed(this, adderObject)
             foreach (var e in GetTriggerEvents(TriggerEventType.BeforeDestroyed))
                 e.Invoke();
 
@@ -132,7 +132,7 @@ namespace Core
         {
             if (IsDestroyed) return;
 
-            // BeforeDamaged(this, adderObjectGuid, damageInfo)
+            // BeforeDamaged(this, adderObject, damageInfo)
             foreach (var e in GetTriggerEvents(TriggerEventType.BeforeDamaged))
                 e.Invoke(damageInfo);
 
@@ -147,7 +147,7 @@ namespace Core
 
             if (IsDestroyed) return;
 
-            // AfterDamaged(this, adderObjectGuid, damageInfo)
+            // AfterDamaged(this, adderObject, damageInfo)
             foreach (var e in GetTriggerEvents(TriggerEventType.AfterDamaged))
                 e.Invoke(damageInfo);
         }
@@ -206,7 +206,7 @@ namespace Core
         public IEnumerable<TiledModifier> AffectedTiledModifiers =>
             CurrentTile.TileMap.Holder.GetTiledModifiers(this);
 
-        public void AddModifier(string modifierName, string adderObjectGuid, int leftMonth)
+        public void AddModifier(string modifierName, IInfinityObject adder, int leftMonth)
         {
             if (_modifiers.ContainsKey(modifierName))
             {
@@ -231,7 +231,7 @@ namespace Core
                 return;
             }
 
-            var m = new Modifier(core, adderObjectGuid, leftMonth);
+            var m = new Modifier(core, adder.Id, leftMonth);
 
             _modifiers.Add(modifierName, m);
             ApplyModifierChangeToDownward(OwnPlayer.PlayerName, m, false);
@@ -582,7 +582,7 @@ namespace Core
             }
 
             // Should consider non-tiled modifiers when the tilemap holder changes
-            if (curHolder.Guid != destHolder.Guid)
+            if (curHolder.Id != destHolder.Id)
             {
                 foreach (var m in destHolder.GetModifiers(OwnPlayer.PlayerName))
                     toAdd.Add(m);

@@ -60,7 +60,7 @@ namespace Core
             }
 
             // Should consider non-tiled modifiers when the tilemap holder changes
-            if (curHolder.Guid != destHolder.Guid)
+            if (curHolder.Id != destHolder.Id)
             {
                 foreach (var m in destHolder.GetModifiers(OwnPlayer.PlayerName))
                     toAdd.Add(m);
@@ -97,7 +97,7 @@ namespace Core
 
         public IPlayer OwnPlayer { get; }
 
-        public string Guid { get; }
+        public int Id { get; set; }
 
         public LuaDictWrapper Storage { get; } = new LuaDictWrapper(new Dictionary<string, object>());
 
@@ -119,7 +119,7 @@ namespace Core
                 ["IdentifierName"] = IdentifierName,
                 ["CustomName"] = CustomName,
                 ["Storage"] = Storage.Data,
-                ["OwnPlayer"] = OwnPlayer.Guid,
+                ["OwnPlayer"] = OwnPlayer.Id,
                 ["Modifiers"] = _playerModifierMap.ToDictionary(x => x.Key,
                     x => x.Value.Values.Select(y => y.ToSaveData()).ToList()),
                 ["TiledModifiers"] = _playerTiledModifierMap.ToDictionary(x => x.Key,
@@ -129,7 +129,7 @@ namespace Core
                 // TODO: Add tile map objects
             };
 
-            return new InfinityObjectData(Guid, TypeName, result);
+            return new InfinityObjectData(Id, TypeName, result);
         }
 
         #region Resources
@@ -213,7 +213,7 @@ namespace Core
         public IEnumerable<TiledModifier> GetTiledModifiers(IOnHexTileObject target)
             => GetTiledModifiers(target.OwnPlayer.PlayerName).Where(x => x.IsInRange(target.CurrentTile.Coord));
 
-        public void AddModifier(string targetPlayerName, string modifierName, string adderObjectGuid, int leftMonth)
+        public void AddModifier(string targetPlayerName, string modifierName, IInfinityObject adder, int leftMonth)
         {
             var core = GameDataStorage.Instance.GetGameData<ModifierData>().GetModifierDirectly(modifierName);
 
@@ -240,7 +240,7 @@ namespace Core
                 return;
             }
 
-            var m = new Modifier(core, adderObjectGuid, leftMonth);
+            var m = new Modifier(core, adder.Id, leftMonth);
 
             modifiers[modifierName] = m;
 
@@ -294,7 +294,7 @@ namespace Core
         public bool HasModifier(string targetPlayerName, string modifierName) =>
             _playerModifierMap.TryGetValue(targetPlayerName, out var modifiers) && modifiers.ContainsKey(modifierName);
 
-        public void AddTiledModifierRange(string targetPlayerName, string modifierName, string adderObjectGuid,
+        public void AddTiledModifierRange(string targetPlayerName, string modifierName, IInfinityObject adder,
             string rangeKeyName, HashSet<HexTileCoord> tiles, int leftMonth)
         {
             var core = GameDataStorage.Instance.GetGameData<ModifierData>().GetModifierDirectly(modifierName);
@@ -316,15 +316,15 @@ namespace Core
 
             if (!modifiers.TryGetValue(modifierName, out var m))
             {
-                m = new TiledModifier(core, adderObjectGuid, rangeKeyName, tiles, leftMonth);
+                m = new TiledModifier(core, adder.Id, rangeKeyName, tiles, leftMonth);
                 TileMap.ApplyModifierChangeToTileObjects(targetPlayerName, m, false, tiles);
                 return;
             }
 
-            if (m.AdderObjectGuid != adderObjectGuid)
+            if (m.AdderObjectId != adder.Id)
             {
                 Logger.Log(LogType.Warning, $"{nameof(Planet)}.{nameof(AddTiledModifierRange)}",
-                    $"Modifier \"{modifierName}\" has already added by different object : \"{m.AdderObjectGuid}\" for {targetPlayerName}, so it will be ignored.");
+                    $"Modifier \"{modifierName}\" has already added by different object : \"{m.AdderObjectId}\" for {targetPlayerName}, so it will be ignored.");
                 return;
             }
 

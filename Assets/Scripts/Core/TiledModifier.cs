@@ -10,15 +10,15 @@ namespace Core
 
         private readonly Dictionary<string, TiledModifierInfo> _infos = new Dictionary<string, TiledModifierInfo>();
 
-        public TiledModifier(ModifierCore core, string adderObjectGuid, string rangeKey,
+        public TiledModifier(ModifierCore core, int adderObjectId, string rangeKey,
             HashSet<HexTileCoord> tiles, int leftMonth)
         {
             _core = core;
-            AdderObjectGuid = adderObjectGuid;
+            AdderObjectId = adderObjectId;
             _infos[rangeKey] = new TiledModifierInfo(tiles, leftMonth);
         }
 
-        public string AdderObjectGuid { get; }
+        public int AdderObjectId { get; }
 
         public IReadOnlyDictionary<string, TiledModifierInfo> Infos => _infos;
 
@@ -43,18 +43,18 @@ namespace Core
 
                 var priority = scope.TriggerEventPriority.TryGetValue(kv.Key, out var value) ? value : 0;
 
-                result[type] = new TriggerEvent(Name, type, kv.Value, target, AdderObjectGuid, priority);
+                result[type] = new TriggerEvent(Name, type, kv.Value, target, AdderObjectId, priority);
             }
 
             return result;
         }
 
-        public void OnAdded(IModifierEffectHolder target) => _core.OnAdded(target, AdderObjectGuid);
+        public void OnAdded(IModifierEffectHolder target) => _core.OnAdded(target, AdderObjectId);
 
-        public void OnRemoved(IModifierEffectHolder target) => _core.OnRemoved(target, AdderObjectGuid);
+        public void OnRemoved(IModifierEffectHolder target) => _core.OnRemoved(target, AdderObjectId);
 
         public IReadOnlyList<ModifierEffect> GetEffects(IModifierEffectHolder target) =>
-            _core.GetEffects(target, AdderObjectGuid);
+            _core.GetEffects(target, AdderObjectId);
 
         public object ToSaveData()
         {
@@ -68,7 +68,7 @@ namespace Core
             var result = new Dictionary<string, object>
             {
                 ["Name"] = Name,
-                ["AdderObjectGuid"] = AdderObjectGuid,
+                ["AdderObjectId"] = AdderObjectId,
                 ["Infos"] = infos,
             };
 

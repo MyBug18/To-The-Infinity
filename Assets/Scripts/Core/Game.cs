@@ -8,18 +8,12 @@ namespace Core
 {
     public sealed class Game : IInfinityObject
     {
-        private readonly Dictionary<string, IInfinityObject> _guidObjectMap = new Dictionary<string, IInfinityObject>();
-
         private readonly Dictionary<string, IPlayer> _playerMap = new Dictionary<string, IPlayer>();
 
-        public Game(int gameSpeed)
+        public Game(int gameSpeed, int? gameId)
         {
             Instance = this;
-
-            var guid = System.Guid.NewGuid().ToString();
-
-            Guid = guid;
-            _guidObjectMap[guid] = this;
+            RegisterInfinityObject(this, true, gameId);
 
             GameSpeed = gameSpeed;
         }
@@ -47,7 +41,7 @@ namespace Core
 
         public string TypeName => nameof(Game);
 
-        public string Guid { get; }
+        public int Id { get; set; }
 
         public LuaDictWrapper Storage { get; } = new LuaDictWrapper(new Dictionary<string, object>());
 
@@ -63,21 +57,10 @@ namespace Core
             var result = new Dictionary<string, object>
             {
                 ["Storage"] = Storage.Data,
-                ["StarSystems"] = StarSystems.Select(x => x.Guid).ToList(),
+                ["StarSystems"] = StarSystems.Select(x => x.Id).ToList(),
             };
 
-            return new InfinityObjectData(Guid, TypeName, result);
-        }
-
-        public bool IsObjectExists(string guid) => _guidObjectMap.ContainsKey(guid);
-
-        public IInfinityObject GetObject(string guid)
-        {
-            if (_guidObjectMap.TryGetValue(guid, out var result)) return result;
-
-            Logger.Log(LogType.Warning, $"{nameof(Game)}.{nameof(GetObject)}",
-                "Trying to get object which does not exist, so it will return nil!");
-            return null;
+            return new InfinityObjectData(Id, TypeName, result);
         }
 
         public IPlayer GetPlayer(string playerName)
@@ -88,6 +71,51 @@ namespace Core
                 "Trying to get player who does not exist, so it will return nil!");
             return null;
         }
+
+        #region IdHandling
+
+        private readonly Dictionary<int, IInfinityObject> _guidObjectMap = new Dictionary<int, IInfinityObject>();
+
+        private static readonly object Mutex = new object();
+
+        private readonly Random _r = new Random();
+
+        [MoonSharpHidden]
+        public void RegisterInfinityObject(IInfinityObject obj, bool isRegistering, int? id = null)
+        {
+            lock (Mutex)
+            {
+                if (isRegistering)
+                {
+                    int newId;
+
+                    if (id == null)
+                    {
+                        newId = _r.Next();
+
+                        while (_guidObjectMap.ContainsKey(newId))
+                            newId = _r.Next();
+                    }
+                    else
+                    {
+                        newId = id.Value;
+
+                        // Should check duplicate key when the id is explicit
+                        if (_guidObjectMap.ContainsKey(newId)) return;
+                    }
+
+                    obj.Id = newId;
+                    _guidObjectMap[newId] = obj;
+                }
+                else
+                    _guidObjectMap.Remove(obj.Id);
+            }
+        }
+
+        [MoonSharpHidden]
+        public IInfinityObject GetObject(int id) => _guidObjectMap.TryGetValue(id, out var result) ? result : null;
+
+        #endregion
 
         #region ModifierEffectCaching
 

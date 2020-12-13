@@ -4,14 +4,14 @@ namespace Core
 {
     public sealed class InfinityObjectData
     {
-        public InfinityObjectData(string guid, string typeName, object data)
+        public InfinityObjectData(int id, string typeName, object data)
         {
-            Guid = guid;
+            Id = id;
             TypeName = typeName;
             Data = JsonConvert.SerializeObject(data, Formatting.Indented);
         }
 
-        public string Guid { get; }
+        public int Id { get; }
 
         public string TypeName { get; }
 

@@ -4,21 +4,21 @@ namespace Core
 {
     public enum TriggerEventType
     {
-        OnAdded, // OnAdded(this, adderObjectGuid)
-        OnRemoved, // OnRemoved(this, adderObjectGuid)
-        BeforeDestroyed, // BeforeDestroyed(this, adderObjectGuid)
+        OnAdded, // OnAdded(this, adderObject)
+        OnRemoved, // OnRemoved(this, adderObject)
+        BeforeDestroyed, // BeforeDestroyed(this, adderObject)
 
-        BeforeDamaged, // BeforeDamaged(this, adderObjectGuid, damageInfo)
-        AfterDamaged, // AfterDamaged(this, adderObjectGuid, damageInfo)
-        BeforeMeleeAttack, // BeforeMeleeAttack(this, adderObjectGuid, attackTarget)
-        AfterMeleeAttack, // AfterMeleeAttack(this, adderObjectGuid, damageInfo, attackTarget)
+        BeforeDamaged, // BeforeDamaged(this, adderObject, damageInfo)
+        AfterDamaged, // AfterDamaged(this, adderObject, damageInfo)
+        BeforeMeleeAttack, // BeforeMeleeAttack(this, adderObject, attackTarget)
+        AfterMeleeAttack, // AfterMeleeAttack(this, adderObject, damageInfo, attackTarget)
 
-        OnPopBirth, // OnPopBirth(this, adderObjectGuid)
+        OnPopBirth, // OnPopBirth(this, adderObject)
     }
 
     public sealed class TriggerEvent
     {
-        private readonly string _adderObjectGuid;
+        private readonly int _adderObjectId;
 
         private readonly ScriptFunctionDelegate _f;
         private readonly string _modifierName;
@@ -28,21 +28,20 @@ namespace Core
         private readonly TriggerEventType _type;
 
         public TriggerEvent(string modifierName, TriggerEventType type, ScriptFunctionDelegate f,
-            IInfinityObject target, string adderObjectGuid, int priority)
+            IInfinityObject target, int adderObjectId, int priority)
         {
             _modifierName = modifierName;
             _type = type;
             _f = f;
             _target = target;
-            _adderObjectGuid = adderObjectGuid;
+            _adderObjectId = adderObjectId;
             Priority = priority;
         }
 
         public int Priority { get; }
 
         public void Invoke(params object[] args)
-        {
-            _f.TryInvoke($"Scope.{_target.TypeName}.{_type}", _modifierName, _target, _adderObjectGuid, args);
-        }
+            => _f.TryInvoke($"Scope.{_target.TypeName}.{_type}", _modifierName, _target,
+                Game.Instance.GetObject(_adderObjectId), args);
     }
 }

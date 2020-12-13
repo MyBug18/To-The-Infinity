@@ -7,10 +7,10 @@ namespace Core
     {
         private readonly ModifierCore _core;
 
-        public Modifier(ModifierCore core, string adderObjectGuid, int leftMonth = -1)
+        public Modifier(ModifierCore core, int adderObjectId, int leftMonth = -1)
         {
             _core = core;
-            AdderObjectGuid = adderObjectGuid;
+            AdderObjectId = adderObjectId;
             LeftMonth = leftMonth;
         }
 
@@ -18,7 +18,7 @@ namespace Core
 
         public bool IsPermanent => LeftMonth != -1;
 
-        public string AdderObjectGuid { get; }
+        public int AdderObjectId { get; }
 
         public string Name => _core.Name;
 
@@ -41,25 +41,25 @@ namespace Core
 
                 var priority = scope.TriggerEventPriority.TryGetValue(kv.Key, out var value) ? value : 0;
 
-                result[type] = new TriggerEvent(Name, type, kv.Value, target, AdderObjectGuid, priority);
+                result[type] = new TriggerEvent(Name, type, kv.Value, target, AdderObjectId, priority);
             }
 
             return result;
         }
 
-        public void OnAdded(IModifierEffectHolder target) => _core.OnAdded(target, AdderObjectGuid);
+        public void OnAdded(IModifierEffectHolder target) => _core.OnAdded(target, AdderObjectId);
 
-        public void OnRemoved(IModifierEffectHolder target) => _core.OnRemoved(target, AdderObjectGuid);
+        public void OnRemoved(IModifierEffectHolder target) => _core.OnRemoved(target, AdderObjectId);
 
         public IReadOnlyList<ModifierEffect> GetEffects(IModifierEffectHolder target) =>
-            _core.GetEffects(target, AdderObjectGuid);
+            _core.GetEffects(target, AdderObjectId);
 
         public object ToSaveData()
         {
             var result = new Dictionary<string, object>
             {
                 ["Name"] = Name,
-                ["AdderObjectGuid"] = AdderObjectGuid,
+                ["AdderObjectId"] = AdderObjectId,
                 ["LeftMonth"] = LeftMonth,
             };
 

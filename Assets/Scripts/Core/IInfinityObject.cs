@@ -10,9 +10,9 @@
         string TypeName { get; }
 
         /// <summary>
-        ///     The GUID of this object
+        ///     The unique Id of this object (Should only be set on initialization!)
         /// </summary>
-        string Guid { get; }
+        int Id { get; set; }
 
         /// <summary>
         ///     Every InfinityObject has it's own small dictionary which can store string key and primitive type value

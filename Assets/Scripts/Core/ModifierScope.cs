@@ -27,9 +27,9 @@ namespace Core
 
         public IReadOnlyDictionary<string, int> TriggerEventPriority { get; }
 
-        public IReadOnlyList<ModifierEffect> GetEffects(IModifierEffectHolder target, string adderObjectGuid) =>
+        public IReadOnlyList<ModifierEffect> GetEffects(IModifierEffectHolder target, int adderObjectId) =>
             _getEffect == null || !_getEffect.TryInvoke($"Scope.{TargetTypeName}.GetEffect", _modifierName,
-                out var result, target, adderObjectGuid)
+                out var result, target, adderObjectId)
                 ? new List<ModifierEffect>()
                 : result;
     }
