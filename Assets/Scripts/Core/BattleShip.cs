@@ -65,6 +65,7 @@ namespace Core
                 ["SpecialActions"] = SpecialActions.Keys.ToArray(),
                 ["RemainHp"] = _remainHp,
                 ["RemainMovePoint"] = RemainMovePoint,
+                ["RemainResourceStorage"] = _remainResourceStorage,
             };
 
             return new InfinityObjectData(Id, TypeName, result);
@@ -97,23 +98,129 @@ namespace Core
 
         public IReadOnlyCollection<string> Properties { get; }
 
+        public IReadOnlyDictionary<string, int> BaseResourceStorage { get; }
+
+        #endregion
+
+        #region ResourceStorage
+
+        private readonly Dictionary<string, int> _remainResourceStorage = new Dictionary<string, int>();
+
+        private readonly Dictionary<string, int> _resourceStorageFromModifier = new Dictionary<string, int>();
+
+        public IReadOnlyDictionary<string, int> RemainResourceStorage => _remainResourceStorage;
+
+        public IReadOnlyDictionary<string, int> ResourceStorageFromModifier => _resourceStorageFromModifier;
+
+        public IReadOnlyDictionary<string, int> MaxResourceStorage
+        {
+            get
+            {
+                var result = new Dictionary<string, int>();
+
+                foreach (var kv in BaseResourceStorage)
+                {
+                    var name = kv.Key;
+
+                    if (!result.ContainsKey(name))
+                        result[name] = 0;
+
+                    result[name] += kv.Value;
+                }
+
+                foreach (var kv in _resourceStorageFromModifier)
+                {
+                    var name = kv.Key;
+
+                    if (!result.ContainsKey(name))
+                        result[name] = 0;
+
+                    result[name] = Math.Max(0, result[name] + kv.Value);
+                }
+
+                return result;
+            }
+        }
+
+        public int GetMaxStorableAmount(string resourceName)
+        {
+            var result = 0;
+
+            if (BaseResourceStorage.TryGetValue(resourceName, out var value))
+                result += value;
+
+            if (_resourceStorageFromModifier.TryGetValue(resourceName, out value))
+                result += value;
+
+            return result;
+        }
+
+        public int GetStorableAmount(string resourceName)
+        {
+            if (!MaxResourceStorage.TryGetValue(resourceName, out var maxValue)) return 0;
+
+            return _remainResourceStorage.TryGetValue(resourceName, out var remainValue)
+                ? Math.Max(0, maxValue - remainValue)
+                : maxValue;
+        }
+
+        public void ChangeResourceAmount(string resourceName, int changeAmount)
+        {
+            using var _ = Game.Instance.GetCacheLock();
+
+            var currentAmount = _remainResourceStorage.TryGetValue(resourceName, out var value) ? value : 0;
+
+            if (changeAmount <= 0)
+            {
+                _remainResourceStorage[resourceName] = Math.Max(0, currentAmount + changeAmount);
+                return;
+            }
+
+            var maxAmount = GetMaxStorableAmount(resourceName);
+
+            if (currentAmount >= maxAmount) return;
+
+            var newAmount = currentAmount + changeAmount;
+
+            _remainResourceStorage[resourceName] = Math.Min(newAmount, maxAmount);
+        }
+
+        public void GiveResource(IResourceStorageHolder target, string resourceName, int amount)
+        {
+            var remainAmount = _remainResourceStorage.TryGetValue(resourceName, out var value) ? value : 0;
+
+            var targetRemainStorage = target.GetStorableAmount(resourceName);
+
+            // Can't give more amount than remaining.
+            amount = Math.Min(remainAmount, amount);
+
+            // Can't give more amount than target can hold.
+            amount = Math.Min(targetRemainStorage, amount);
+
+            if (amount <= 0) return;
+
+            _remainResourceStorage[resourceName] -= amount;
+            target.ChangeResourceAmount(resourceName, amount);
+        }
+
         #endregion
 
         #region Battle
 
         private int _remainHp;
 
-        private int _attackPowerFromModifierAbsolute, _attackPowerFromModifierRelative;
+        private int _maxHpFromModifier;
 
-        public int AttackPower => (BaseAttackPower + WaitCache(_attackPowerFromModifierAbsolute)) *
-            (100 + _attackPowerFromModifierRelative) / 100;
+        private int _attackPowerFromModifier;
+
+        public int AttackPower => BaseAttackPower + WaitCache(_attackPowerFromModifier);
+
+        public int MaxHp => BaseMaxHp + WaitCache(_maxHpFromModifier);
 
         public int RemainHp
         {
             get => _remainHp;
-
-            [MoonSharpHidden]
-            set
+            private set
             {
                 _remainHp += value;
 
@@ -124,7 +231,7 @@ namespace Core
                     return;
                 }
 
-                _remainHp = Math.Min(BaseMaxHp, _remainHp);
+                _remainHp = Math.Min(MaxHp, _remainHp);
             }
         }
 
@@ -179,7 +286,9 @@ namespace Core
 
         #region SpecialAction
 
-        public IReadOnlyDictionary<string, SpecialAction> SpecialActions { get; }
+        private readonly Dictionary<string, SpecialAction> _specialActions = new Dictionary<string, SpecialAction>();
+
+        public IReadOnlyDictionary<string, SpecialAction> SpecialActions => _specialActions;
 
         public bool CheckSpecialActionCost(IReadOnlyDictionary<string, int> cost) =>
             throw new NotImplementedException();
@@ -399,14 +508,17 @@ namespace Core
             }
 
             CacheMovableTileInfo();
+
+            // In case that MaxHp has changed
+            RemainHp = RemainHp;
             _isCachingModifierEffect = false;
         }
 
         private IReadOnlyList<ModifierEffect> ApplyModifierEffects(IEnumerable<ModifierEffect> effects)
         {
             _maxMovePointFromModifier = 0;
-            _attackPowerFromModifierAbsolute = 0;
-            _attackPowerFromModifierRelative = 0;
+            _attackPowerFromModifier = 0;
+            _maxHpFromModifier = 0;
 
             var result = new List<ModifierEffect>();
 
@@ -425,24 +537,22 @@ namespace Core
                         _maxMovePointFromModifier += amount;
                         break;
                     }
-                    // AttackPower_<A || R>
+                    // AttackPower
                     case ModifierEffectType.AttackPower:
                     {
-                        if (infos.Count != 1)
+                        if (infos.Count != 0)
                             continue;
 
-                        switch (infos[1].ToLower())
-                        {
-                            case "a":
-                                _attackPowerFromModifierAbsolute += amount;
-                                break;
-                            case "r":
-                                _attackPowerFromModifierRelative += amount;
-                                break;
-                            default:
-                                continue;
-                        }
+                        _attackPowerFromModifier += amount;
+                        break;
+                    }
+                    // MaxHp
+                    case ModifierEffectType.MaxHp:
+                    {
+                        if (infos.Count != 0)
+                            continue;
 
+                        _maxHpFromModifier += amount;
                         break;
                     }
                 }

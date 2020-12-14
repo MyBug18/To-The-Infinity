@@ -7,7 +7,8 @@ namespace Core
         Default,
 
         MaxMovePoint, // MaxMovePoint
-        AttackPower, // AttackPower_<A || R>
+        AttackPower, // AttackPower
+        MaxHp, // MaxHp
     }
 
     public readonly struct ModifierEffect
