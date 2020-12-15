@@ -290,6 +290,14 @@ namespace Core
 
         public IReadOnlyDictionary<string, SpecialAction> SpecialActions => _specialActions;
 
+        public void AddSpecialAction(string name)
+        {
+            if (_specialActions.ContainsKey(name)) return;
+
+            _specialActions[name] = GameDataStorage.Instance.GetGameData<SpecialActionData>()
+                .GetSpecialActionDirectly(this, name);
+        }
+
         public bool CheckSpecialActionCost(IReadOnlyDictionary<string, int> cost) =>
             throw new NotImplementedException();
 

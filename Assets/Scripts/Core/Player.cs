@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Core.GameData;
 using MoonSharp.Interpreter;
 
 namespace Core
@@ -112,7 +113,17 @@ namespace Core
 
         #region SpecialAction
 
-        public IReadOnlyDictionary<string, SpecialAction> SpecialActions { get; }
+        private readonly Dictionary<string, SpecialAction> _specialActions = new Dictionary<string, SpecialAction>();
+
+        public IReadOnlyDictionary<string, SpecialAction> SpecialActions => _specialActions;
+
+        public void AddSpecialAction(string name)
+        {
+            if (_specialActions.ContainsKey(name)) return;
+
+            _specialActions[name] = GameDataStorage.Instance.GetGameData<SpecialActionData>()
+                .GetSpecialActionDirectly(this, name);
+        }
 
         public bool CheckSpecialActionCost(IReadOnlyDictionary<string, int> cost) =>
             throw new NotImplementedException();
@@ -169,6 +180,11 @@ namespace Core
         public LuaDictWrapper Storage => null;
 
         public IReadOnlyDictionary<string, SpecialAction> SpecialActions => new Dictionary<string, SpecialAction>();
+
+        public void AddSpecialAction(string name)
+        {
+
+        }
 
         public bool CheckSpecialActionCost(IReadOnlyDictionary<string, int> cost) => false;
 
