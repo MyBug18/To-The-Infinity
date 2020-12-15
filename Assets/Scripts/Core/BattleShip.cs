@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Core.GameData;
 using MoonSharp.Interpreter;
+using Newtonsoft.Json;
 
 namespace Core
 {
@@ -34,6 +35,11 @@ namespace Core
         {
             using var _ = Game.Instance.GetCacheLock();
 
+            Game.Instance.RegisterInfinityObject(this, true);
+
+            CurrentTile = initialTile;
+            CurrentTile.AddTileObject(this);
+
             IdentifierName = prototype.IdentifierName;
             Properties = prototype.Properties;
             AttackDamageType = prototype.AttackDamageType;
@@ -44,14 +50,11 @@ namespace Core
 
             OwnPlayer = player;
 
-            CurrentTile = initialTile;
-            CurrentTile.AddTileObject(this);
+            foreach (var s in prototype.BasicSpecialActions)
+                AddSpecialAction(s, true);
 
             foreach (var m in prototype.BasicModifiers)
-                AddModifier(m, this, -1, true);
-
-            foreach (var s in prototype.BasicSpecialActions)
-                AddSpecialAction(s);
+                AddModifier(m, Id, -1, true);
         }
 
         public string TypeName => nameof(BattleShip);
@@ -95,18 +98,63 @@ namespace Core
 
             var result = new Dictionary<string, object>
             {
+                ["Id"] = Id,
                 ["IdentifierName"] = IdentifierName,
                 ["CustomName"] = CustomName,
                 ["Storage"] = Storage.Data,
-                ["OwnPlayer"] = OwnPlayer.Id,
-                ["Modifiers"] = _modifiers.Values.Select(x => x.ToSaveData()).ToList(),
-                ["SpecialActions"] = _specialActions.Keys.ToArray(),
+                ["OwnPlayer"] = OwnPlayer.PlayerName,
                 ["RemainHp"] = _remainHp,
                 ["RemainMovePoint"] = RemainMovePoint,
                 ["RemainResourceStorage"] = _remainResourceStorage,
+                ["SpecialActions"] = _specialActions.Keys.ToArray(),
+                ["Modifiers"] = _modifiers.Values.Select(x => x.ToSaveData()).ToList(),
             };
 
-            return new InfinityObjectData(Id, TypeName, result);
+            return new InfinityObjectData(TypeName, result);
+        }
+
+        public BattleShip(InfinityObjectData data, HexTile initialTile)
+        {
+            var dict = data.Dict;
+
+            Game.Instance.RegisterInfinityObject(this, true, dict.GetInt("Id"));
+
+            CurrentTile = initialTile;
+            CurrentTile.AddTileObject(this);
+
+            IdentifierName = dict.GetString("IdentifierName");
+            CustomName = dict.GetString("CustomName");
+
+            foreach (var kv in dict.GetDict("Storage"))
+                Storage.Set(kv.Key, kv.Value);
+
+            OwnPlayer = Game.Instance.GetPlayer(dict.GetString("OwnPlayer"));
+
+            _remainHp = dict.GetInt("RemainHp");
+            RemainMovePoint = dict.GetInt("RemainMovePoint");
+            foreach (var kv in dict.GetDict("RemainResourceStorage"))
+                _remainResourceStorage[kv.Key] = Convert.ToInt32(kv.Value);
+
+            var prototype = BattleShipData.Instance.GetPrototype(IdentifierName);
+
+            Properties = prototype.Properties;
+            AttackDamageType = prototype.AttackDamageType;
+            BaseAttackPower = prototype.BaseAttackPower;
+            BaseMaxHp = prototype.BaseMaxHp;
+            BaseMaxMovePoint = prototype.BaseMaxMovePoint;
+            BaseResourceStorage = prototype.BaseResourceStorage;
+
+            foreach (var s in prototype.BasicSpecialActions)
+                AddSpecialAction(s, true);
+
+            foreach (var s in dict.GetStringList("SpecialActions"))
+                AddSpecialAction(s);
+
+            foreach (var m in prototype.BasicModifiers)
+                AddModifier(m, Id, -1, true);
+
+            foreach (var m in dict.GetDictList("Modifiers"))
+                AddModifier(m.GetString("Name"), m.GetInt("AdderObjectId"), m.GetInt("LeftMonth"), false);
         }
 
         public void TeleportToTile(HexTile tile) => TeleportToTile(tile, false);
@@ -323,18 +371,22 @@ namespace Core
             }
         }
 
-        public void AddSpecialAction(string name)
-        {
-            if (_specialActions.ContainsKey(name)) return;
-
-            _specialActions[name] = SpecialActionData.Instance.GetSpecialActionDirectly(this, name);
-        }
+        public void AddSpecialAction(string name) => AddSpecialAction(name, false);
 
         public bool CheckSpecialActionCost(IReadOnlyDictionary<string, int> cost) =>
             throw new NotImplementedException();
 
         public void ConsumeSpecialActionCost(IReadOnlyDictionary<string, int> cost)
             => throw new NotImplementedException();
+
+        private void AddSpecialAction(string name, bool isBase)
+        {
+            var dict = isBase ? _baseSpecialActions : _specialActions;
+
+            if (dict.ContainsKey(name)) return;
+
+            dict[name] = SpecialActionData.Instance.GetSpecialActionDirectly(this, name);
+        }
 
         #endregion
 
@@ -361,7 +413,7 @@ namespace Core
             CurrentTile.TileMap.Holder.GetTiledModifiers(this);
 
         public void AddModifier(string modifierName, IInfinityObject adder, int leftMonth)
-            => AddModifier(modifierName, adder, leftMonth, false);
+            => AddModifier(modifierName, adder?.Id ?? Id, leftMonth, false);
 
         public void RemoveModifier(string modifierName)
         {
@@ -401,7 +453,7 @@ namespace Core
             }
         }
 
-        private void AddModifier(string modifierName, IInfinityObject adder, int leftMonth, bool isBase)
+        private void AddModifier(string modifierName, int adderId, int leftMonth, bool isBase)
         {
             var dict = isBase ? _baseModifiers : _modifiers;
 
@@ -428,7 +480,7 @@ namespace Core
                 return;
             }
 
-            var m = new Modifier(core, adder.Id, leftMonth);
+            var m = new Modifier(core, adderId, leftMonth);
 
             dict.Add(modifierName, m);
             ApplyModifierChangeToDownward(OwnPlayer.PlayerName, m, false);

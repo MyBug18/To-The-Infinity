@@ -116,6 +116,7 @@ namespace Core
 
             var result = new Dictionary<string, object>
             {
+                ["Id"] = Id,
                 ["IdentifierName"] = IdentifierName,
                 ["CustomName"] = CustomName,
                 ["Storage"] = Storage.Data,
@@ -129,7 +130,7 @@ namespace Core
                 // TODO: Add tile map objects
             };
 
-            return new InfinityObjectData(Id, TypeName, result);
+            return new InfinityObjectData(TypeName, result);
         }
 
         #region Resources

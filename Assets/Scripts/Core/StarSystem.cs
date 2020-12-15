@@ -39,6 +39,7 @@ namespace Core
         {
             var result = new Dictionary<string, object>
             {
+                ["Id"] = Id,
                 ["IdentifierName"] = IdentifierName,
                 ["Storage"] = Storage.Data,
                 ["Modifiers"] = _playerModifierMap.ToDictionary(x => x.Key,
@@ -49,7 +50,7 @@ namespace Core
                 // TODO: Add tile map objects
             };
 
-            return new InfinityObjectData(Id, TypeName, result);
+            return new InfinityObjectData(TypeName, result);
         }
 
         #region Modifier

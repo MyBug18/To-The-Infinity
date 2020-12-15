@@ -56,11 +56,12 @@ namespace Core
         {
             var result = new Dictionary<string, object>
             {
+                ["Id"] = Id,
                 ["Storage"] = Storage.Data,
                 ["StarSystems"] = StarSystems.Select(x => x.Id).ToList(),
             };
 
-            return new InfinityObjectData(Id, TypeName, result);
+            return new InfinityObjectData(TypeName, result);
         }
 
         public IPlayer GetPlayer(string playerName)

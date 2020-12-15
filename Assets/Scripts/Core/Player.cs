@@ -55,6 +55,7 @@ namespace Core
         {
             var result = new Dictionary<string, object>
             {
+                ["Id"] = Id,
                 ["PlayerName"] = PlayerName,
                 ["Storage"] = Storage.Data,
                 ["Relation"] = _relations,
@@ -62,7 +63,7 @@ namespace Core
                 ["SpecialActions"] = _specialActions.Keys.ToArray(),
             };
 
-            return new InfinityObjectData(Id, TypeName, result);
+            return new InfinityObjectData(TypeName, result);
         }
 
         [MoonSharpHidden]
@@ -165,10 +166,11 @@ namespace Core
         {
             var result = new Dictionary<string, object>
             {
+                ["Id"] = Id,
                 ["PlayerName"] = PlayerName,
             };
 
-            return new InfinityObjectData(Id, TypeName, result);
+            return new InfinityObjectData(TypeName, result);
         }
 
         public IPlayer OwnPlayer => this;
