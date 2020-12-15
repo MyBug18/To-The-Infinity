@@ -124,7 +124,7 @@ namespace Core
                     x => x.Value.Values.Select(y => y.ToSaveData()).ToList()),
                 ["TiledModifiers"] = _playerTiledModifierMap.ToDictionary(x => x.Key,
                     x => x.Value.Values.Select(y => y.ToSaveData()).ToList()),
-                ["SpecialActions"] = SpecialActions.Keys.ToArray(),
+                ["SpecialActions"] = _specialActions.Keys.ToArray(),
 
                 // TODO: Add tile map objects
             };
@@ -159,7 +159,7 @@ namespace Core
 
         private readonly Dictionary<string, SpecialAction> _specialActions = new Dictionary<string, SpecialAction>();
 
-        public IReadOnlyDictionary<string, SpecialAction> SpecialActions => _specialActions;
+        public IEnumerable<SpecialAction> SpecialActions => _specialActions.Values;
 
         public void AddSpecialAction(string name)
         {

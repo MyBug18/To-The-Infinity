@@ -62,7 +62,7 @@ namespace Core
                 ["Storage"] = Storage.Data,
                 ["OwnPlayer"] = OwnPlayer.Id,
                 ["Modifiers"] = _modifiers.Values.Select(x => x.ToSaveData()).ToList(),
-                ["SpecialActions"] = SpecialActions.Keys.ToArray(),
+                ["SpecialActions"] = _specialActions.Keys.ToArray(),
                 ["RemainHp"] = _remainHp,
                 ["RemainMovePoint"] = RemainMovePoint,
                 ["RemainResourceStorage"] = _remainResourceStorage,
@@ -288,7 +288,7 @@ namespace Core
 
         private readonly Dictionary<string, SpecialAction> _specialActions = new Dictionary<string, SpecialAction>();
 
-        public IReadOnlyDictionary<string, SpecialAction> SpecialActions => _specialActions;
+        public IEnumerable<SpecialAction> SpecialActions => _specialActions.Values;
 
         public void AddSpecialAction(string name)
         {

@@ -59,7 +59,7 @@ namespace Core
                 ["Storage"] = Storage.Data,
                 ["Relation"] = _relations,
                 ["OwnPlayer"] = OwnPlayer.Id,
-                ["SpecialActions"] = SpecialActions.Keys.ToArray(),
+                ["SpecialActions"] = _specialActions.Keys.ToArray(),
             };
 
             return new InfinityObjectData(Id, TypeName, result);
@@ -115,7 +115,7 @@ namespace Core
 
         private readonly Dictionary<string, SpecialAction> _specialActions = new Dictionary<string, SpecialAction>();
 
-        public IReadOnlyDictionary<string, SpecialAction> SpecialActions => _specialActions;
+        public IEnumerable<SpecialAction> SpecialActions => _specialActions.Values;
 
         public void AddSpecialAction(string name)
         {
@@ -179,7 +179,7 @@ namespace Core
 
         public LuaDictWrapper Storage => null;
 
-        public IReadOnlyDictionary<string, SpecialAction> SpecialActions => new Dictionary<string, SpecialAction>();
+        public IEnumerable<SpecialAction> SpecialActions => new SpecialAction[0];
 
         public void AddSpecialAction(string name)
         {

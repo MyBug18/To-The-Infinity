@@ -4,7 +4,7 @@ namespace Core
 {
     public interface ISpecialActionHolder : IInfinityObject
     {
-        IReadOnlyDictionary<string, SpecialAction> SpecialActions { get; }
+        IEnumerable<SpecialAction> SpecialActions { get; }
 
         void AddSpecialAction(string name);
 
