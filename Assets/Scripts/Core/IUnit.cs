@@ -4,6 +4,8 @@ namespace Core
 {
     public interface IUnit : IOnHexTileObject, IResourceStorageHolder
     {
+        string AttackDamageType { get; }
+
         int BaseAttackPower { get; }
 
         int AttackPower { get; }

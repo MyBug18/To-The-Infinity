@@ -30,7 +30,33 @@ namespace Core
         private readonly Dictionary<TriggerEventType, Dictionary<string, TriggerEvent>> _triggerEvents =
             new Dictionary<TriggerEventType, Dictionary<string, TriggerEvent>>();
 
+        public BattleShip(BattleShipPrototype prototype, IPlayer player, HexTile initialTile)
+        {
+            using var _ = Game.Instance.GetCacheLock();
+
+            IdentifierName = prototype.IdentifierName;
+            Properties = prototype.Properties;
+            AttackDamageType = prototype.AttackDamageType;
+            BaseAttackPower = prototype.BaseAttackPower;
+            BaseMaxHp = prototype.BaseMaxHp;
+            BaseMaxMovePoint = prototype.BaseMaxMovePoint;
+            BaseResourceStorage = prototype.BaseResourceStorage;
+
+            OwnPlayer = player;
+
+            CurrentTile = initialTile;
+            CurrentTile.AddTileObject(this);
+
+            foreach (var m in prototype.BasicModifiers)
+                AddModifier(m, this, -1, true);
+
+            foreach (var s in prototype.BasicSpecialActions)
+                AddSpecialAction(s);
+        }
+
         public string TypeName => nameof(BattleShip);
+
+        public string IdentifierName { get; }
 
         public int Id { get; set; }
 
@@ -42,6 +68,18 @@ namespace Core
         public LuaDictWrapper Storage { get; } = new LuaDictWrapper(new Dictionary<string, object>());
 
         public bool IsDestroyed { get; private set; }
+
+        public string AttackDamageType { get; }
+
+        public int BaseAttackPower { get; }
+
+        public int BaseMaxHp { get; }
+
+        public int BaseMaxMovePoint { get; }
+
+        public IReadOnlyCollection<string> Properties { get; }
+
+        public IReadOnlyDictionary<string, int> BaseResourceStorage { get; }
 
         public void StartNewTurn(int month)
         {
@@ -83,24 +121,6 @@ namespace Core
             CurrentTile.RemoveTileObject(TypeName);
             CurrentTile = null;
         }
-
-        #region ProtoTypeData
-
-        public string IdentifierName { get; }
-
-        public string AttackDamageType { get; }
-
-        public int BaseAttackPower { get; }
-
-        public int BaseMaxHp { get; }
-
-        public int BaseMaxMovePoint { get; }
-
-        public IReadOnlyCollection<string> Properties { get; }
-
-        public IReadOnlyDictionary<string, int> BaseResourceStorage { get; }
-
-        #endregion
 
         #region ResourceStorage
 
@@ -286,9 +306,22 @@ namespace Core
 
         #region SpecialAction
 
+        private readonly Dictionary<string, SpecialAction> _baseSpecialActions =
+            new Dictionary<string, SpecialAction>();
+
         private readonly Dictionary<string, SpecialAction> _specialActions = new Dictionary<string, SpecialAction>();
 
-        public IEnumerable<SpecialAction> SpecialActions => _specialActions.Values;
+        public IEnumerable<SpecialAction> SpecialActions
+        {
+            get
+            {
+                foreach (var v in _baseSpecialActions.Values)
+                    yield return v;
+
+                foreach (var v in _specialActions.Values)
+                    yield return v;
+            }
+        }
 
         public void AddSpecialAction(string name)
         {
@@ -308,12 +341,17 @@ namespace Core
 
         #region Modifier
 
+        private readonly Dictionary<string, Modifier> _baseModifiers = new Dictionary<string, Modifier>();
+
         private readonly Dictionary<string, Modifier> _modifiers = new Dictionary<string, Modifier>();
 
         [MoonSharpHidden]
         public IEnumerable<Modifier> GetModifiers()
         {
             foreach (var m in CurrentTile.TileMap.Holder.GetModifiers(OwnPlayer.PlayerName))
+                yield return m;
+
+            foreach (var m in _baseModifiers.Values)
                 yield return m;
 
             foreach (var m in _modifiers.Values)
@@ -324,35 +362,7 @@ namespace Core
             CurrentTile.TileMap.Holder.GetTiledModifiers(this);
 
         public void AddModifier(string modifierName, IInfinityObject adder, int leftMonth)
-        {
-            if (_modifiers.ContainsKey(modifierName))
-            {
-                Logger.Log(LogType.Warning, $"{nameof(BattleShip)}.{nameof(AddModifier)}",
-                    $"Trying to add modifier \"{modifierName}\" which already exists, so it will be ignored.");
-                return;
-            }
-
-            var core = GameDataStorage.Instance.GetGameData<ModifierData>().GetModifierDirectly(modifierName);
-
-            if (core.TargetType != TypeName)
-            {
-                Logger.Log(LogType.Warning, $"{nameof(BattleShip)}.{nameof(AddModifier)}",
-                    $"Modifier \"{modifierName}\" is not for {TypeName}, but for {core.TargetType}, so it will be ignored.");
-                return;
-            }
-
-            if (core.IsTileLimited)
-            {
-                Logger.Log(LogType.Warning, $"{nameof(BattleShip)}.{nameof(AddModifier)}",
-                    $"Modifier \"{modifierName}\" is a tile limited modifier!, but tried to use as a tile unlimited modifier, so it will be ignored.");
-                return;
-            }
-
-            var m = new Modifier(core, adder.Id, leftMonth);
-
-            _modifiers.Add(modifierName, m);
-            ApplyModifierChangeToDownward(OwnPlayer.PlayerName, m, false);
-        }
+            => AddModifier(modifierName, adder, leftMonth, false);
 
         public void RemoveModifier(string modifierName)
         {
@@ -390,6 +400,39 @@ namespace Core
 
                 RegisterTriggerEvent(m.Name, m.GetTriggerEvent(this));
             }
+        }
+
+        private void AddModifier(string modifierName, IInfinityObject adder, int leftMonth, bool isBase)
+        {
+            var dict = isBase ? _baseModifiers : _modifiers;
+
+            if (dict.ContainsKey(modifierName))
+            {
+                Logger.Log(LogType.Warning, $"{nameof(BattleShip)}.{nameof(AddModifier)}",
+                    $"Trying to add modifier \"{modifierName}\" which already exists, so it will be ignored.");
+                return;
+            }
+
+            var core = GameDataStorage.Instance.GetGameData<ModifierData>().GetModifierDirectly(modifierName);
+
+            if (core.TargetType != TypeName)
+            {
+                Logger.Log(LogType.Warning, $"{nameof(BattleShip)}.{nameof(AddModifier)}",
+                    $"Modifier \"{modifierName}\" is not for {TypeName}, but for {core.TargetType}, so it will be ignored.");
+                return;
+            }
+
+            if (core.IsTileLimited)
+            {
+                Logger.Log(LogType.Warning, $"{nameof(BattleShip)}.{nameof(AddModifier)}",
+                    $"Modifier \"{modifierName}\" is a tile limited modifier!, but tried to use as a tile unlimited modifier, so it will be ignored.");
+                return;
+            }
+
+            var m = new Modifier(core, adder.Id, leftMonth);
+
+            dict.Add(modifierName, m);
+            ApplyModifierChangeToDownward(OwnPlayer.PlayerName, m, false);
         }
 
         private void ReduceModifiersLeftMonth(int month)

@@ -16,6 +16,7 @@ namespace Core
         private static readonly IReadOnlyDictionary<string, Func<string, ILuaHolder>> LuaHolderMaker =
             new Dictionary<string, Func<string, ILuaHolder>>
             {
+                {"BattleShip", path => new BattleShipPrototype(path)},
                 {"DamageType", path => new DamageTypePrototype(path)},
                 {"HexTile", path => new HexTilePrototype(path)},
                 {"Modifier", path => new ModifierPrototype(path)},
@@ -29,6 +30,7 @@ namespace Core
         private readonly IReadOnlyDictionary<string, IGameData> _allData =
             new Dictionary<string, IGameData>
             {
+                {"BattleShip", new BattleShipData()},
                 {"DamageType", new DamageTypeData()},
                 {"HexTile", new HexTileData()},
                 {"Modifier", new ModifierData()},
