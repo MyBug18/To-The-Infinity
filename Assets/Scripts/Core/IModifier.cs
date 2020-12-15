@@ -8,6 +8,8 @@ namespace Core
 
         IReadOnlyDictionary<TriggerEventType, TriggerEvent> GetTriggerEvent(IModifierEffectHolder target);
 
+        void OnAdded(IModifierEffectHolder target);
+
         void OnRemoved(IModifierEffectHolder target);
 
         IReadOnlyList<ModifierEffect> GetEffects(IModifierEffectHolder target);

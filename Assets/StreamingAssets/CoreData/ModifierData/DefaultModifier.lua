@@ -16,6 +16,11 @@ function (target, adderObject)
 end
 
 Scope.Game.TriggerEvent = {}
+Scope.Game.TriggerEvent.OnAdded =
+function (target, adderObject)
+
+end
+
 Scope.Game.TriggerEvent.OnRemoved =
 function (target, adderObject)
 

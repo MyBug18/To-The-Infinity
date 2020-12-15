@@ -293,6 +293,8 @@ namespace Core
             }
             else
             {
+                m.OnAdded(this);
+
                 RegisterTriggerEvent(m.Name, m.GetTriggerEvent(this));
             }
 

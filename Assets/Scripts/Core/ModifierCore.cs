@@ -34,6 +34,15 @@ namespace Core
 
         public override int GetHashCode() => Name.GetHashCode();
 
+        public void OnAdded(IModifierEffectHolder target, int adderObjectId)
+        {
+            if (!Scope.TryGetValue(target.TypeName, out var scope)) return;
+
+            if (!scope.TriggerEvent.TryGetValue("OnAdded", out var onAdded)) return;
+
+            onAdded.TryInvoke($"Scope.{target.TypeName}.OnAdded", Name, target, Game.Instance.GetObject(adderObjectId));
+        }
+
         public void OnRemoved(IModifierEffectHolder target, int adderObjectId)
         {
             if (!Scope.TryGetValue(target.TypeName, out var scope)) return;
