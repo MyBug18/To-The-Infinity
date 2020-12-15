@@ -4,10 +4,14 @@ namespace Core.GameData
 {
     public sealed class SpecialActionData : IGameData
     {
+        public static SpecialActionData Instance { get; private set; }
+
         private readonly Dictionary<string, SpecialActionPrototype> _data =
             new Dictionary<string, SpecialActionPrototype>();
 
         private SpecialActionPrototype _default;
+
+        public SpecialActionData() => Instance = this;
 
         public bool HasDefaultValue => _default != null;
 

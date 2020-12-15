@@ -327,8 +327,7 @@ namespace Core
         {
             if (_specialActions.ContainsKey(name)) return;
 
-            _specialActions[name] = GameDataStorage.Instance.GetGameData<SpecialActionData>()
-                .GetSpecialActionDirectly(this, name);
+            _specialActions[name] = SpecialActionData.Instance.GetSpecialActionDirectly(this, name);
         }
 
         public bool CheckSpecialActionCost(IReadOnlyDictionary<string, int> cost) =>
@@ -413,7 +412,7 @@ namespace Core
                 return;
             }
 
-            var core = GameDataStorage.Instance.GetGameData<ModifierData>().GetModifierDirectly(modifierName);
+            var core = ModifierData.Instance.GetModifierDirectly(modifierName);
 
             if (core.TargetType != TypeName)
             {

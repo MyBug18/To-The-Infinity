@@ -97,7 +97,7 @@ namespace Core
 
         public void AddModifier(string targetPlayerName, string modifierName, IInfinityObject adder, int leftMonth)
         {
-            var core = GameDataStorage.Instance.GetGameData<ModifierData>().GetModifierDirectly(modifierName);
+            var core = ModifierData.Instance.GetModifierDirectly(modifierName);
 
             if (!CommonCheckModifierCoreAddable(core, targetPlayerName)) return;
 
@@ -176,7 +176,7 @@ namespace Core
         public void AddTiledModifierRange(string targetPlayerName, string modifierName, IInfinityObject adder,
             string rangeKeyName, HashSet<HexTileCoord> tiles, int leftMonth)
         {
-            var core = GameDataStorage.Instance.GetGameData<ModifierData>().GetModifierDirectly(modifierName);
+            var core = ModifierData.Instance.GetModifierDirectly(modifierName);
 
             if (!CommonCheckModifierCoreAddable(core, targetPlayerName)) return;
 

@@ -121,7 +121,7 @@ namespace Core
         {
             if (_specialActions.ContainsKey(name)) return;
 
-            _specialActions[name] = GameDataStorage.Instance.GetGameData<SpecialActionData>()
+            _specialActions[name] = SpecialActionData.Instance
                 .GetSpecialActionDirectly(this, name);
         }
 

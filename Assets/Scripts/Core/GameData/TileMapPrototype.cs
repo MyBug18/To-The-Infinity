@@ -105,7 +105,7 @@ namespace Core.GameData
 
         private HexTile GenerateTile(TileMap tileMap, HexTileCoord coord, float noise, LuaDictWrapper sharedStorage)
         {
-            var tileData = GameDataStorage.Instance.GetGameData<HexTileData>();
+            var tileData = HexTileData.Instance;
 
             if (!_makeTile.TryInvoke("MakeTile", FilePath, out var dict, coord, noise, sharedStorage))
             {

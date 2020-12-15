@@ -87,12 +87,7 @@ namespace Core
 
         public IOnHexTileObject AddTileObjectWithName(string typeName, string name, HexTileCoord coord)
         {
-            var gameData = GameDataStorage.Instance.GetGameData(typeName);
-
-            if (gameData == null)
-                return null;
-
-            switch (gameData)
+            switch (typeName)
             {
                 default:
                     return null;

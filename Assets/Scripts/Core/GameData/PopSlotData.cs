@@ -4,9 +4,13 @@ namespace Core.GameData
 {
     public sealed class PopSlotData : IGameData
     {
+        public static PopSlotData Instance { get; private set; }
+
         private readonly Dictionary<string, PopSlotPrototype> _data = new Dictionary<string, PopSlotPrototype>();
 
         private PopSlotPrototype _default;
+
+        public PopSlotData() => Instance = this;
 
         public HashSet<string> AllJobName { get; } = new HashSet<string>();
 

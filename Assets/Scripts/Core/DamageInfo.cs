@@ -26,7 +26,7 @@ namespace Core
 
         public void ChangeDamageType(string damageType)
         {
-            if (!GameDataStorage.Instance.GetGameData<DamageTypeData>().ExistsDamageType(damageType))
+            if (!DamageTypeData.Instance.ExistsDamageType(damageType))
             {
                 Logger.Log(LogType.Warning, "",
                     $"{damageType} is not defined in DamageTypeData, so it will be ignored.");

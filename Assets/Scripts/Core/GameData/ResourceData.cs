@@ -12,6 +12,8 @@ namespace Core.GameData
 
     public sealed class ResourceData : IGameData
     {
+        public static ResourceData Instance { get; private set; }
+
         private readonly Dictionary<string, ResourcePrototype> _data = new Dictionary<string, ResourcePrototype>();
 
         private readonly HashSet<string> _factors = new HashSet<string>
@@ -28,6 +30,8 @@ namespace Core.GameData
         };
 
         private ResourcePrototype _default;
+
+        public ResourceData() => Instance = this;
 
         public bool HasDefaultValue => _default != null;
 

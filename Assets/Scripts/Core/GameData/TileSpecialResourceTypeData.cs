@@ -5,10 +5,14 @@ namespace Core.GameData
 {
     public sealed class TileSpecialResourceTypeData : IGameData
     {
+        public static TileSpecialResourceTypeData Instance { get; private set; }
+
         private readonly Dictionary<string, TileSpecialResourceTypePrototype> _data =
             new Dictionary<string, TileSpecialResourceTypePrototype>();
 
         private TileSpecialResourceTypePrototype _default;
+
+        public TileSpecialResourceTypeData() => Instance = this;
 
         public bool HasDefaultValue => _default != null;
 

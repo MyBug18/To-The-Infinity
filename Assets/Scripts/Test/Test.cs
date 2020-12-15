@@ -18,7 +18,7 @@ namespace Test
 
         private void Start()
         {
-            var tileMap = GameDataStorage.Instance.GetGameData<TileMapData>().CreateDirectly("Default", null, 5, null);
+            var tileMap = TileMapData.Instance.CreateDirectly("Default", null, 5, null);
 
             var obj = Instantiate(tileMapPrefab, transform);
             obj.Init(tileMap);

@@ -66,8 +66,7 @@ namespace Core.GameData
             if (string.IsNullOrEmpty(specialResourceName))
                 return new HexTile(tileMap, coord, IdentifierName, null);
 
-            var specialResource = GameDataStorage.Instance.GetGameData<TileSpecialResourceTypeData>()
-                .GetDirectly(specialResourceName);
+            var specialResource = TileSpecialResourceTypeData.Instance.GetDirectly(specialResourceName);
 
             return new HexTile(tileMap, coord, IdentifierName, specialResource);
         }

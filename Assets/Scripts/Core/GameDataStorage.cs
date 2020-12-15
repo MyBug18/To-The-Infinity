@@ -169,14 +169,5 @@ namespace Core
                     return result;
                 });
         }
-
-        public T GetGameData<T>() where T : IGameData => (T)GetGameData(typeof(T).Name);
-
-        public IGameData GetGameData(string dataName)
-        {
-            if (dataName.EndsWith("Data")) dataName = dataName.Substring(0, dataName.Length - 4);
-
-            return !_allData.TryGetValue(dataName, out var result) ? null : result;
-        }
     }
 }

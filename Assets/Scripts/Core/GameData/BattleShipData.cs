@@ -4,9 +4,13 @@ namespace Core.GameData
 {
     public class BattleShipData : IGameData
     {
+        public static BattleShipData Instance { get; private set; }
+
         private readonly Dictionary<string, BattleShipPrototype> _data = new Dictionary<string, BattleShipPrototype>();
 
         private BattleShipPrototype _default;
+
+        public BattleShipData() => Instance = this;
 
         public bool HasDefaultValue => _default != null;
 
