@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Core
 {
-    public static class Noise2d
+    public static class TileMapNoiseMaker
     {
         private static Random _random;
         private static int[] _permutation;
@@ -16,7 +16,7 @@ namespace Core
 
         public static void InitializeGradSeed(int? seed)
         {
-            Seed = seed ?? UnityEngine.Random.Range(int.MinValue, int.MaxValue);
+            Seed = seed ?? new Random().Next();
             _random = new Random(Seed);
             CalculateGradients();
         }

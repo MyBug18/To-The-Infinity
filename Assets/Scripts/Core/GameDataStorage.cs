@@ -46,7 +46,6 @@ namespace Core
         public void Initialize()
         {
             InitializeMoonSharp();
-            Noise2d.InitializeGradSeed(null);
             Logger.Instance.Initialize();
 
             var pathList = Directory.GetFiles(Path.Combine(Application.streamingAssetsPath, "CoreData"),

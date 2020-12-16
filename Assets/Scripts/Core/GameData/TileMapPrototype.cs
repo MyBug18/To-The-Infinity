@@ -45,7 +45,7 @@ namespace Core.GameData
 
             var size = 2 * radius + 1;
 
-            var noiseMap = Noise2d.GenerateNoiseMap(size, size, 2, seed);
+            var noiseMap = TileMapNoiseMaker.GenerateNoiseMap(size, size, 2, seed);
 
             var tileMap = new HexTile[size][];
 
