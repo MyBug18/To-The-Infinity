@@ -109,7 +109,7 @@ namespace Core.GameData
 
             if (!_makeTile.TryInvoke("MakeTile", FilePath, out var dict, coord, noise, sharedStorage))
             {
-                Logger.Log(LogType.Error, IdentifierName + ".MakeFile",
+                Logger.Log(LogType.Error, IdentifierName + ".MakeTile",
                     "Error while making tile, so trying to use default value!");
 
                 return tileData.GetPrototype("Default").Create(tileMap, coord, 0);
