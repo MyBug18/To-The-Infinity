@@ -110,7 +110,9 @@ namespace Core
                     _guidObjectMap[newId] = obj;
                 }
                 else
+                {
                     _guidObjectMap.Remove(obj.Id);
+                }
             }
         }
 

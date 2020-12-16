@@ -4,13 +4,12 @@ namespace Core.GameData
 {
     public sealed class ModifierData : IGameData
     {
-        public static ModifierData Instance { get; private set; }
-
         private readonly Dictionary<string, ModifierPrototype> _data = new Dictionary<string, ModifierPrototype>();
 
         private ModifierPrototype _default;
 
         public ModifierData() => Instance = this;
+        public static ModifierData Instance { get; private set; }
 
         public bool HasDefaultValue => _default != null;
 

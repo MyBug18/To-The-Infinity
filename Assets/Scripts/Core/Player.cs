@@ -185,7 +185,6 @@ namespace Core
 
         public void AddSpecialAction(string name)
         {
-
         }
 
         public bool CheckSpecialActionCost(IReadOnlyDictionary<string, int> cost) => false;

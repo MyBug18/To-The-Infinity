@@ -49,7 +49,8 @@ namespace Core
 
             if (!scope.TriggerEvent.TryGetValue("OnRemoved", out var onRemoved)) return;
 
-            onRemoved.TryInvoke($"Scope.{target.TypeName}.OnRemoved", Name, target, Game.Instance.GetObject(adderObjectId));
+            onRemoved.TryInvoke($"Scope.{target.TypeName}.OnRemoved", Name, target,
+                Game.Instance.GetObject(adderObjectId));
         }
 
         public IReadOnlyList<ModifierEffect> GetEffects(IModifierEffectHolder target, int adderObjectId) =>

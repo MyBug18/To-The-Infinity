@@ -14,6 +14,7 @@ namespace Test
         private void Awake()
         {
             GameDataStorage.Instance.Initialize();
+            TileMapNoiseMaker.InitializeGradSeed(null);
         }
 
         private void Start()

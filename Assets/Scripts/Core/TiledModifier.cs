@@ -18,11 +18,11 @@ namespace Core
             _infos[rangeKey] = new TiledModifierInfo(tiles, leftMonth);
         }
 
-        public string TargetType => _core.TargetType;
-
         public int AdderObjectId { get; }
 
         public IReadOnlyDictionary<string, TiledModifierInfo> Infos => _infos;
+
+        public string TargetType => _core.TargetType;
 
         public string Name => _core.Name;
 

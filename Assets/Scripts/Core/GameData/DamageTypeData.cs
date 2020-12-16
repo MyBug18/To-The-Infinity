@@ -4,13 +4,12 @@ namespace Core.GameData
 {
     public class DamageTypeData : IGameData
     {
-        public static DamageTypeData Instance { get; private set; }
-
         private readonly Dictionary<string, DamageTypePrototype> _data = new Dictionary<string, DamageTypePrototype>();
 
         private DamageTypePrototype _default;
 
         public DamageTypeData() => Instance = this;
+        public static DamageTypeData Instance { get; private set; }
 
         public bool HasDefaultValue => _default != null;
 

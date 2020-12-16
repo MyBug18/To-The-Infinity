@@ -4,13 +4,12 @@ namespace Core.GameData
 {
     public sealed class TileMapData : IGameData
     {
-        public static TileMapData Instance { get; private set; }
-
         private readonly Dictionary<string, TileMapPrototype> _data = new Dictionary<string, TileMapPrototype>();
 
         private TileMapPrototype _default;
 
         public TileMapData() => Instance = this;
+        public static TileMapData Instance { get; private set; }
 
         public bool HasDefaultValue => _default != null;
 

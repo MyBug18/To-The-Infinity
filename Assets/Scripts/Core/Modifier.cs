@@ -14,13 +14,13 @@ namespace Core
             LeftMonth = leftMonth;
         }
 
-        public string TargetType => _core.TargetType;
-
         public int LeftMonth { get; private set; }
 
         public bool IsPermanent => LeftMonth != -1;
 
         public int AdderObjectId { get; }
+
+        public string TargetType => _core.TargetType;
 
         public string Name => _core.Name;
 

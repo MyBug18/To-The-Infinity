@@ -4,13 +4,12 @@ namespace Core.GameData
 {
     public sealed class HexTileData : IGameData
     {
-        public static HexTileData Instance { get; private set; }
-
         private readonly Dictionary<string, HexTilePrototype> _data = new Dictionary<string, HexTilePrototype>();
 
         private HexTilePrototype _default;
 
         public HexTileData() => Instance = this;
+        public static HexTileData Instance { get; private set; }
 
         public bool HasDefaultValue => _default != null;
 

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Core.GameData;
 using MoonSharp.Interpreter;
-using Newtonsoft.Json;
 
 namespace Core
 {
@@ -57,62 +56,6 @@ namespace Core
                 AddModifier(m, Id, -1, true);
         }
 
-        public string TypeName => nameof(BattleShip);
-
-        public string IdentifierName { get; }
-
-        public int Id { get; set; }
-
-        public IPlayer OwnPlayer { get; }
-
-        [MoonSharpHidden]
-        public string CustomName { get; }
-
-        public LuaDictWrapper Storage { get; } = new LuaDictWrapper(new Dictionary<string, object>());
-
-        public bool IsDestroyed { get; private set; }
-
-        public string AttackDamageType { get; }
-
-        public int BaseAttackPower { get; }
-
-        public int BaseMaxHp { get; }
-
-        public int BaseMaxMovePoint { get; }
-
-        public IReadOnlyCollection<string> Properties { get; }
-
-        public IReadOnlyDictionary<string, int> BaseResourceStorage { get; }
-
-        public void StartNewTurn(int month)
-        {
-            RemainMovePoint = MaxMovePoint;
-
-            ReduceModifiersLeftMonth(month);
-        }
-
-        [MoonSharpHidden]
-        public InfinityObjectData Save()
-        {
-            if (IsDestroyed) return null;
-
-            var result = new Dictionary<string, object>
-            {
-                ["Id"] = Id,
-                ["IdentifierName"] = IdentifierName,
-                ["CustomName"] = CustomName,
-                ["Storage"] = Storage.Data,
-                ["OwnPlayer"] = OwnPlayer.PlayerName,
-                ["RemainHp"] = _remainHp,
-                ["RemainMovePoint"] = RemainMovePoint,
-                ["RemainResourceStorage"] = _remainResourceStorage,
-                ["SpecialActions"] = _specialActions.Keys.ToArray(),
-                ["Modifiers"] = _modifiers.Values.Select(x => x.ToSaveData()).ToList(),
-            };
-
-            return new InfinityObjectData(TypeName, result);
-        }
-
         public BattleShip(InfinityObjectData data, HexTile initialTile)
         {
             var dict = data.Dict;
@@ -155,6 +98,62 @@ namespace Core
 
             foreach (var m in dict.GetDictList("Modifiers"))
                 AddModifier(m.GetString("Name"), m.GetInt("AdderObjectId"), m.GetInt("LeftMonth"), false);
+        }
+
+        public IReadOnlyDictionary<string, int> BaseResourceStorage { get; }
+
+        public string TypeName => nameof(BattleShip);
+
+        public string IdentifierName { get; }
+
+        public int Id { get; set; }
+
+        public IPlayer OwnPlayer { get; }
+
+        [MoonSharpHidden]
+        public string CustomName { get; }
+
+        public LuaDictWrapper Storage { get; } = new LuaDictWrapper(new Dictionary<string, object>());
+
+        public bool IsDestroyed { get; private set; }
+
+        public string AttackDamageType { get; }
+
+        public int BaseAttackPower { get; }
+
+        public int BaseMaxHp { get; }
+
+        public int BaseMaxMovePoint { get; }
+
+        public IReadOnlyCollection<string> Properties { get; }
+
+        public void StartNewTurn(int month)
+        {
+            RemainMovePoint = MaxMovePoint;
+
+            ReduceModifiersLeftMonth(month);
+        }
+
+        [MoonSharpHidden]
+        public InfinityObjectData Save()
+        {
+            if (IsDestroyed) return null;
+
+            var result = new Dictionary<string, object>
+            {
+                ["Id"] = Id,
+                ["IdentifierName"] = IdentifierName,
+                ["CustomName"] = CustomName,
+                ["Storage"] = Storage.Data,
+                ["OwnPlayer"] = OwnPlayer.PlayerName,
+                ["RemainHp"] = _remainHp,
+                ["RemainMovePoint"] = RemainMovePoint,
+                ["RemainResourceStorage"] = _remainResourceStorage,
+                ["SpecialActions"] = _specialActions.Keys.ToArray(),
+                ["Modifiers"] = _modifiers.Values.Select(x => x.ToSaveData()).ToList(),
+            };
+
+            return new InfinityObjectData(TypeName, result);
         }
 
         public void TeleportToTile(HexTile tile) => TeleportToTile(tile, false);
