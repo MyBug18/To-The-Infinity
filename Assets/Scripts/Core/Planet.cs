@@ -49,7 +49,7 @@ namespace Core
             }
 
             var toRemove = new HashSet<IModifier>();
-            var toAdd = new HashSet<IModifier>(destHolder.GetTiledModifiers(OwnPlayer.PlayerName));
+            var toAdd = new HashSet<IModifier>(destHolder.GetAllTiledModifiers(OwnPlayer.PlayerName));
 
             foreach (var m in AffectedTiledModifiers)
             {
@@ -189,7 +189,7 @@ namespace Core
             new Dictionary<string, Dictionary<string, TiledModifier>>();
 
         public IEnumerable<TiledModifier> AffectedTiledModifiers =>
-            CurrentTile.TileMap.Holder.GetTiledModifiers(this);
+            CurrentTile.TileMap.Holder.GetTiledModifiersForTarget(this);
 
         [MoonSharpHidden]
         public IEnumerable<Modifier> GetModifiers(string targetPlayerName)
@@ -208,7 +208,7 @@ namespace Core
         }
 
         [MoonSharpHidden]
-        public IEnumerable<TiledModifier> GetTiledModifiers(string targetPlayerName)
+        public IEnumerable<TiledModifier> GetAllTiledModifiers(string targetPlayerName)
         {
             if (_playerTiledModifierMap.TryGetValue("Global", out var globalModifiers))
                 foreach (var m in globalModifiers.Values)
@@ -221,8 +221,8 @@ namespace Core
         }
 
         [MoonSharpHidden]
-        public IEnumerable<TiledModifier> GetTiledModifiers(IOnHexTileObject target)
-            => GetTiledModifiers(target.OwnPlayer.PlayerName).Where(x => x.IsInRange(target.CurrentTile.Coord));
+        public IEnumerable<TiledModifier> GetTiledModifiersForTarget(IOnHexTileObject target)
+            => GetAllTiledModifiers(target.OwnPlayer.PlayerName).Where(x => x.IsInRange(target.CurrentTile.Coord));
 
         public void AddModifier(string targetPlayerName, string modifierName, IInfinityObject adder, int leftMonth)
         {
@@ -281,6 +281,13 @@ namespace Core
         public void ApplyModifierChangeToDownward(string targetPlayerName, IModifier m, bool isRemoving)
         {
             if (targetPlayerName.ToLower() != "global" && targetPlayerName != OwnPlayer.PlayerName)
+            {
+                TileMap.ApplyModifierChangeToTileObjects(targetPlayerName, m, isRemoving);
+                return;
+            }
+
+            // Tiled modifier cannot affect the target type itself.
+            if (m is TiledModifier && m.TargetType == TypeName)
             {
                 TileMap.ApplyModifierChangeToTileObjects(targetPlayerName, m, isRemoving);
                 return;

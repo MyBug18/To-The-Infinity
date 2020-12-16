@@ -410,7 +410,7 @@ namespace Core
         }
 
         public IEnumerable<TiledModifier> AffectedTiledModifiers =>
-            CurrentTile.TileMap.Holder.GetTiledModifiers(this);
+            CurrentTile.TileMap.Holder.GetTiledModifiersForTarget(this);
 
         public void AddModifier(string modifierName, IInfinityObject adder, int leftMonth)
             => AddModifier(modifierName, adder?.Id ?? Id, leftMonth, false);
@@ -783,7 +783,7 @@ namespace Core
             var curHolder = CurrentTile.TileMap.Holder;
 
             var toRemove = new HashSet<IModifier>();
-            var toAdd = new HashSet<IModifier>(destHolder.GetTiledModifiers(OwnPlayer.PlayerName));
+            var toAdd = new HashSet<IModifier>(destHolder.GetAllTiledModifiers(OwnPlayer.PlayerName));
 
             foreach (var m in AffectedTiledModifiers)
             {

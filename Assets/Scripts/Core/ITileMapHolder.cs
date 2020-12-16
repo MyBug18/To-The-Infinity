@@ -6,9 +6,9 @@ namespace Core
     {
         TileMap TileMap { get; }
 
-        IEnumerable<TiledModifier> GetTiledModifiers(string targetPlayerName);
+        IEnumerable<TiledModifier> GetAllTiledModifiers(string targetPlayerName);
 
-        IEnumerable<TiledModifier> GetTiledModifiers(IOnHexTileObject target);
+        IEnumerable<TiledModifier> GetTiledModifiersForTarget(IOnHexTileObject target);
 
         /// <summary>
         ///     Should not allow same modifier with different adder guid
