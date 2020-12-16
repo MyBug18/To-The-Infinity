@@ -185,6 +185,21 @@ namespace Core
             return ring[0];
         }
 
+        public (float x, float y) ToCartesian(HexTileCoord coord)
+        {
+            if (!IsValidCoord(coord)) return (0, 0);
+
+            var q = coord.Q - Radius;
+            var r = coord.R - Radius;
+
+            var sqrt3 = (float)Math.Sqrt(3);
+
+            var x = sqrt3 * q + sqrt3 / 2 * r;
+            var y = 1.5f * r;
+
+            return (x, y);
+        }
+
         public object ToSaveData() => new Dictionary<string, object>
         {
             ["Seed"] = Seed,
