@@ -20,6 +20,16 @@ namespace Core
     [MoonSharpUserData]
     public readonly struct HexTileCoord : IEquatable<HexTileCoord>
     {
+        public object ToSaveData() => new List<int> {Q, R};
+
+        public static HexTileCoord FromSaveData(object data)
+        {
+            if (!(data is List<int> list))
+                throw new InvalidOperationException();
+
+            return new HexTileCoord(list[0], list[1]);
+        }
+
         public int Q { get; }
         public int R { get; }
 

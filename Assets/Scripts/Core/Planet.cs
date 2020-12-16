@@ -126,8 +126,7 @@ namespace Core
                 ["TiledModifiers"] = _playerTiledModifierMap.ToDictionary(x => x.Key,
                     x => x.Value.Values.Select(y => y.ToSaveData()).ToList()),
                 ["SpecialActions"] = _specialActions.Keys.ToArray(),
-
-                // TODO: Add tile map objects
+                ["TileMap"] = TileMap.ToSaveData(),
             };
 
             return new InfinityObjectData(TypeName, result);

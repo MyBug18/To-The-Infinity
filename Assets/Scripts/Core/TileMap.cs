@@ -184,5 +184,15 @@ namespace Core
 
             return ring[0];
         }
+
+        public object ToSaveData() => new Dictionary<string, object>
+        {
+            ["Seed"] = Seed,
+            ["HexTileCoordInfos"] = _onTileMapObjects.Select(kv => new Dictionary<string, object>
+            {
+                ["HexTileCoord"] = kv.Key.ToSaveData(),
+                ["Objects"] = kv.Value.Select(v => v.Value.Id).Cast<object>().ToList(),
+            }).Cast<object>().ToList(),
+        };
     }
 }
