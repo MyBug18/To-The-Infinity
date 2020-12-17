@@ -14,7 +14,7 @@ namespace Core
         ///     Should not allow same modifier with different adder guid
         /// </summary>
         void AddTiledModifierRange(string targetPlayerName, string modifierName, IInfinityObject adder,
-            string rangeKeyName, HashSet<HexTileCoord> tiles, int leftMonth);
+            string rangeKeyName, HashSet<HexTileCoord> tiles, int leftWeek);
 
         void MoveTiledModifierRange(string targetPlayerName, string modifierName, string rangeKeyName,
             HashSet<HexTileCoord> tiles);

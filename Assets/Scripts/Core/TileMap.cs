@@ -37,9 +37,9 @@ namespace Core
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         [MoonSharpHidden]
-        public void StartNewTurn(int month)
+        public void StartNewTurn(int week)
         {
-            foreach (var obj in _onTileMapObjects.Values.SelectMany(objs => objs.Values)) obj.StartNewTurn(month);
+            foreach (var obj in _onTileMapObjects.Values.SelectMany(objs => objs.Values)) obj.StartNewTurn(week);
         }
 
         /// <summary>

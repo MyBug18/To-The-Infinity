@@ -46,10 +46,10 @@ namespace Core
 
         public LuaDictWrapper Storage { get; } = new LuaDictWrapper(new Dictionary<string, object>());
 
-        public void StartNewTurn(int month)
+        public void StartNewTurn(int week)
         {
             foreach (var s in StarSystems)
-                s.StartNewTurn(month);
+                s.StartNewTurn(week);
         }
 
         [MoonSharpHidden]

@@ -46,7 +46,7 @@ namespace Core
 
         public Player(string playerName) => PlayerName = playerName;
 
-        public void StartNewTurn(int month)
+        public void StartNewTurn(int week)
         {
         }
 
@@ -157,7 +157,7 @@ namespace Core
         [MoonSharpHidden]
         public RelationType GetRelationInner(string target) => RelationType.Neutral;
 
-        public void StartNewTurn(int month)
+        public void StartNewTurn(int week)
         {
         }
 

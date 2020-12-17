@@ -11,11 +11,11 @@ namespace Core
         private readonly Dictionary<string, TiledModifierInfo> _infos = new Dictionary<string, TiledModifierInfo>();
 
         public TiledModifier(ModifierCore core, int adderObjectId, string rangeKey,
-            HashSet<HexTileCoord> tiles, int leftMonth)
+            HashSet<HexTileCoord> tiles, int leftWeek)
         {
             _core = core;
             AdderObjectId = adderObjectId;
-            _infos[rangeKey] = new TiledModifierInfo(tiles, leftMonth);
+            _infos[rangeKey] = new TiledModifierInfo(tiles, leftWeek);
         }
 
         public int AdderObjectId { get; }
@@ -63,7 +63,7 @@ namespace Core
             var infos = _infos.Select(kv => new Dictionary<string, object>
             {
                 ["RangeKey"] = kv.Key,
-                ["LeftMonth"] = kv.Value.LeftMonth,
+                ["LeftWeek"] = kv.Value.LeftWeek,
                 ["Tiles"] = kv.Value.Tiles.ToList(),
             }).ToList();
 
@@ -77,14 +77,14 @@ namespace Core
             return result;
         }
 
-        public HashSet<HexTileCoord> ReduceLeftMonth(int month)
+        public HashSet<HexTileCoord> ReduceLeftWeek(int week)
         {
             var removedRange = new HashSet<HexTileCoord>();
             var toRemove = new List<string>();
 
             foreach (var kv in _infos.Where(kv => !kv.Value.IsPermanent))
             {
-                if (kv.Value.LeftMonth - month <= 0)
+                if (kv.Value.LeftWeek - week <= 0)
                 {
                     toRemove.Add(kv.Key);
                     foreach (var t in kv.Value.Tiles)
@@ -92,7 +92,7 @@ namespace Core
                     continue;
                 }
 
-                kv.Value.ReduceLeftMonth(month);
+                kv.Value.ReduceLeftWeek(week);
             }
 
             foreach (var n in toRemove)
@@ -104,7 +104,7 @@ namespace Core
         /// <summary>
         ///     Returns pure added tile effect range
         /// </summary>
-        public HashSet<HexTileCoord> AddTileInfo(string rangeKey, HashSet<HexTileCoord> tiles, int leftMonth)
+        public HashSet<HexTileCoord> AddTileInfo(string rangeKey, HashSet<HexTileCoord> tiles, int leftWeek)
         {
             if (_infos.ContainsKey(rangeKey)) return new HashSet<HexTileCoord>();
 
@@ -113,7 +113,7 @@ namespace Core
                 where _infos.Values.All(info => !info.Tiles.Contains(t))
                 select t);
 
-            _infos[rangeKey] = new TiledModifierInfo(tiles, leftMonth);
+            _infos[rangeKey] = new TiledModifierInfo(tiles, leftWeek);
 
             return result;
         }
@@ -133,7 +133,7 @@ namespace Core
                 select t);
 
             var originalTile = _infos[rangeKey].Tiles;
-            _infos[rangeKey] = new TiledModifierInfo(newTiles, _infos[rangeKey].LeftMonth);
+            _infos[rangeKey] = new TiledModifierInfo(newTiles, _infos[rangeKey].LeftWeek);
 
             var pureRemoved = new HashSet<HexTileCoord>(
                 from t in originalTile
@@ -172,22 +172,22 @@ namespace Core
     {
         private readonly HashSet<HexTileCoord> _tiles;
 
-        public TiledModifierInfo(HashSet<HexTileCoord> tiles, int leftMonth)
+        public TiledModifierInfo(HashSet<HexTileCoord> tiles, int leftWeek)
         {
             _tiles = tiles;
-            LeftMonth = leftMonth;
+            LeftWeek = leftWeek;
         }
 
         public IEnumerable<HexTileCoord> Tiles => _tiles;
 
-        public int LeftMonth { get; private set; }
+        public int LeftWeek { get; private set; }
 
-        public bool IsPermanent => LeftMonth == -1;
+        public bool IsPermanent => LeftWeek == -1;
 
-        public void ReduceLeftMonth(int month)
+        public void ReduceLeftWeek(int week)
         {
             if (IsPermanent) return;
-            LeftMonth -= month;
+            LeftWeek -= week;
         }
     }
 }

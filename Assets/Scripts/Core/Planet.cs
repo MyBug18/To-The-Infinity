@@ -103,10 +103,10 @@ namespace Core
 
         public TileMap TileMap { get; }
 
-        public void StartNewTurn(int month)
+        public void StartNewTurn(int week)
         {
-            ReduceModifiersLeftMonth(month);
-            TileMap.StartNewTurn(month);
+            ReduceModifiersLeftWeek(week);
+            TileMap.StartNewTurn(week);
         }
 
         [MoonSharpHidden]
@@ -223,7 +223,7 @@ namespace Core
         public IEnumerable<TiledModifier> GetTiledModifiersForTarget(IOnHexTileObject target)
             => GetAllTiledModifiers(target.OwnPlayer.PlayerName).Where(x => x.IsInRange(target.CurrentTile.Coord));
 
-        public void AddModifier(string targetPlayerName, string modifierName, IInfinityObject adder, int leftMonth)
+        public void AddModifier(string targetPlayerName, string modifierName, IInfinityObject adder, int leftWeek)
         {
             var core = ModifierData.Instance.GetModifierDirectly(modifierName);
 
@@ -250,7 +250,7 @@ namespace Core
                 return;
             }
 
-            var m = new Modifier(core, adder.Id, leftMonth);
+            var m = new Modifier(core, adder.Id, leftWeek);
 
             modifiers[modifierName] = m;
 
@@ -312,7 +312,7 @@ namespace Core
             _playerModifierMap.TryGetValue(targetPlayerName, out var modifiers) && modifiers.ContainsKey(modifierName);
 
         public void AddTiledModifierRange(string targetPlayerName, string modifierName, IInfinityObject adder,
-            string rangeKeyName, HashSet<HexTileCoord> tiles, int leftMonth)
+            string rangeKeyName, HashSet<HexTileCoord> tiles, int leftWeek)
         {
             var core = ModifierData.Instance.GetModifierDirectly(modifierName);
 
@@ -333,7 +333,7 @@ namespace Core
 
             if (!modifiers.TryGetValue(modifierName, out var m))
             {
-                m = new TiledModifier(core, adder.Id, rangeKeyName, tiles, leftMonth);
+                m = new TiledModifier(core, adder.Id, rangeKeyName, tiles, leftWeek);
                 TileMap.ApplyModifierChangeToTileObjects(targetPlayerName, m, false, tiles);
                 return;
             }
@@ -352,7 +352,7 @@ namespace Core
                 return;
             }
 
-            var pureAdd = m.AddTileInfo(rangeKeyName, tiles, leftMonth);
+            var pureAdd = m.AddTileInfo(rangeKeyName, tiles, leftWeek);
 
             TileMap.ApplyModifierChangeToTileObjects(targetPlayerName, m, false, pureAdd);
         }
@@ -409,7 +409,7 @@ namespace Core
                 _playerTiledModifierMap.Remove(targetPlayerName);
         }
 
-        private void ReduceModifiersLeftMonth(int month)
+        private void ReduceModifiersLeftWeek(int week)
         {
             var toRemoveList = new List<string>();
 
@@ -419,13 +419,13 @@ namespace Core
 
                 foreach (var m in modifiers.Values.Where(m => !m.IsPermanent))
                 {
-                    if (m.LeftMonth - month <= 0)
+                    if (m.LeftWeek - week <= 0)
                     {
                         toRemoveList.Add(m.Name);
                         continue;
                     }
 
-                    m.ReduceLeftMonth(month);
+                    m.ReduceLeftWeek(week);
                 }
 
                 foreach (var n in toRemoveList)
@@ -442,7 +442,7 @@ namespace Core
 
                 foreach (var m in modifiers.Values)
                 {
-                    var pureRemove = m.ReduceLeftMonth(month);
+                    var pureRemove = m.ReduceLeftWeek(week);
 
                     if (m.Infos.Count == 0)
                         toRemoveList.Add(m.Name);

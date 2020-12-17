@@ -7,16 +7,16 @@ namespace Core
     {
         private readonly ModifierCore _core;
 
-        public Modifier(ModifierCore core, int adderObjectId, int leftMonth = -1)
+        public Modifier(ModifierCore core, int adderObjectId, int leftWeek = -1)
         {
             _core = core;
             AdderObjectId = adderObjectId;
-            LeftMonth = leftMonth;
+            LeftWeek = leftWeek;
         }
 
-        public int LeftMonth { get; private set; }
+        public int LeftWeek { get; private set; }
 
-        public bool IsPermanent => LeftMonth != -1;
+        public bool IsPermanent => LeftWeek != -1;
 
         public int AdderObjectId { get; }
 
@@ -62,17 +62,17 @@ namespace Core
             {
                 ["Name"] = Name,
                 ["AdderObjectId"] = AdderObjectId,
-                ["LeftMonth"] = LeftMonth,
+                ["LeftWeek"] = LeftWeek,
             };
 
             return result;
         }
 
-        public void ReduceLeftMonth(int month)
+        public void ReduceLeftWeek(int week)
         {
-            if (LeftMonth == -1) return;
+            if (LeftWeek == -1) return;
 
-            LeftMonth -= month;
+            LeftWeek -= week;
         }
 
         public override bool Equals(object obj) => obj is Modifier m && _core == m._core;

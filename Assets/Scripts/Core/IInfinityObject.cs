@@ -19,7 +19,7 @@
         /// </summary>
         LuaDictWrapper Storage { get; }
 
-        void StartNewTurn(int month);
+        void StartNewTurn(int week);
 
         InfinityObjectData Save();
     }

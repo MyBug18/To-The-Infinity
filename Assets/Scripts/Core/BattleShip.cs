@@ -97,7 +97,7 @@ namespace Core
                 AddModifier(m, Id, -1, true);
 
             foreach (var m in dict.GetDictList("Modifiers"))
-                AddModifier(m.GetString("Name"), m.GetInt("AdderObjectId"), m.GetInt("LeftMonth"), false);
+                AddModifier(m.GetString("Name"), m.GetInt("AdderObjectId"), m.GetInt("LeftWeek"), false);
         }
 
         public IReadOnlyDictionary<string, int> BaseResourceStorage { get; }
@@ -127,11 +127,11 @@ namespace Core
 
         public IReadOnlyCollection<string> Properties { get; }
 
-        public void StartNewTurn(int month)
+        public void StartNewTurn(int week)
         {
             RemainMovePoint = MaxMovePoint;
 
-            ReduceModifiersLeftMonth(month);
+            ReduceModifiersLeftWeek(week);
         }
 
         [MoonSharpHidden]
@@ -411,8 +411,8 @@ namespace Core
         public IEnumerable<TiledModifier> AffectedTiledModifiers =>
             CurrentTile.TileMap.Holder.GetTiledModifiersForTarget(this);
 
-        public void AddModifier(string modifierName, IInfinityObject adder, int leftMonth)
-            => AddModifier(modifierName, adder?.Id ?? Id, leftMonth, false);
+        public void AddModifier(string modifierName, IInfinityObject adder, int leftWeek)
+            => AddModifier(modifierName, adder?.Id ?? Id, leftWeek, false);
 
         public void RemoveModifier(string modifierName)
         {
@@ -452,7 +452,7 @@ namespace Core
             }
         }
 
-        private void AddModifier(string modifierName, int adderId, int leftMonth, bool isBase)
+        private void AddModifier(string modifierName, int adderId, int leftWeek, bool isBase)
         {
             var dict = isBase ? _baseModifiers : _modifiers;
 
@@ -479,13 +479,13 @@ namespace Core
                 return;
             }
 
-            var m = new Modifier(core, adderId, leftMonth);
+            var m = new Modifier(core, adderId, leftWeek);
 
             dict.Add(modifierName, m);
             ApplyModifierChangeToDownward(OwnPlayer.PlayerName, m, false);
         }
 
-        private void ReduceModifiersLeftMonth(int month)
+        private void ReduceModifiersLeftWeek(int week)
         {
             var toRemoveList = new List<string>();
 
@@ -494,13 +494,13 @@ namespace Core
                 var m = _modifiers[name];
                 if (m.IsPermanent) continue;
 
-                if (m.LeftMonth - month <= 0)
+                if (m.LeftWeek - week <= 0)
                 {
                     toRemoveList.Add(name);
                     continue;
                 }
 
-                _modifiers[name].ReduceLeftMonth(month);
+                _modifiers[name].ReduceLeftWeek(week);
             }
 
             foreach (var name in toRemoveList)
