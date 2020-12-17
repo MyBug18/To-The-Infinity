@@ -165,7 +165,7 @@ namespace Core
                 e.Invoke();
 
             IsDestroyed = true;
-            CurrentTile.RemoveTileObject(TypeName);
+            CurrentTile?.RemoveTileObject(TypeName);
             CurrentTile = null;
         }
 
@@ -398,8 +398,9 @@ namespace Core
         [MoonSharpHidden]
         public IEnumerable<Modifier> GetModifiers()
         {
-            foreach (var m in CurrentTile.TileMap.Holder.GetModifiers(OwnPlayer.PlayerName))
-                yield return m;
+            if (CurrentTile != null)
+                foreach (var m in CurrentTile.TileMap.Holder.GetModifiers(OwnPlayer.PlayerName))
+                    yield return m;
 
             foreach (var m in _baseModifiers.Values)
                 yield return m;
@@ -409,7 +410,7 @@ namespace Core
         }
 
         public IEnumerable<TiledModifier> AffectedTiledModifiers =>
-            CurrentTile.TileMap.Holder.GetTiledModifiersForTarget(this);
+            CurrentTile?.TileMap.Holder.GetTiledModifiersForTarget(this) ?? new TiledModifier[0];
 
         public void AddModifier(string modifierName, IInfinityObject adder, int leftWeek)
             => AddModifier(modifierName, adder?.Id ?? Id, leftWeek, false);
@@ -738,6 +739,12 @@ namespace Core
 
         private void CacheMovableTileInfo()
         {
+            if (CurrentTile == null)
+            {
+                _movableTileInfoCache = new Dictionary<HexTileCoord, MoveInfo>();
+                return;
+            }
+
             var currentCoord = CurrentTile.Coord;
             var tileMap = CurrentTile.TileMap;
 
