@@ -50,7 +50,7 @@ namespace Core
             OwnPlayer = player;
 
             foreach (var s in prototype.BasicSpecialActions)
-                AddSpecialAction(s, true);
+                AddSpecialAction(s);
 
             foreach (var m in prototype.BasicModifiers)
                 AddModifier(m, Id, -1, true, false);
@@ -88,9 +88,6 @@ namespace Core
             BaseResourceStorage = prototype.BaseResourceStorage;
 
             foreach (var s in prototype.BasicSpecialActions)
-                AddSpecialAction(s, true);
-
-            foreach (var s in dict.GetStringList("SpecialActions"))
                 AddSpecialAction(s);
 
             foreach (var m in prototype.BasicModifiers)
@@ -149,7 +146,6 @@ namespace Core
                 ["RemainHp"] = _remainHp,
                 ["RemainMovePoint"] = RemainMovePoint,
                 ["RemainResourceStorage"] = _remainResourceStorage,
-                ["SpecialActions"] = _specialActions.Keys.ToArray(),
                 ["Modifiers"] = _modifiers.Values.Select(x => x.ToSaveData()).ToList(),
             };
 
@@ -366,24 +362,9 @@ namespace Core
 
         #region SpecialAction
 
-        private readonly Dictionary<string, SpecialAction> _baseSpecialActions =
-            new Dictionary<string, SpecialAction>();
-
         private readonly Dictionary<string, SpecialAction> _specialActions = new Dictionary<string, SpecialAction>();
 
-        public IEnumerable<SpecialAction> SpecialActions
-        {
-            get
-            {
-                foreach (var v in _baseSpecialActions.Values)
-                    yield return v;
-
-                foreach (var v in _specialActions.Values)
-                    yield return v;
-            }
-        }
-
-        public void AddSpecialAction(string name) => AddSpecialAction(name, false);
+        public IReadOnlyDictionary<string, SpecialAction> SpecialActions => _specialActions;
 
         public bool CheckSpecialActionCost(IReadOnlyDictionary<string, int> cost) =>
             throw new NotImplementedException();
@@ -391,13 +372,11 @@ namespace Core
         public void ConsumeSpecialActionCost(IReadOnlyDictionary<string, int> cost)
             => throw new NotImplementedException();
 
-        private void AddSpecialAction(string name, bool isBase)
+        private void AddSpecialAction(string name)
         {
-            var dict = isBase ? _baseSpecialActions : _specialActions;
+            if (_specialActions.ContainsKey(name)) return;
 
-            if (dict.ContainsKey(name)) return;
-
-            dict[name] = SpecialActionData.Instance.GetSpecialActionDirectly(this, name);
+            _specialActions[name] = SpecialActionData.Instance.GetSpecialActionDirectly(this, name);
         }
 
         #endregion

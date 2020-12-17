@@ -125,7 +125,6 @@ namespace Core
                     x => x.Value.Values.Select(y => y.ToSaveData()).ToList()),
                 ["TiledModifiers"] = _playerTiledModifierMap.ToDictionary(x => x.Key,
                     x => x.Value.Values.Select(y => y.ToSaveData()).ToList()),
-                ["SpecialActions"] = _specialActions.Keys.ToArray(),
                 ["TileMap"] = TileMap.ToSaveData(),
             };
 
@@ -159,15 +158,7 @@ namespace Core
 
         private readonly Dictionary<string, SpecialAction> _specialActions = new Dictionary<string, SpecialAction>();
 
-        public IEnumerable<SpecialAction> SpecialActions => _specialActions.Values;
-
-        public void AddSpecialAction(string name)
-        {
-            if (_specialActions.ContainsKey(name)) return;
-
-            _specialActions[name] = SpecialActionData.Instance
-                .GetSpecialActionDirectly(this, name);
-        }
+        public IReadOnlyDictionary<string, SpecialAction> SpecialActions => _specialActions;
 
         public bool CheckSpecialActionCost(IReadOnlyDictionary<string, int> cost) =>
             throw new NotImplementedException();
@@ -175,6 +166,14 @@ namespace Core
         public void ConsumeSpecialActionCost(IReadOnlyDictionary<string, int> cost)
         {
             throw new NotImplementedException();
+        }
+
+        private void AddSpecialAction(string name)
+        {
+            if (_specialActions.ContainsKey(name)) return;
+
+            _specialActions[name] = SpecialActionData.Instance
+                .GetSpecialActionDirectly(this, name);
         }
 
         #endregion

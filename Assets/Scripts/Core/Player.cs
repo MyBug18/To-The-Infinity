@@ -60,7 +60,6 @@ namespace Core
                 ["Storage"] = Storage.Data,
                 ["Relation"] = _relations,
                 ["OwnPlayer"] = OwnPlayer.Id,
-                ["SpecialActions"] = _specialActions.Keys.ToArray(),
             };
 
             return new InfinityObjectData(TypeName, result);
@@ -116,15 +115,7 @@ namespace Core
 
         private readonly Dictionary<string, SpecialAction> _specialActions = new Dictionary<string, SpecialAction>();
 
-        public IEnumerable<SpecialAction> SpecialActions => _specialActions.Values;
-
-        public void AddSpecialAction(string name)
-        {
-            if (_specialActions.ContainsKey(name)) return;
-
-            _specialActions[name] = SpecialActionData.Instance
-                .GetSpecialActionDirectly(this, name);
-        }
+        public IReadOnlyDictionary<string, SpecialAction> SpecialActions => _specialActions;
 
         public bool CheckSpecialActionCost(IReadOnlyDictionary<string, int> cost) =>
             throw new NotImplementedException();
@@ -132,6 +123,14 @@ namespace Core
         public void ConsumeSpecialActionCost(IReadOnlyDictionary<string, int> cost)
         {
             throw new NotImplementedException();
+        }
+
+        private void AddSpecialAction(string name)
+        {
+            if (_specialActions.ContainsKey(name)) return;
+
+            _specialActions[name] = SpecialActionData.Instance
+                .GetSpecialActionDirectly(this, name);
         }
 
         #endregion
@@ -181,11 +180,7 @@ namespace Core
 
         public LuaDictWrapper Storage => null;
 
-        public IEnumerable<SpecialAction> SpecialActions => new SpecialAction[0];
-
-        public void AddSpecialAction(string name)
-        {
-        }
+        public IReadOnlyDictionary<string, SpecialAction> SpecialActions => new Dictionary<string, SpecialAction>();
 
         public bool CheckSpecialActionCost(IReadOnlyDictionary<string, int> cost) => false;
 
