@@ -24,6 +24,8 @@ namespace Core
 
         IReadOnlyCollection<string> Properties { get; }
 
+        void ChangeRemainHp(int amount);
+
         void OnDamaged(DamageInfo damageInfo);
 
         void Move(HexTileCoord coord);

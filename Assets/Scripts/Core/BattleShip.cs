@@ -302,6 +302,8 @@ namespace Core
             }
         }
 
+        public void ChangeRemainHp(int amount) => RemainHp = amount;
+
         public void OnDamaged(DamageInfo damageInfo)
         {
             if (IsDestroyed) return;
