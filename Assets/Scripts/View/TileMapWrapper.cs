@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace View
 {
-    public class TileMapWrapper : MonoBehaviour
+    public sealed class TileMapWrapper : MonoBehaviour
     {
         [SerializeField]
         private HexTileWrapper hexTilePrefab;

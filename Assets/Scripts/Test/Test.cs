@@ -6,7 +6,7 @@ using Logger = Core.Logger;
 
 namespace Test
 {
-    public class Test : MonoBehaviour
+    public sealed class Test : MonoBehaviour
     {
         [SerializeField]
         private TileMapWrapper tileMapPrefab;

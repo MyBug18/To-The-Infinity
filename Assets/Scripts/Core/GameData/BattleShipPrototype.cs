@@ -3,7 +3,7 @@ using MoonSharp.Interpreter;
 
 namespace Core.GameData
 {
-    public class BattleShipPrototype : ILuaHolder
+    public sealed class BattleShipPrototype : ILuaHolder
     {
         public BattleShipPrototype(string filePath) => FilePath = filePath;
 

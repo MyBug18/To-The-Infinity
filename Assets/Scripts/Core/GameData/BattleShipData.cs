@@ -2,7 +2,7 @@
 
 namespace Core.GameData
 {
-    public class BattleShipData : IGameData
+    public sealed class BattleShipData : IGameData
     {
         private readonly Dictionary<string, BattleShipPrototype> _data = new Dictionary<string, BattleShipPrototype>();
 

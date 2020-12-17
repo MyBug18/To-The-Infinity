@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace View
 {
-    public class HexTileWrapper : MonoBehaviour
+    public sealed class HexTileWrapper : MonoBehaviour
     {
         public HexTile HexTile { get; private set; }
 
