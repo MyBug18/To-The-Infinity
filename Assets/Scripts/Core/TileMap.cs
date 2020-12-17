@@ -124,13 +124,13 @@ namespace Core
         ///     Null range will cover entire tilemap.
         /// </summary>
         [MoonSharpHidden]
-        public void ApplyModifierChangeToTileObjects(string targetPlayerName, IModifier m, bool isRemoving,
-            HashSet<HexTileCoord> pureRange = null)
+        public void ApplyModifierChangeToTileObjects(string targetPlayerName, IModifier m,
+            bool isRemoving, bool isFromSaveData, HashSet<HexTileCoord> pureRange)
         {
             foreach (var objs in _onTileMapObjects
                 .Where(objs => pureRange == null || pureRange.Contains(objs.Key))
                 .SelectMany(objDict => objDict.Value.Values))
-                objs.ApplyModifierChangeToDownward(targetPlayerName, m, isRemoving);
+                objs.ApplyModifierChangeToDownward(targetPlayerName, m, isRemoving, isFromSaveData);
         }
 
         public void StartCachingModifierEffects()

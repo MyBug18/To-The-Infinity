@@ -53,7 +53,7 @@ namespace Core
                 AddSpecialAction(s, true);
 
             foreach (var m in prototype.BasicModifiers)
-                AddModifier(m, Id, -1, true);
+                AddModifier(m, Id, -1, true, false);
         }
 
         public BattleShip(InfinityObjectData data, HexTile initialTile)
@@ -94,10 +94,10 @@ namespace Core
                 AddSpecialAction(s);
 
             foreach (var m in prototype.BasicModifiers)
-                AddModifier(m, Id, -1, true);
+                AddModifier(m, Id, -1, true, true);
 
             foreach (var m in dict.GetDictList("Modifiers"))
-                AddModifier(m.GetString("Name"), m.GetInt("AdderObjectId"), m.GetInt("LeftWeek"), false);
+                AddModifier(m.GetString("Name"), m.GetInt("AdderObjectId"), m.GetInt("LeftWeek"), false, true);
         }
 
         public IReadOnlyDictionary<string, int> BaseResourceStorage { get; }
@@ -426,7 +426,7 @@ namespace Core
             CurrentTile?.TileMap.Holder.GetTiledModifiersForTarget(this) ?? new TiledModifier[0];
 
         public void AddModifier(string modifierName, IInfinityObject adder, int leftWeek)
-            => AddModifier(modifierName, adder?.Id ?? Id, leftWeek, false);
+            => AddModifier(modifierName, adder?.Id ?? Id, leftWeek, false, false);
 
         public void RemoveModifier(string modifierName)
         {
@@ -439,13 +439,14 @@ namespace Core
 
             var m = _modifiers[modifierName];
             _modifiers.Remove(modifierName);
-            ApplyModifierChangeToDownward(OwnPlayer.PlayerName, m, true);
+            ApplyModifierChangeToDownward(OwnPlayer.PlayerName, m, true, false);
         }
 
         public bool HasModifier(string modifierName) => _modifiers.ContainsKey(modifierName);
 
         [MoonSharpHidden]
-        public void ApplyModifierChangeToDownward(string targetPlayerName, IModifier m, bool isRemoving)
+        public void ApplyModifierChangeToDownward(string targetPlayerName, IModifier m,
+            bool isRemoving, bool isFromSaveData)
         {
             if (targetPlayerName.ToLower() != "global" && targetPlayerName != OwnPlayer.PlayerName)
                 return;
@@ -460,13 +461,15 @@ namespace Core
             }
             else
             {
-                m.OnAdded(this);
+                // Should not apply OnAdded effect when loading
+                if (!isFromSaveData)
+                    m.OnAdded(this);
 
                 RegisterTriggerEvent(m.Name, m.GetTriggerEvent(this));
             }
         }
 
-        private void AddModifier(string modifierName, int adderId, int leftWeek, bool isBase)
+        private void AddModifier(string modifierName, int adderId, int leftWeek, bool isBase, bool isFromSaveData)
         {
             var dict = isBase ? _baseModifiers : _modifiers;
 
@@ -496,7 +499,7 @@ namespace Core
             var m = new Modifier(core, adderId, leftWeek);
 
             dict.Add(modifierName, m);
-            ApplyModifierChangeToDownward(OwnPlayer.PlayerName, m, false);
+            ApplyModifierChangeToDownward(OwnPlayer.PlayerName, m, false, isFromSaveData);
         }
 
         private void ReduceModifiersLeftWeek(int week)
@@ -829,7 +832,7 @@ namespace Core
 
             // Remove modifier before detaching
             foreach (var m in toRemove)
-                ApplyModifierChangeToDownward(OwnPlayer.PlayerName, m, true);
+                ApplyModifierChangeToDownward(OwnPlayer.PlayerName, m, true, false);
 
             if (!withoutTileMapAction)
                 CurrentTile.RemoveTileObject(TypeName);
@@ -841,7 +844,7 @@ namespace Core
                 tile.AddTileObject(this);
 
             foreach (var m in toAdd)
-                ApplyModifierChangeToDownward(OwnPlayer.PlayerName, m, false);
+                ApplyModifierChangeToDownward(OwnPlayer.PlayerName, m, false, false);
         }
 
         #endregion

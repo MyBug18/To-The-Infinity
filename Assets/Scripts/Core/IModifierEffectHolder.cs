@@ -6,7 +6,8 @@ namespace Core
     {
         IReadOnlyDictionary<string, IReadOnlyList<ModifierEffect>> ModifierEffectsMap { get; }
 
-        void ApplyModifierChangeToDownward(string targetPlayerName, IModifier m, bool isRemoving);
+        void ApplyModifierChangeToDownward(string targetPlayerName, IModifier m,
+            bool isRemoving, bool isFromSaveData);
 
         void StartCachingModifierEffect();
     }

@@ -96,6 +96,117 @@ namespace Core
             => GetAllTiledModifiers(target.OwnPlayer.PlayerName).Where(x => x.IsInRange(target.CurrentTile.Coord));
 
         public void AddModifier(string targetPlayerName, string modifierName, IInfinityObject adder, int leftWeek)
+            => AddModifier(targetPlayerName, modifierName, adder, leftWeek, false);
+
+        public void RemoveModifier(string targetPlayerName, string modifierName)
+        {
+            if (!_playerModifierMap.TryGetValue(targetPlayerName, out var modifiers) ||
+                !modifiers.ContainsKey(modifierName))
+            {
+                Logger.Log(LogType.Warning, $"{nameof(StarSystem)}.{nameof(RemoveModifier)}",
+                    $"Trying to remove modifier \"{modifierName}\" which doesn't exist for {targetPlayerName}, so it will be ignored.");
+                return;
+            }
+
+            var m = modifiers[modifierName];
+            modifiers.Remove(modifierName);
+
+            if (modifiers.Count == 0)
+                _playerModifierMap.Remove(targetPlayerName);
+
+            ApplyModifierChangeToDownward(targetPlayerName, m, true, false);
+        }
+
+        [MoonSharpHidden]
+        public void ApplyModifierChangeToDownward(string targetPlayerName, IModifier m, bool isRemoving, bool isFromSaveData)
+        {
+            if (targetPlayerName.ToLower() != "global" && targetPlayerName != OwnPlayer.PlayerName)
+            {
+                TileMap.ApplyModifierChangeToTileObjects(targetPlayerName, m, isRemoving, isFromSaveData, null);
+                return;
+            }
+
+            // Tiled modifier cannot affect the target type itself.
+            if (m is TiledModifier && m.TargetType == TypeName)
+            {
+                TileMap.ApplyModifierChangeToTileObjects(targetPlayerName, m, isRemoving, isFromSaveData, null);
+                return;
+            }
+
+            if (isRemoving)
+            {
+                m.OnRemoved(this);
+
+                RemoveTriggerEvent(m.Name);
+            }
+            else
+            {
+                if (!isFromSaveData)
+                    m.OnAdded(this);
+
+                RegisterTriggerEvent(m.Name, m.GetTriggerEvent(this));
+            }
+
+            TileMap.ApplyModifierChangeToTileObjects(targetPlayerName, m, isRemoving, isFromSaveData, null);
+        }
+
+        public void AddTiledModifierRange(string targetPlayerName, string modifierName, IInfinityObject adder,
+            string rangeKeyName, HashSet<HexTileCoord> tiles, int leftWeek)
+            => AddTiledModifierRange(targetPlayerName, modifierName, adder, rangeKeyName, tiles, leftWeek, false);
+
+        public void MoveTiledModifierRange(string targetPlayerName, string modifierName, string rangeKeyName,
+            HashSet<HexTileCoord> tiles)
+        {
+            if (!_playerTiledModifierMap.TryGetValue(targetPlayerName, out var modifiers) ||
+                !modifiers.TryGetValue(modifierName, out var m))
+            {
+                Logger.Log(LogType.Warning, $"{nameof(StarSystem)}.{nameof(MoveTiledModifierRange)}",
+                    $"Trying to access modifier \"{modifierName}\" which doesn't exist, so it will be ignored.");
+                return;
+            }
+
+            if (!m.Infos.ContainsKey(rangeKeyName))
+            {
+                Logger.Log(LogType.Warning, $"{nameof(StarSystem)}.{nameof(MoveTiledModifierRange)}",
+                    $"There is no range key \"{rangeKeyName}\" in modifier \"{modifierName}\", so it will be ignored.");
+                return;
+            }
+
+            var (pureAdd, pureRemove) = m.MoveTileInfo(rangeKeyName, tiles);
+
+            TileMap.ApplyModifierChangeToTileObjects(targetPlayerName, m, false, false, pureAdd);
+            TileMap.ApplyModifierChangeToTileObjects(targetPlayerName, m, true, false, pureRemove);
+        }
+
+        public void RemoveTiledModifierRange(string targetPlayerName, string modifierName, string rangeKeyName)
+        {
+            if (!_playerTiledModifierMap.TryGetValue(targetPlayerName, out var modifiers) ||
+                !modifiers.TryGetValue(modifierName, out var m))
+            {
+                Logger.Log(LogType.Warning, $"{nameof(StarSystem)}.{nameof(RemoveTiledModifierRange)}",
+                    $"Trying to remove modifier \"{modifierName}\" which doesn't exist, so it will be ignored.");
+                return;
+            }
+
+            if (!m.Infos.ContainsKey(rangeKeyName))
+            {
+                Logger.Log(LogType.Warning, $"{nameof(StarSystem)}.{nameof(RemoveTiledModifierRange)}",
+                    $"There is no range key \"{rangeKeyName}\" in modifier \"{modifierName}\", so it will be ignored.");
+                return;
+            }
+
+            var pureRemove = m.RemoveTileInfo(rangeKeyName);
+
+            TileMap.ApplyModifierChangeToTileObjects(targetPlayerName, m, true, false, pureRemove);
+
+            if (m.Infos.Count == 0)
+                modifiers.Remove(modifierName);
+
+            if (modifiers.Count == 0)
+                _playerTiledModifierMap.Remove(targetPlayerName);
+        }
+
+        private void AddModifier(string targetPlayerName, string modifierName, IInfinityObject adder, int leftWeek, bool isFromSaveData)
         {
             var core = ModifierData.Instance.GetModifierDirectly(modifierName);
 
@@ -126,62 +237,11 @@ namespace Core
 
             modifiers[modifierName] = m;
 
-            ApplyModifierChangeToDownward(targetPlayerName, m, false);
+            ApplyModifierChangeToDownward(targetPlayerName, m, false, isFromSaveData);
         }
 
-        public void RemoveModifier(string targetPlayerName, string modifierName)
-        {
-            if (!_playerModifierMap.TryGetValue(targetPlayerName, out var modifiers) ||
-                !modifiers.ContainsKey(modifierName))
-            {
-                Logger.Log(LogType.Warning, $"{nameof(StarSystem)}.{nameof(RemoveModifier)}",
-                    $"Trying to remove modifier \"{modifierName}\" which doesn't exist for {targetPlayerName}, so it will be ignored.");
-                return;
-            }
-
-            var m = modifiers[modifierName];
-            modifiers.Remove(modifierName);
-
-            if (modifiers.Count == 0)
-                _playerModifierMap.Remove(targetPlayerName);
-
-            ApplyModifierChangeToDownward(targetPlayerName, m, true);
-        }
-
-        [MoonSharpHidden]
-        public void ApplyModifierChangeToDownward(string targetPlayerName, IModifier m, bool isRemoving)
-        {
-            if (targetPlayerName.ToLower() != "global" && targetPlayerName != OwnPlayer.PlayerName)
-            {
-                TileMap.ApplyModifierChangeToTileObjects(targetPlayerName, m, isRemoving);
-                return;
-            }
-
-            // Tiled modifier cannot affect the target type itself.
-            if (m is TiledModifier && m.TargetType == TypeName)
-            {
-                TileMap.ApplyModifierChangeToTileObjects(targetPlayerName, m, isRemoving);
-                return;
-            }
-
-            if (isRemoving)
-            {
-                m.OnRemoved(this);
-
-                RemoveTriggerEvent(m.Name);
-            }
-            else
-            {
-                m.OnAdded(this);
-
-                RegisterTriggerEvent(m.Name, m.GetTriggerEvent(this));
-            }
-
-            TileMap.ApplyModifierChangeToTileObjects(targetPlayerName, m, isRemoving);
-        }
-
-        public void AddTiledModifierRange(string targetPlayerName, string modifierName, IInfinityObject adder,
-            string rangeKeyName, HashSet<HexTileCoord> tiles, int leftWeek)
+        private void AddTiledModifierRange(string targetPlayerName, string modifierName, IInfinityObject adder,
+            string rangeKeyName, HashSet<HexTileCoord> tiles, int leftWeek, bool isFromSaveData)
         {
             var core = ModifierData.Instance.GetModifierDirectly(modifierName);
 
@@ -203,7 +263,7 @@ namespace Core
             if (!modifiers.TryGetValue(modifierName, out var m))
             {
                 m = new TiledModifier(core, adder.Id, rangeKeyName, tiles, leftWeek);
-                TileMap.ApplyModifierChangeToTileObjects(targetPlayerName, m, false, tiles);
+                TileMap.ApplyModifierChangeToTileObjects(targetPlayerName, m, false, isFromSaveData, tiles);
                 return;
             }
 
@@ -223,59 +283,7 @@ namespace Core
 
             var pureAdd = m.AddTileInfo(rangeKeyName, tiles, leftWeek);
 
-            TileMap.ApplyModifierChangeToTileObjects(targetPlayerName, m, false, pureAdd);
-        }
-
-        public void MoveTiledModifierRange(string targetPlayerName, string modifierName, string rangeKeyName,
-            HashSet<HexTileCoord> tiles)
-        {
-            if (!_playerTiledModifierMap.TryGetValue(targetPlayerName, out var modifiers) ||
-                !modifiers.TryGetValue(modifierName, out var m))
-            {
-                Logger.Log(LogType.Warning, $"{nameof(StarSystem)}.{nameof(MoveTiledModifierRange)}",
-                    $"Trying to access modifier \"{modifierName}\" which doesn't exist, so it will be ignored.");
-                return;
-            }
-
-            if (!m.Infos.ContainsKey(rangeKeyName))
-            {
-                Logger.Log(LogType.Warning, $"{nameof(StarSystem)}.{nameof(MoveTiledModifierRange)}",
-                    $"There is no range key \"{rangeKeyName}\" in modifier \"{modifierName}\", so it will be ignored.");
-                return;
-            }
-
-            var (pureAdd, pureRemove) = m.MoveTileInfo(rangeKeyName, tiles);
-
-            TileMap.ApplyModifierChangeToTileObjects(targetPlayerName, m, false, pureAdd);
-            TileMap.ApplyModifierChangeToTileObjects(targetPlayerName, m, true, pureRemove);
-        }
-
-        public void RemoveTiledModifierRange(string targetPlayerName, string modifierName, string rangeKeyName)
-        {
-            if (!_playerTiledModifierMap.TryGetValue(targetPlayerName, out var modifiers) ||
-                !modifiers.TryGetValue(modifierName, out var m))
-            {
-                Logger.Log(LogType.Warning, $"{nameof(StarSystem)}.{nameof(RemoveTiledModifierRange)}",
-                    $"Trying to remove modifier \"{modifierName}\" which doesn't exist, so it will be ignored.");
-                return;
-            }
-
-            if (!m.Infos.ContainsKey(rangeKeyName))
-            {
-                Logger.Log(LogType.Warning, $"{nameof(StarSystem)}.{nameof(RemoveTiledModifierRange)}",
-                    $"There is no range key \"{rangeKeyName}\" in modifier \"{modifierName}\", so it will be ignored.");
-                return;
-            }
-
-            var pureRemove = m.RemoveTileInfo(rangeKeyName);
-
-            TileMap.ApplyModifierChangeToTileObjects(targetPlayerName, m, true, pureRemove);
-
-            if (m.Infos.Count == 0)
-                modifiers.Remove(modifierName);
-
-            if (modifiers.Count == 0)
-                _playerTiledModifierMap.Remove(targetPlayerName);
+            TileMap.ApplyModifierChangeToTileObjects(targetPlayerName, m, false, isFromSaveData, pureAdd);
         }
 
         private void ReduceModifiersLeftWeek(int week)
@@ -316,7 +324,7 @@ namespace Core
                     if (m.Infos.Count == 0)
                         toRemoveList.Add(m.Name);
 
-                    TileMap.ApplyModifierChangeToTileObjects(kv.Key, m, true, pureRemove);
+                    TileMap.ApplyModifierChangeToTileObjects(kv.Key, m, true, false, pureRemove);
                 }
 
                 foreach (var n in toRemoveList)
