@@ -326,6 +326,17 @@ namespace Core
                 e.Invoke(damageInfo);
         }
 
+        public bool IsMeleeAttackable(IUnit target)
+        {
+            if (CurrentTile == null || target.CurrentTile == null) return false;
+
+            if (IsDestroyed) return false;
+
+            return CurrentTile.TileMap.Holder.TypeName != nameof(StarSystem) &&
+                   CurrentTile.TileMap.Holder.Id == target.CurrentTile.TileMap.Holder.Id &&
+                   CurrentTile.Coord.IsAdjacent(target.CurrentTile.Coord, false);
+        }
+
         public void MeleeAttack(IUnit target)
         {
             if (IsDestroyed) return;
