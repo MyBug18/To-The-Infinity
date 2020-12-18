@@ -15,6 +15,7 @@ namespace Core
             Instance = this;
             RegisterInfinityObject(this, true, gameId);
             TileMapNoiseMaker.InitializeGradSeed(gameId);
+            RandomManager.Instance.Initialize(gameId);
 
             GameSpeed = gameSpeed;
         }
